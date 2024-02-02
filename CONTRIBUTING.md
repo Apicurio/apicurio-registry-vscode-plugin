@@ -4,35 +4,57 @@ When contributing to this repository, please first discuss the change you wish t
 
 Please note that this project is maintain on free personal time, be kind and do not except immediate answers.
 
-## install
+## Prereqisites
 
-```sh
-npm i
-```
+This extension is best developed in Visual Studio Code (VSC) itself. Even if you use other IDE to edit the code, VSC is required for debugging.
 
-## Developp
+### Visual Studio Code
 
-Use the run and debug pannel to test your module (For more details see [MSFT documentation](https://code.visualstudio.com/api)).
-The launch Extention task will compile in watch mode your extention `npm run watch` and launch a vsc instance with current extention.
-Use the `restart` button to refresh the VSC instance with current code.
+To set up your VSC, install the following extensions:
 
-You can run a local Apicurio registry available on http://localhost:8080 by running :
+-   [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+
+    Run **ctrl+P** and then `ext install esbenp.prettier-vscode`.
+
+    The extension will automatically format the code on file save, or you can run **ctrl+shift+I** or **ctrl+shift+P -> Format Document**.
+
+-   [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+
+    Run **ctrl+P** and then `ext install dbaeumer.vscode-eslint`.
+
+### Run Apicurio Registry
+
+You can run a local Apicurio Registry instance with docker:
 
 ```sh
 docker run -it -p 8080:8080 apicurio/apicurio-registry-mem:latest-release
 ```
 
-## Lint your code
+It will be available at http://localhost:8080.
 
-To lint you Extention code run :
+### Visual Studio Code Extensions (VSCE) tool
+
+To package the extension for publishing, you need the `vsce` executable, which can be installed by running:
 
 ```sh
-npm run lint
+npm install -g @vscode/vsce
 ```
 
-## Package your code
+## Install
 
-Using VSCE Run :
+```sh
+npm install
+```
+
+## Developp
+
+Use the **Run and Debug** panel to run and debug the extension. Make sure the **Run Extension** task is selected and press **F5**.
+
+The task will compile the extention and launch a VSC instance with the extension loaded.
+
+## Package
+
+Using VSCE, run:
 
 ```sh
 vsce package

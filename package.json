@@ -1,230 +1,231 @@
 {
-	"name": "apicurio-registry-explorer",
-	"displayName": "Apicurio registry",
-	"description": "Explore Apicurio registry content.",
-	"version": "1.0.1",
-	"publisher": "apicurio",
-	"author": {
-		"name": "Apicurio",
-		"url": "https://www.apicur.io/"
-	},
-	"license": "Apache-2.0",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Apicurio/apicurio-registry-vscode-plugin.git"
-	},
-	"engines": {
-		"vscode": "^1.57.0"
-	},
-	"categories": [
-		"Visualization"
-	],
-	"icon": "resources/apicurio_icon.png",
-	"activationEvents": [
-		"onView:apicurioExplorer"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"viewsWelcome": [
-			{
-				"view": "apicurioExplorer",
-				"contents": "Please wait until connection to your Apicurio registry or, in order to explore an Apicurio registry, you should :\n - configure a registry in your settings (Settings > Apicurio).\n - refresh the view.\n\n[Get Started](command:workbench.action.openSettings2)"
-			}
-		],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "apicurio-explorer",
-					"title": "Apicurio Explorer",
-					"icon": "resources/apicurio_icon.svg"
-				}
-			]
-		},
-		"views": {
-			"apicurio-explorer": [
-				{
-					"id": "apicurioExplorer",
-					"name": "Apicurio Explorer",
-					"icon": "resources/apicurio_icon.svg",
-					"contextualTitle": "Apicurio Explorer"
-				},
-				{
-					"id": "apicurioVersionsExplorer",
-					"name": "Apicurio Versions Explorer"
-				},
-				{
-					"id": "apicurioMetasExplorer",
-					"name": "Apicurio Metas Explorer"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "apicurioExplorer.refreshEntry",
-				"title": "Refresh",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "apicurioExplorer.search",
-				"title": "Search",
-				"icon": "$(search)"
-			},
-			{
-				"command": "apicurioExplorer.addArtifact",
-				"title": "Add artifact",
-				"icon": "$(add)"
-			},
-			{
-				"command": "apicurioVersionsExplorer.deleteArtifact",
-				"title": "Delete artifact",
-				"icon": "$(notebook-delete-cell)"
-			},
-			{
-				"command": "apicurioVersionsExplorer.openVersion",
-				"title": "Open",
-				"icon": "$(open-preview)"
-			},
-			{
-				"command": "apicurioVersionsExplorer.reverseDisplay",
-				"title": "Reverse order",
-				"icon": "$(symbol-null)"
-			},
-			{
-				"command": "apicurioVersionsExplorer.addVersion",
-				"title": "Add artifact version",
-				"icon": "$(add)"
-			},
-			{
-				"command": "apicurioMetasExplorer.editMetas",
-				"title": "Edit metas",
-				"icon": "$(edit)"
-			},
-			{
-				"command": "apicurioMetasExplorer.editState",
-				"title": "Change state",
-				"icon": "$(eye)"
-			}
-		],
-		"menus": {
-			"commandPalette": [
-				{
-					"command": "apicurioExplorer.refreshEntry"
-				}
-			],
-			"view/title": [
-				{
-					"command": "apicurioExplorer.refreshEntry",
-					"when": "view == apicurioExplorer",
-					"group": "navigation"
-				},
-				{
-					"command": "apicurioExplorer.search",
-					"when": "view == apicurioExplorer",
-					"group": "navigation"
-				},
-				{
-					"command": "apicurioExplorer.addArtifact",
-					"when": "view == apicurioExplorer"
-				},
-				{
-					"command": "apicurioVersionsExplorer.reverseDisplay",
-					"when": "view == apicurioVersionsExplorer"
-				},
-				{
-					"command": "apicurioVersionsExplorer.addVersion",
-					"when": "view == apicurioVersionsExplorer"
-				},
-				{
-					"command": "apicurioVersionsExplorer.deleteArtifact",
-					"when": "view == apicurioVersionsExplorer"
-				},
-				{
-					"command": "apicurioMetasExplorer.editMetas",
-					"when": "view == apicurioMetasExplorer",
-					"group": "navigation"
-				},
-				{
-					"command": "apicurioMetasExplorer.editState",
-					"when": "view == apicurioMetasExplorer"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "apicurioVersionsExplorer.openVersion",
-					"when": "view == apicurioVersionsExplorer",
-					"group": "inline"
-				}
-			]
-		},
-		"configuration": [
-			{
-				"title": "Apicurio",
-				"properties": {
-					"apicurio.http.secure": {
-						"description": "Use HTTPS instead of HTTP",
-						"type": "boolean",
-						"default": false
-					},
-					"apicurio.http.host": {
-						"description": "The Apicurio registry host to explore",
-						"type": "string",
-						"default": ""
-					},
-					"apicurio.http.port": {
-						"description": "The Apicurio registry port (default : 80 for http | 443 for https)",
-						"type": "integer",
-						"default": 80
-					},
-					"apicurio.http.path": {
-						"description": "The Apicurio registry path",
-						"type": "string",
-						"default": "/apis/registry/v2/"
-					},
-					"apicurio.search.limit": {
-						"description": "The Apicurio search limit (number of artifacts to return)",
-						"type": "integer",
-						"default": 50
-					},
-					"apicurio.explorer.name": {
-						"description": "Display name (if exist) instead of ID in registry explorer view",
-						"type": "boolean",
-						"default": false
-					},
-					"apicurio.versions.reverse": {
-						"description": "Reverse Versions order by default",
-						"type": "boolean",
-						"default": false
-					},
-					"apicurio.tools.preview.format": {
-						"description": "Format document on preview",
-						"type": "boolean",
-						"default": "true"
-					},
-					"apicurio.tools.preview.OPENAPI": {
-						"description": "Open OPENAPI artifacts with SwaggerPreview (if 'Arjun.swagger-viewer' plugin is available)",
-						"type": "boolean",
-						"default": "true"
-					}
-				}
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"lint": "eslint . --ext .ts,.tsx"
-	},
-	"devDependencies": {
-		"@types/node": "^17.0.12",
-		"@types/vscode": "^1.52.0",
-		"@typescript-eslint/eslint-plugin": "^5.10.1",
-		"eslint": "^8.7.0",
-		"typescript": "^4.5.5"
-	},
-	"dependencies": {
-		"http": "^0.0.1-security",
-		"https": "^1.0.0",
-		"mime-types": "^2.1.34"
-	}
+    "name": "apicurio-registry-explorer",
+    "displayName": "Apicurio registry",
+    "description": "Explore Apicurio registry content.",
+    "version": "1.0.1",
+    "publisher": "apicurio",
+    "author": {
+        "name": "Apicurio",
+        "url": "https://www.apicur.io/"
+    },
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Apicurio/apicurio-registry-vscode-plugin.git"
+    },
+    "engines": {
+        "vscode": "^1.57.0"
+    },
+    "categories": [
+        "Visualization"
+    ],
+    "icon": "resources/apicurio_icon.png",
+    "activationEvents": [
+        "onView:apicurioExplorer"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "viewsWelcome": [
+            {
+                "view": "apicurioExplorer",
+                "contents": "Please wait until connection to your Apicurio registry or, in order to explore an Apicurio registry, you should :\n - configure a registry in your settings (Settings > Apicurio).\n - refresh the view.\n\n[Get Started](command:workbench.action.openSettings2)"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "apicurio-explorer",
+                    "title": "Apicurio Explorer",
+                    "icon": "resources/apicurio_icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "apicurio-explorer": [
+                {
+                    "id": "apicurioExplorer",
+                    "name": "Apicurio Explorer",
+                    "icon": "resources/apicurio_icon.svg",
+                    "contextualTitle": "Apicurio Explorer"
+                },
+                {
+                    "id": "apicurioVersionsExplorer",
+                    "name": "Apicurio Versions Explorer"
+                },
+                {
+                    "id": "apicurioMetasExplorer",
+                    "name": "Apicurio Metas Explorer"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "apicurioExplorer.refreshEntry",
+                "title": "Refresh",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "apicurioExplorer.search",
+                "title": "Search",
+                "icon": "$(search)"
+            },
+            {
+                "command": "apicurioExplorer.addArtifact",
+                "title": "Add artifact",
+                "icon": "$(add)"
+            },
+            {
+                "command": "apicurioVersionsExplorer.deleteArtifact",
+                "title": "Delete artifact",
+                "icon": "$(notebook-delete-cell)"
+            },
+            {
+                "command": "apicurioVersionsExplorer.openVersion",
+                "title": "Open",
+                "icon": "$(open-preview)"
+            },
+            {
+                "command": "apicurioVersionsExplorer.reverseDisplay",
+                "title": "Reverse order",
+                "icon": "$(symbol-null)"
+            },
+            {
+                "command": "apicurioVersionsExplorer.addVersion",
+                "title": "Add artifact version",
+                "icon": "$(add)"
+            },
+            {
+                "command": "apicurioMetasExplorer.editMetas",
+                "title": "Edit metas",
+                "icon": "$(edit)"
+            },
+            {
+                "command": "apicurioMetasExplorer.editState",
+                "title": "Change state",
+                "icon": "$(eye)"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "apicurioExplorer.refreshEntry"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "apicurioExplorer.refreshEntry",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioExplorer.search",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioExplorer.addArtifact",
+                    "when": "view == apicurioExplorer"
+                },
+                {
+                    "command": "apicurioVersionsExplorer.reverseDisplay",
+                    "when": "view == apicurioVersionsExplorer"
+                },
+                {
+                    "command": "apicurioVersionsExplorer.addVersion",
+                    "when": "view == apicurioVersionsExplorer"
+                },
+                {
+                    "command": "apicurioVersionsExplorer.deleteArtifact",
+                    "when": "view == apicurioVersionsExplorer"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editMetas",
+                    "when": "view == apicurioMetasExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editState",
+                    "when": "view == apicurioMetasExplorer"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "apicurioVersionsExplorer.openVersion",
+                    "when": "view == apicurioVersionsExplorer",
+                    "group": "inline"
+                }
+            ]
+        },
+        "configuration": [
+            {
+                "title": "Apicurio",
+                "properties": {
+                    "apicurio.http.secure": {
+                        "description": "Use HTTPS instead of HTTP",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "apicurio.http.host": {
+                        "description": "The Apicurio registry host to explore",
+                        "type": "string",
+                        "default": ""
+                    },
+                    "apicurio.http.port": {
+                        "description": "The Apicurio registry port (default : 80 for http | 443 for https)",
+                        "type": "integer",
+                        "default": 80
+                    },
+                    "apicurio.http.path": {
+                        "description": "The Apicurio registry path",
+                        "type": "string",
+                        "default": "/apis/registry/v2/"
+                    },
+                    "apicurio.search.limit": {
+                        "description": "The Apicurio search limit (number of artifacts to return)",
+                        "type": "integer",
+                        "default": 50
+                    },
+                    "apicurio.explorer.name": {
+                        "description": "Display name (if exist) instead of ID in registry explorer view",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "apicurio.versions.reverse": {
+                        "description": "Reverse Versions order by default",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "apicurio.tools.preview.format": {
+                        "description": "Format document on preview",
+                        "type": "boolean",
+                        "default": "true"
+                    },
+                    "apicurio.tools.preview.OPENAPI": {
+                        "description": "Open OPENAPI artifacts with SwaggerPreview (if 'Arjun.swagger-viewer' plugin is available)",
+                        "type": "boolean",
+                        "default": "true"
+                    }
+                }
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "lint": "eslint . --ext .ts,.tsx"
+    },
+    "devDependencies": {
+        "@types/node": "^17.0.12",
+        "@types/vscode": "^1.52.0",
+        "@typescript-eslint/eslint-plugin": "^5.10.1",
+        "eslint": "^8.7.0",
+        "prettier": "3.2.4",
+        "typescript": "^4.5.5"
+    },
+    "dependencies": {
+        "http": "^0.0.1-security",
+        "https": "^1.0.0",
+        "mime-types": "^2.1.34"
+    }
 }
