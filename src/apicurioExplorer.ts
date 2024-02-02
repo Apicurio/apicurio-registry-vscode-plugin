@@ -1,9 +1,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { SearchEntry, Search } from './interfaces';
+import { Search, SearchEntry } from './interfaces';
 import { ApicurioTools } from './tools';
 import * as mime from 'mime-types';
+import { Services } from './services';
 
 namespace _ {
     export const tools = new ApicurioTools();
@@ -14,72 +15,47 @@ namespace _ {
  */
 
 export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchEntry> {
-    private _extensionUri: any;
-    private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-    readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+    private readonly extensionUri: any;
 
-    private _currentSearch: Search;
-    protected get currentSearch(): Search {
-        return this._currentSearch;
-    }
-    protected set currentSearch(value: Search) {
-        this._currentSearch = value;
+    private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
+    readonly onDidChangeTreeData: vscode.Event<void>;
+
+    private currentSearch: Search;
+
+    constructor(extensionUri: vscode.Uri) {
+        this.extensionUri = extensionUri;
+
+        this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
+        this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+
+        this.currentSearch = { property: '', propertyValue: '' };
     }
 
-    constructor(extensionUri) {
-        this._extensionUri = extensionUri;
-        this._currentSearch = { attribut: '', search: '' };
-    }
     public refresh(search?: Search): any {
-        this.currentSearch = search ? search : { attribut: '', search: '' };
-        this._onDidChangeTreeData.fire(undefined);
+        this.currentSearch = search ? search : { property: '', propertyValue: '' };
+        this.onDidChangeTreeDataEmitter.fire();
     }
 
     // Get Groups
 
-    getGroups(): string[] | Thenable<string[]> {
-        return this._getGroups();
+    private getGroups(): Promise<string[]> {
+        return Services.get().getRegistryClient().getGroups();
     }
 
-    async _getGroups(): Promise<string[]> {
-        const limit: number = vscode.workspace.getConfiguration('apicurio.search').get('limit');
-        const path = _.tools.getQueryPath({ id: null, group: null }, 'search', {
-            limit: limit,
-            offset: 0,
-        });
-        const children: any = await _.tools.query(path);
-        const groups: string[] = [];
-        for (let i = 0; i < children.artifacts.length; i++) {
-            // Manage parents
-            if (groups.includes(children.artifacts[i].groupId)) {
-                continue;
-            }
-            groups.push(children.artifacts[i].groupId);
-        }
-        return Promise.resolve(groups);
-    }
     // Read Directory
 
-    readDirectory(groupId: string): SearchEntry[] | Thenable<SearchEntry[]> {
-        return this._readDirectory(groupId);
-    }
-
-    async _readDirectory(groupId: string): Promise<SearchEntry[]> {
+    private async readDirectory(groupId: string): Promise<SearchEntry[]> {
         const searchParam = {};
-        const limit: number = vscode.workspace.getConfiguration('apicurio.search').get('limit');
         // Manage search parameters
-        if (this.currentSearch.attribut) {
-            searchParam[this.currentSearch.attribut] = this.currentSearch.search;
+        if (this.currentSearch.property) {
+            searchParam[this.currentSearch.property] = this.currentSearch.propertyValue;
         }
         if (groupId) {
             searchParam['group'] = groupId;
         }
-        searchParam[this.currentSearch.attribut] = this.currentSearch.search;
-        searchParam['limit'] = limit;
-        searchParam['offset'] = 0;
+
         // Manage request
-        const path = _.tools.getQueryPath({ group: null, id: null }, 'search', searchParam);
-        const children: any = await _.tools.query(path);
+        const children = await Services.get().getRegistryClient().searchArtifacts(searchParam);
         const result: SearchEntry[] = [];
         const currentGroup: string[] = [];
         for (let i = 0; i < children.artifacts.length; i++) {
@@ -90,10 +66,16 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             currentGroup.push(children.artifacts[i].groupId);
             // for all items
             // Manage custom searches (not available on Apicurio API)
-            if (this.currentSearch.attribut == 'type' && this.currentSearch.search != children.artifacts[i].type) {
+            if (
+                this.currentSearch.property == 'type' &&
+                this.currentSearch.propertyValue != children.artifacts[i].type
+            ) {
                 continue;
             }
-            if (this.currentSearch.attribut == 'state' && this.currentSearch.search != children.artifacts[i].state) {
+            if (
+                this.currentSearch.property == 'state' &&
+                this.currentSearch.propertyValue != children.artifacts[i].state
+            ) {
                 continue;
             }
             const child: SearchEntry = {
@@ -103,7 +85,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
                 description: children.artifacts[i].description,
                 type: children.artifacts[i].type,
                 state: children.artifacts[i].state,
-                parent: groupId ? false : true,
+                parent: !groupId,
             };
             result.push(child);
         }
@@ -248,7 +230,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         };
         await _.tools.query(path, 'POST', body, headers);
         // Refresh view to display version.
-        this._onDidChangeTreeData.fire(undefined);
+        this.onDidChangeTreeDataEmitter.fire();
     }
 
     // Search
@@ -259,7 +241,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             title: `${title}`,
             canPickMany: false,
         });
-        let search = '';
+        let search: string;
         switch (option) {
             case 'type':
                 search = await vscode.window.showQuickPick(_.tools.getLists('types'), {
@@ -279,8 +261,8 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
                 });
                 break;
         }
-        const searchReqest: Search = { attribut: option, search: search };
-        Promise.resolve(this.refresh(searchReqest));
+        const searchRequest: Search = { property: option, propertyValue: search };
+        return this.refresh(searchRequest);
     }
 
     // tree data provider
@@ -292,12 +274,11 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
 
     getTreeItem(element: SearchEntry): vscode.TreeItem {
         if (element.parent) {
-            // Manage display of empty results (not collapible).
-            const treeItem = new vscode.TreeItem(
+            // Manage display of empty results (not collapsible).
+            return new vscode.TreeItem(
                 element.groupId,
                 element.id ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
             );
-            return treeItem;
         }
         const displayName = vscode.workspace.getConfiguration('apicurio.explorer').get('name');
         const name = !displayName || !element.name ? element.id : element.name;
@@ -312,8 +293,8 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         treeItem.tooltip = tooltip;
         // treeItem.iconPath = new vscode.ThemeIcon('key');
         treeItem.iconPath = {
-            dark: vscode.Uri.joinPath(this._extensionUri, 'resources', 'dark', element.type.toLowerCase() + '.svg'),
-            light: vscode.Uri.joinPath(this._extensionUri, 'resources', 'light', element.type.toLowerCase() + '.svg'),
+            dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', element.type.toLowerCase() + '.svg'),
+            light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', element.type.toLowerCase() + '.svg'),
         };
         return treeItem;
     }
@@ -334,5 +315,7 @@ export class ApicurioExplorer {
         vscode.commands.registerCommand('apicurioExplorer.refreshEntry', () => treeDataProvider.refresh());
         vscode.commands.registerCommand('apicurioExplorer.search', () => treeDataProvider.search());
         vscode.commands.registerCommand('apicurioExplorer.addArtifact', () => treeDataProvider.addArtifact());
+
+        //vscode.commands.registerCommand('apicurioExplorer.test', () => Services.get().test());
     }
 }

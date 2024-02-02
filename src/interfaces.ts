@@ -30,8 +30,8 @@ interface CurrentArtifact {
 }
 
 interface Search {
-    attribut: string;
-    search: string;
+    property: string;
+    propertyValue: string;
 }
 
 export { SearchEntry, VersionEntry, MetaEntry, CurrentArtifact, Search };

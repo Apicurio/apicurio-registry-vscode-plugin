@@ -105,6 +105,11 @@
                 "icon": "$(eye)"
             }
         ],
+        "_": {
+            "command": "apicurioExplorer.test",
+            "title": "Test",
+            "icon": "$(eye)"
+        },
         "menus": {
             "commandPalette": [
                 {
@@ -155,6 +160,10 @@
                     "group": "inline"
                 }
             ]
+        },
+        "__": {
+            "command": "apicurioExplorer.test",
+            "when": "view == apicurioExplorer"
         },
         "configuration": [
             {
