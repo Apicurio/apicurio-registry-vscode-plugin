@@ -1,0 +1,46 @@
+name: Test
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        if: github.repository_owner == 'Apicurio'
+        steps:
+            - name: Set up npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Dependencies
+              run: |
+                  npm install
+
+            - name: Compile
+              run: |
+                  npm run compile
+
+            - name: Run Registry
+              run: |
+                  echo "REGISTRY_CID=$(docker run -d -p 8080:8080 quay.io/apicurio/apicurio-registry-mem:2.5.x-snapshot)" >> "$GITHUB_ENV"
+
+            - name: Test
+              run: |
+                  xvfb-run -a npm run test
+
+            - name: Stop Registry
+              run: |
+                  docker stop "$REGISTRY_CID"
+
+#            - name: Setup tmate session
+#              if: failure()
+#              uses: mxschmitt/action-tmate@v3

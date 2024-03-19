@@ -1,0 +1,123 @@
+name: Release
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: Branch to release from
+                required: true
+                default: main
+            release-version:
+                description: Version being released (e.g. 7.8.9)
+                required: true
+            next-version:
+                description: Version after the release (e.g. 7.8.10-dev)
+                required: true
+            # pre-release:
+            #     type: boolean
+            #     description: Create a pre-release version
+            #     required: true
+            #     default: true
+            changelog:
+                type: boolean
+                description: I have updated the CHANGELOG.md file
+                required: true
+                default: false
+            debug:
+                type: boolean
+                description: Debug with tmate on failure
+                required: true
+                default: true
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        if: github.repository_owner == 'Apicurio'
+        steps:
+            - name: Check prerequisites
+              if: ${{ !inputs.changelog }}
+              run: |
+                  exit 1
+
+            - name: Set up npm
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+
+            - name: Set up vsce
+              run: |
+                  npm install -g @vscode/vsce
+
+            - name: Set up ovsx
+              run: |
+                  npm install -g ovsx
+
+            - name: Checkout
+              run: |
+                  git init
+                  git config user.name apicurio-ci
+                  git config user.email apicurio.ci@gmail.com
+                  git remote add origin "https://apicurio-ci:${{ secrets.ACCESS_TOKEN }}@github.com/Apicurio/apicurio-registry-vscode-plugin.git"
+                  git fetch
+                  git checkout --track "origin/${{ inputs.branch }}"
+
+            - name: Dependencies
+              run: |
+                  npm install
+
+            - name: Compile
+              run: |
+                  npm run compile
+
+            - name: Run Registry
+              run: |
+                  echo "REGISTRY_CID=$(docker run -d -p 8080:8080 quay.io/apicurio/apicurio-registry-mem:2.5.x-snapshot)" >> "$GITHUB_ENV"
+
+            - name: Test
+              run: |
+                  xvfb-run -a npm run test
+
+            - name: Stop Registry
+              run: |
+                  docker stop "$REGISTRY_CID"
+
+            # - name: Configure pre-release
+            #   if: ${{ inputs.pre-release }}
+            #   run: |
+            #       echo "PRE_RELEASE=--pre-release" >> "$GITHUB_ENV"
+
+            # - name: Configure release
+            #   if: ${{ !inputs.pre-release }}
+            #   run: |
+            #       echo "PRE_RELEASE=" >> "$GITHUB_ENV"
+
+            - name: Package
+              run: |
+                  vsce package -m "Update to release version ${{ inputs.release-version }}" "${{ inputs.release-version }}"
+                  echo "VSIX_FILE=apicurio-registry-explorer-${{ inputs.release-version }}.vsix" >> "$GITHUB_ENV"
+
+            - name: Publish with vsce
+              run: |
+                  vsce publish -i "$VSIX_FILE" -p "${{ secrets.VSCODE_MARKETPLACE_ACCESS_TOKEN }}"
+
+            - name: Publish with ovsx
+              run: |
+                  ovsx publish -i "$VSIX_FILE" -p "${{ secrets.OVSX_REGISTRY_ACCESS_TOKEN }}"
+
+            - name: Next version
+              # if: ${{ !inputs.pre-release }}
+              run: |
+                  npm version --no-git-tag-version ${{ inputs.next-version }}
+                  git commit -m "Update to next development version ${{ inputs.next-version }}"
+
+            - name: Push
+              # if: ${{ !inputs.pre-release }}
+              run: |
+                  git push origin "${{ inputs.branch }}"
+                  git push origin "v${{ inputs.release-version }}"
+
+            # TODO: Create a GitHub release
+
+            - name: Setup tmate session
+              if: failure() && inputs.debug
+              uses: mxschmitt/action-tmate@v3

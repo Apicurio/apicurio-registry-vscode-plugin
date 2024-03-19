@@ -4,7 +4,7 @@ When contributing to this repository, please first discuss the change you wish t
 
 Please note that this project is maintain on free personal time, be kind and do not except immediate answers.
 
-## Prereqisites
+## Prerequisites
 
 This extension is best developed in Visual Studio Code (VSC) itself. Even if you use other IDE to edit the code, VSC is required for debugging.
 
@@ -22,12 +22,12 @@ To set up your VSC, install the following extensions:
 
     Run **ctrl+P** and then `ext install dbaeumer.vscode-eslint`.
 
-### Run Apicurio Registry
+### Apicurio Registry
 
-You can run a local Apicurio Registry instance with docker:
+You need Apicurio Registry during development, or to run the testsuite. You can run a local instance with docker:
 
 ```sh
-docker run -it -p 8080:8080 apicurio/apicurio-registry-mem:latest-release
+docker run -it -p 8080:8080 quay.io/apicurio/apicurio-registry-mem:2.5.x-snapshot
 ```
 
 It will be available at http://localhost:8080.
@@ -40,17 +40,45 @@ To package the extension for publishing, you need the `vsce` executable, which c
 npm install -g @vscode/vsce
 ```
 
-## Install
+## Dependencies
 
 ```sh
 npm install
 ```
 
-## Developp
+## Develop
 
 Use the **Run and Debug** panel to run and debug the extension. Make sure the **Run Extension** task is selected and press **F5**.
 
-The task will compile the extention and launch a VSC instance with the extension loaded.
+The task will compile the extension and launch a VSC instance with the extension loaded.
+
+## Compile
+
+```sh
+npm run compile
+```
+
+or
+
+```sh
+npm run vscode:prepublish
+```
+
+## Test
+
+To run the testsuite, an Apicurio Registry instance at `localhost:8080` is required.
+
+```sh
+npm run test
+```
+
+or
+
+```sh
+npm run test-no-timeout
+```
+
+without the default Mocha promise timeout.
 
 ## Package
 

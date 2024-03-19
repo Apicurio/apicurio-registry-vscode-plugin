@@ -1,8 +1,8 @@
-.DS_Store
-.vscode/settings.json
 *.vsix
-out
-node_modules
-yarn.lock
-package-lock.json
 .idea
+.test-extensions
+.trash~
+.vscode/settings.json
+node_modules
+out
+package-lock.json
