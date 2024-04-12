@@ -44,3 +44,5 @@ jobs:
 #            - name: Setup tmate session
 #              if: failure()
 #              uses: mxschmitt/action-tmate@v3
+
+# TODO: Save test artifacts: "Screenshots of failures can be found in: /tmp/test-resources/screenshots"

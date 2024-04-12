@@ -92,7 +92,7 @@ describe('Create and view a new artifact', () => {
         });
 
         it('confirms', async () => {
-            expect(await dialog.getTitle()).to.match(/^Confirm/);
+            expect(await dialog.getTitle()).to.match(/^Create /);
             expect(await labels(dialog)).to.have.members(['yes', 'no']);
             await dialog.selectQuickPick('yes');
         });
