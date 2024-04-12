@@ -212,7 +212,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
 
         // Confirm box
         const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-            title: `Confirm '${artifactType}' : '${groupId}/${artifactId}:${version}'`,
+            title: `Create ${artifactType} artifact with identifiers '${groupId}:${artifactId}:${version}' ?`,
             canPickMany: false,
         });
         if (confirm != 'yes') {

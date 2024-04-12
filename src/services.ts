@@ -30,20 +30,18 @@ class Services {
     public static get() {
         if (this.instance == null) {
             this.instance = new this();
-            this.instance.settings = new Settings();
-            this.instance.client = new RegistryClient(this.instance.settings);
+            this.instance.client = new RegistryClient();
         }
         return this.instance;
     }
 
-    private settings: Settings;
     private client: RegistryClient;
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {}
 
     public getSettings() {
-        return this.settings;
+        return new Settings(); // TODO: We need to create a new instance in case the settings change.
     }
 
     public getRegistryClient() {

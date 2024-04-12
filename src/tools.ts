@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as http from 'http';
 import * as https from 'https';
 import { CurrentArtifact } from './interfaces';
+import { isObject } from './utils';
 
 export class ApicurioTools {
     /**
@@ -111,7 +112,14 @@ export class ApicurioTools {
         return new Promise<string>((resolve, reject) => {
             const hhttpx = vscode.workspace.getConfiguration('apicurio.http').get('secure') ? https : http;
             const settings = this.getApicurioHttpSettings();
-            headers = !headers ? { 'Content-Type': 'application/json', Accept: '*/*' } : headers;
+
+            if (!isObject(headers)) {
+                headers = {};
+            }
+            headers = {
+                ...{ 'Content-Type': 'application/json', Accept: '*/*' },
+                ...headers,
+            };
             // FIX Apicurio isso on Yaml mime type (for OAS mostly).
             // If the type is not recognise, the entity is stored as YAML and not JSON wich is an issue for referencine entities thrue the registry across schamas
             // ex : $ref: "http://127.0.0.1.nip.io:8080/apis/registry/v2/groups/test/artifacts/test/versions/1#/components/schemas/test"

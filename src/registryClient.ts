@@ -1,7 +1,8 @@
-import { Settings } from './services';
-import * as vscode from 'vscode';
-import * as https from 'https';
 import * as http from 'http';
+import * as https from 'https';
+import * as vscode from 'vscode';
+import { Services, Settings } from './services';
+import { isObject } from './utils';
 
 interface SearchedArtifact {
     groupId: string | undefined;
@@ -31,12 +32,6 @@ interface ArtifactSearchResult {
 const DEFAULT_GROUP_ID = 'default';
 
 class RegistryClient {
-    private settings: Settings;
-
-    constructor(settings: Settings) {
-        this.settings = settings;
-    }
-
     public getArtifacts(): Promise<ArtifactSearchResult> {
         return this.searchArtifacts();
     }
@@ -44,7 +39,7 @@ class RegistryClient {
     public searchArtifacts(options?: object): Promise<ArtifactSearchResult> {
         const res = this.executeRequest(
             this.requestPath(`search/artifacts`, {
-                ...this.settings.limits(),
+                ...Services.get().getSettings().limits(),
                 ...options,
             })
         ) as Promise<ArtifactSearchResult>;
@@ -79,23 +74,25 @@ class RegistryClient {
 
     private executeRequest(path: string, method?: string, headers?: any, body?: any): Promise<object | string | null> {
         return new Promise<object | string>((resolve, reject) => {
-            const client = this.settings.useHttps ? https : http;
+            const settings = Services.get().getSettings();
+            const client = settings.useHttps ? https : http;
 
+            if (!isObject(headers)) {
+                headers = {};
+            }
             headers = {
-                Accept: '*/*',
-                'Content-Type': 'application/json',
+                ...{ 'Content-Type': 'application/json', Accept: '*/*' },
                 ...headers,
             };
-
             if (headers['Content-Type'].endsWith('yaml') || headers['Content-Type'].endsWith('yml')) {
                 headers['Content-Type'] = 'application/x-yaml';
             }
 
             const req = client.request(
                 {
-                    hostname: this.settings.hostname,
-                    port: this.settings.port,
-                    path: `${this.settings.path}${path}`,
+                    hostname: settings.hostname,
+                    port: settings.port,
+                    path: `${settings.path}${path}`,
                     method: method ? method : 'GET',
                     headers: headers,
                 },
