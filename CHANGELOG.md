@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased][Unreleased]
 
+## [v1.0.3][v1.0.3] - 2023-04-19
+
+-   Fix: Detect workspace location when previewing Apicurio Registry content.
+
 ## [v1.0.2][v1.0.2] - 2023-04-12
 
 -   Fix handling of default artifact groups.
@@ -77,7 +81,8 @@ All notable changes to this project will be documented in this file.
 
 -   Basic Apicurio explorer.
 
-[unreleased]: https://github.com/jetmartin/Apicurio/apicurio-registry-vscode-plugin/v1.0.2...HEAD
+[unreleased]: https://github.com/jetmartin/Apicurio/apicurio-registry-vscode-plugin/v1.0.3...HEAD
+[v1.0.3]: https://github.com/Apicurio/apicurio-registry-vscode-plugin/compare/v1.0.2...v1.0.3
 [v1.0.2]: https://github.com/Apicurio/apicurio-registry-vscode-plugin/compare/v1.0.1...v1.0.2
 [v1.0.1]: https://github.com/Apicurio/apicurio-registry-vscode-plugin/compare/v1.0.0...v1.0.1
 [v1.0.0]: https://github.com/Apicurio/apicurio-registry-vscode-plugin/compare/v0.1.0...v1.0.0

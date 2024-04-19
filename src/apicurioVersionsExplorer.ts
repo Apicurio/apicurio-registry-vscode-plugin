@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { SearchEntry, VersionEntry, CurrentArtifact } from './interfaces';
 import { ApicurioTools } from './tools';
 import * as mime from 'mime-types';
+import { isString } from './utils';
 
 namespace _ {
     export const tools = new ApicurioTools();
@@ -198,7 +199,13 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
         }
 
         // Mamage document
-        const fileName = `${data.groupId}--${data.id}--${data.version}.${extention}`;
+        const wsDirPath = this.getWorkspaceDirPath();
+        let fileName: string = `${data.groupId}--${data.id}--${data.version}.${extention}`;
+        if (isString(wsDirPath)) {
+            fileName = `${wsDirPath}/${fileName}`;
+        } else {
+            vscode.window.showWarningMessage(`Could not determine full workspace path for file '${fileName}`);
+        }
         const newUri = vscode.Uri.file(fileName).with({ scheme: 'untitled', path: fileName });
         vscode.workspace.openTextDocument(newUri).then(
             (a: vscode.TextDocument) => {
@@ -232,6 +239,20 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
             }
         }
         return Promise.resolve();
+    }
+
+    getWorkspaceDirPath(): string | undefined {
+        const lastOpenFilePath: string | undefined = vscode.window.activeTextEditor?.document.fileName;
+        const workspaces = vscode.workspace.workspaceFolders?.map((dir) => dir.uri.fsPath);
+        if (workspaces !== undefined) {
+            if (workspaces.length === 1) {
+                return workspaces[0];
+            }
+            if (lastOpenFilePath != undefined && workspaces.length > 1) {
+                return workspaces.filter((fsPath) => lastOpenFilePath.startsWith(fsPath))[0];
+            }
+        }
+        return undefined;
     }
 
     getVersions(group: string, id: string): VersionEntry[] | Thenable<VersionEntry[]> {
