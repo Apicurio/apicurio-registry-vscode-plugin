@@ -198,13 +198,13 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
             }
         }
 
-        // Mamage document
+        // Manage document
         const wsDirPath = this.getWorkspaceDirPath();
         let fileName: string = `${data.groupId}--${data.id}--${data.version}.${extention}`;
         if (isString(wsDirPath)) {
             fileName = `${wsDirPath}/${fileName}`;
         } else {
-            vscode.window.showWarningMessage(`Could not determine full workspace path for file '${fileName}`);
+            vscode.window.showWarningMessage(`Could not determine full workspace path for file '${fileName}'.`);
         }
         const newUri = vscode.Uri.file(fileName).with({ scheme: 'untitled', path: fileName });
         vscode.workspace.openTextDocument(newUri).then(
@@ -248,7 +248,7 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
             if (workspaces.length === 1) {
                 return workspaces[0];
             }
-            if (lastOpenFilePath != undefined && workspaces.length > 1) {
+            if (lastOpenFilePath !== undefined && workspaces.length > 1) {
                 return workspaces.filter((fsPath) => lastOpenFilePath.startsWith(fsPath))[0];
             }
         }
