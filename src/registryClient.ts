@@ -3,15 +3,16 @@ import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services, Settings } from './services';
 import { isObject } from './utils';
+import { isArray } from 'util';
 
 interface SearchedArtifact {
     groupId: string | undefined;
     description: string | undefined;
-    id: string;
+    artifactId: string;
     name: string;
     createdOn: string;
     createdBy: string;
-    type: string;
+    artifactType: string;
     modifiedBy: string;
     modifiedOn: string;
     state: string;
@@ -69,6 +70,7 @@ class RegistryClient {
         for (const key in params) {
             query = `${query}${!query ? '?' : '&'}${key}=${params[key]}`;
         }
+vscode.window.showErrorMessage(`Apicurio requestPath: ${path}${query}`);
         return `${path}${query}`;
     }
 
@@ -127,6 +129,18 @@ class RegistryClient {
                                 return reject(output);
                             }
                         } else {
+                                /**
+                                 * Add some retro compatibility data when Apicurio is V2
+                                 */
+                                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+                                    if (isObject(output) && isArray(output.artifacts)) {
+                                        for (var i in output.artifacts) {
+                                            let v2 = {artifactId: output.artifacts[i].id, artifactType: output.artifacts[i].type}; // Fix missing fields on v2 API
+                                            output.artifacts[i] = Object.assign(v2, output.artifacts[i]);
+                                        }
+                                    }
+                                }
+vscode.window.showErrorMessage(`Apicurio output: ${JSON.stringify(output)}`);
                             return resolve(output);
                         }
                     });

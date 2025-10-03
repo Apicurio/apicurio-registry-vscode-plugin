@@ -31,7 +31,7 @@ export class ApicurioTools {
             case 'states':
                 options = ['ENABLED', 'DISABLED', 'DEPRECATED'];
                 break;
-            case 'types':
+            case 'artifactType':
                 options = [
                     'AVRO',
                     'PROTOBUF',
@@ -61,23 +61,48 @@ export class ApicurioTools {
         type = !type ? 'default' : type;
         switch (type) {
             case 'meta':
-                path = `groups/${artifact.group}/artifacts/${artifact.id}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}`; // @TODO: Manage versions.
                 break;
             case 'versions':
-                path = `groups/${artifact.group}/artifacts/${artifact.id}/versions`;
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions`;
                 break;
             case 'group':
                 path = `groups/${artifact.group}/artifacts`;
                 break;
             case 'delete':
-                path = `groups/${artifact.group}/artifacts/${artifact.id}`;
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}`;
                 break;
             case 'search':
                 path = `search/artifacts`;
                 break;
             default:
-                path = `groups/${artifact.group}/artifacts/${artifact.id}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}`;
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}`;
                 break;
+        }
+        /**
+         * Add some retro compatibility data when Apicurio is V2
+         */
+        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+            switch (type) {
+                case 'meta':
+                    path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
+                    break;
+                case 'versions':
+                    path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions`;
+                    break;
+                case 'group':
+                    path = `groups/${artifact.group}/artifacts`;
+                    break;
+                case 'delete':
+                    path = `groups/${artifact.group}/artifacts/${artifact.artifactId}`;
+                    break;
+                case 'search':
+                    path = `search/artifacts`;
+                    break;
+                default:
+                    path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}`;
+                    break;
+            }
         }
         let parameters = '';
         for (const key in params) {
@@ -157,6 +182,7 @@ export class ApicurioTools {
                         case 404:
                             // Fix resolution issue for 404 responses on Apicurio API
                             vscode.window.showErrorMessage('Apicurio : Not found.');
+vscode.window.showErrorMessage(`Apicurio requestPath: ${path}`);
                             resolve('');
                             break;
                         case 409:

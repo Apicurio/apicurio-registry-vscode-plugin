@@ -169,6 +169,11 @@
             {
                 "title": "Apicurio",
                 "properties": {
+                    "apicurio.api.version": {
+                        "description": "The version of the Apicurio API to use",
+                        "type": "string",
+                        "default": "v3"
+                    },
                     "apicurio.http.secure": {
                         "description": "Use HTTPS instead of HTTP",
                         "type": "boolean",
@@ -187,7 +192,7 @@
                     "apicurio.http.path": {
                         "description": "The Apicurio registry path",
                         "type": "string",
-                        "default": "/apis/registry/v2/"
+                        "default": "/apis/registry/v3/"
                     },
                     "apicurio.search.limit": {
                         "description": "The Apicurio search limit (number of artifacts to return)",

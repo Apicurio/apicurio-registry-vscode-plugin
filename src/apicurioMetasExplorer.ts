@@ -41,16 +41,16 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
     private changeCurrentArtifact(element: SearchEntry | VersionEntry) {
         this.currentArtifact = {
             group: element.groupId,
-            id: element.id,
+            artifactId: element.artifactId,
             version: element.version ? element.version : 'latest',
         };
     }
 
-    readMetas(group: string, id: string, version?: string): MetaEntry[] | Thenable<MetaEntry[]> {
-        return this._readMetas(group, id, version ? version : 'latest');
+    readMetas(group: string, artifactId: string, version?: string): MetaEntry[] | Thenable<MetaEntry[]> {
+        return this._readMetas(group, artifactId, version ? version : 'latest');
     }
 
-    async _readMetas(group: string, id: string, version?: string): Promise<MetaEntry[]> {
+    async _readMetas(group: string, artifactId: string, version?: string): Promise<MetaEntry[]> {
         const path = _.tools.getQueryPath(this.currentArtifact, 'meta');
         const children: any = await _.tools.query(path);
         const result: MetaEntry[] = [];
@@ -59,7 +59,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
                 meta: i,
                 value: children[i],
                 groupId: group,
-                id: id,
+                artifactId: artifactId,
                 name: '',
                 description: '',
                 type: '',
@@ -82,7 +82,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
                 meta: activeMeta == 'labels' ? element[activeMeta][i] : i, // If meta is labels, display in meta instead of value.
                 value: activeMeta == 'labels' ? '' : element[activeMeta][i], // If meta is labels, display in meta instead of value.
                 groupId: element.group,
-                id: element.id,
+                artifactId: element.artifactId,
                 name: '',
                 description: '',
                 type: '',
@@ -99,7 +99,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
     // Edit state
 
     async editState(): Promise<any> {
-        if (!this._currentArtifact.id) {
+        if (!this._currentArtifact.artifactId) {
             vscode.window.showErrorMessage('An artifact must be selected.');
             return Promise.resolve();
         }
@@ -141,9 +141,9 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
 
     _getCurrentStatePath() {
         const group = this._currentArtifact.group;
-        const id = this._currentArtifact.id;
+        const artifactId = this._currentArtifact.artifactId;
         const version = this._currentArtifact.version;
-        let queryPath = `groups/${group}/artifacts/${id}`;
+        let queryPath = `groups/${group}/artifacts/${artifactId}`;
         if (version != 'latest') {
             queryPath = `${queryPath}/versions/${version}`;
         }
@@ -267,7 +267,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
     // Edit metas
 
     async editMetas(): Promise<any> {
-        if (!this._currentArtifact.id) {
+        if (!this._currentArtifact.artifactId) {
             vscode.window.showErrorMessage('An artifact version must be selected.');
             return Promise.resolve();
         }
@@ -341,19 +341,19 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
         if (this.currentArtifact.group) {
             artifact = {
                 group: this.currentArtifact.group,
-                id: this.currentArtifact.id,
+                artifactId: this.currentArtifact.artifactId,
                 version: this.currentArtifact.version ? this.currentArtifact.version : 'latest',
             };
         }
         if (element) {
             artifact = {
                 group: element.groupId,
-                id: element.id,
+                artifactId: element.artifactId,
                 version: element.version ? element.version : 'latest',
             };
         }
         if (artifact.group) {
-            const children: MetaEntry[] = await this.readMetas(artifact.group, artifact.id, artifact.version);
+            const children: MetaEntry[] = await this.readMetas(artifact.group, artifact.artifactId, artifact.version);
             return Promise.resolve(children);
         }
         return Promise.resolve([]);

@@ -58,6 +58,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         const children = await Services.get().getRegistryClient().searchArtifacts(searchParam);
         const result: SearchEntry[] = [];
         const currentGroup: string[] = [];
+vscode.window.showErrorMessage(`Apicurio children: ${JSON.stringify(children)}`);
         for (let i = 0; i < children.artifacts.length; i++) {
             // Manage parents
             if (!groupId && currentGroup.includes(children.artifacts[i].groupId)) {
@@ -67,8 +68,8 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             // for all items
             // Manage custom searches (not available on Apicurio API)
             if (
-                this.currentSearch.property == 'type' &&
-                this.currentSearch.propertyValue != children.artifacts[i].type
+                this.currentSearch.property == 'artifactType' &&
+                this.currentSearch.propertyValue != children.artifacts[i].artifactType
             ) {
                 continue;
             }
@@ -80,11 +81,10 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             }
             const child: SearchEntry = {
                 groupId: children.artifacts[i].groupId,
-                id: children.artifacts[i].id,
+                artifactId: children.artifacts[i].artifactId,
                 name: children.artifacts[i].name,
                 description: children.artifacts[i].description,
-                type: children.artifacts[i].type,
-                state: children.artifacts[i].state,
+                artifactType: children.artifacts[i].artifactType,
                 parent: !groupId,
             };
             result.push(child);
@@ -93,19 +93,19 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         if (result.length == 0) {
             const isEmpty: SearchEntry = {
                 groupId: 'No content',
-                id: '',
+                artifactId: '',
                 name: '',
                 description: '',
-                type: '',
+                artifactType: '',
                 state: '',
                 parent: true,
             };
             return Promise.resolve([isEmpty]);
         }
-        // Sort result, as the API do not allow sort by Group or ID but only by name or update date
+        // Sort result, as the API do not allow sort by Group or artifactId but only by name or update date
         result.sort(function (a, b) {
-            const nameA = a.groupId.toLowerCase() + a.id.toLowerCase(); // ignore upper and lowercase
-            const nameB = b.groupId.toLowerCase() + b.id.toLowerCase(); // ignore upper and lowercase
+            const nameA = a.groupId.toLowerCase() + a.artifactId.toLowerCase(); // ignore upper and lowercase
+            const nameB = b.groupId.toLowerCase() + b.artifactId.toLowerCase(); // ignore upper and lowercase
             if (nameA < nameB) {
                 return -1;
             }
@@ -163,7 +163,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             vscode.window.showErrorMessage('No group defined.');
             return Promise.resolve();
         }
-        const artifactType = await vscode.window.showQuickPick(_.tools.getLists('types'), {
+        const artifactType = await vscode.window.showQuickPick(_.tools.getLists('artifactType'), {
             title: 'Choose an artifact type to push :',
         });
         if (!artifactType) {
@@ -218,7 +218,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         if (confirm != 'yes') {
             return Promise.resolve();
         }
-        const path = _.tools.getQueryPath({ id: null, group: groupId }, 'group', {
+        const path = _.tools.getQueryPath({ artifactId: null, group: groupId }, 'group', {
             ifExists: 'FAIL',
         });
         const mimeType = mime.lookup(currentFile);
@@ -243,8 +243,8 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         });
         let search: string;
         switch (option) {
-            case 'type':
-                search = await vscode.window.showQuickPick(_.tools.getLists('types'), {
+            case 'artifactType':
+                search = await vscode.window.showQuickPick(_.tools.getLists('artifactType'), {
                     title: `${title} ${option}`,
                     canPickMany: false,
                 });
@@ -277,24 +277,23 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
             // Manage display of empty results (not collapsible).
             return new vscode.TreeItem(
                 element.groupId,
-                element.id ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
+                element.artifactId ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
             );
         }
         const displayName = vscode.workspace.getConfiguration('apicurio.explorer').get('name');
-        const name = !displayName || !element.name ? element.id : element.name;
-        const tooltip = !displayName && element.name ? element.name : element.id;
+        const name = !displayName || !element.name ? element.artifactId : element.name;
+        const tooltip = !displayName && element.name ? element.name : element.artifactId;
         const treeItem = new vscode.TreeItem(name, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.command = {
             command: 'apicurioExplorer.refreshChildViews',
             title: 'Display artifact versions',
             arguments: [element],
         };
-        treeItem.description = element.state.toLowerCase();
         treeItem.tooltip = tooltip;
         // treeItem.iconPath = new vscode.ThemeIcon('key');
         treeItem.iconPath = {
-            dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', element.type.toLowerCase() + '.svg'),
-            light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', element.type.toLowerCase() + '.svg'),
+            dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', element.artifactType.toLowerCase() + '.svg'),
+            light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', element.artifactType.toLowerCase() + '.svg'),
         };
         return treeItem;
     }

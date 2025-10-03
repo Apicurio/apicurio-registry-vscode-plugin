@@ -1,9 +1,9 @@
 interface SearchEntry {
     groupId: string;
-    id: string;
+    artifactId: string;
     name: string;
     description: string;
-    type: string;
+    artifactType: string;
     state: string;
     version?: string;
     parent: boolean;
@@ -25,7 +25,7 @@ interface MetaEntry extends VersionEntry {
 
 interface CurrentArtifact {
     group: string;
-    id: string;
+    artifactId: string;
     version?: string;
 }
 
