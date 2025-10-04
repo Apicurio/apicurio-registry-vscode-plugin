@@ -76,7 +76,9 @@ export class ApicurioTools {
                 path = `search/artifacts`;
                 break;
             default:
-                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}`;
+                // Get artifact
+                // API v3 require version, no latest allowed by default.
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`;
                 break;
         }
         /**
