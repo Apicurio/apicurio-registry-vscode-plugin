@@ -26,7 +26,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
     constructor() {
         this._currentArtifact = {
             group: undefined,
-            id: undefined,
+            artifactId: undefined,
             version: undefined,
         };
     }
