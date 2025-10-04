@@ -30,7 +30,7 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
         this._reverseDisplay = vscode.workspace.getConfiguration('apicurio.versions').get('reverse');
         this._currentArtifact = {
             group: undefined,
-            id: undefined,
+            artifactId: undefined,
         };
     }
 
@@ -92,7 +92,7 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
     async deleteArtifact(deleteVersion?: boolean) {
         // Confirm box
         const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-            title: `Are you shure to delete '${this.currentArtifact.group}/${this.currentArtifact.id}'`,
+            title: `Are you shure to delete '${this.currentArtifact.group}/${this.currentArtifact.artifactId}'`,
             canPickMany: false,
         });
         if (confirm != 'yes') {
@@ -125,7 +125,7 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
     }
 
     private changeCurrentArtifact(element: SearchEntry) {
-        this.currentArtifact = { group: element.groupId, id: element.id };
+        this.currentArtifact = { group: element.groupId, artifactId: element.artifactId };
     }
 
     public reverseDisplay() {
@@ -135,11 +135,11 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
 
     // Read Artifact
 
-    readArtifact(group: string, id: string, version?: string): any | Thenable<any> {
-        return this._readArtifact(group, id, version ? version : 'latest');
+    readArtifact(group: string, artifactId: string, version?: string): any | Thenable<any> {
+        return this._readArtifact(group, artifactId, version ? version : 'latest');
     }
-    async _readArtifact(group: string, id: string, version: string): Promise<any> {
-        const path = _.tools.getQueryPath({ group: group, id: id, version: version });
+    async _readArtifact(group: string, artifactId: string, version: string): Promise<any> {
+        const path = _.tools.getQueryPath({ group: group, artifactId: artifactId, version: version });
         const child: any = await _.tools.query(path, null, null, null, false);
         return Promise.resolve(child);
     }
@@ -153,13 +153,13 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
     async _getArtifactType(): Promise<string> {
         const path = _.tools.getQueryPath(this.currentArtifact, 'meta');
         const child: any = await _.tools.query(path);
-        return Promise.resolve(child.type);
+        return Promise.resolve(child.artifactType);
     }
 
     async openVersion(artifact: vscode.Uri): Promise<any> {
         const tmp: string = JSON.stringify(artifact);
         const data: VersionEntry = JSON.parse(tmp);
-        let children: any = await this.readArtifact(data.groupId, data.id, data.version);
+        let children: any = await this.readArtifact(data.groupId, data.artifactId, data.version);
         // @TODO manage other extentions if require for other formats.
         let extention = '';
         const artifactType = await this.getArtifactType();
@@ -200,7 +200,7 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
 
         // Manage document
         const wsDirPath = this.getWorkspaceDirPath();
-        let fileName: string = `${data.groupId}--${data.id}--${data.version}.${extention}`;
+        let fileName: string = `${data.groupId}--${data.artifactId}--${data.version}.${extention}`;
         if (isString(wsDirPath)) {
             fileName = `${wsDirPath}/${fileName}`;
         } else {
@@ -255,21 +255,21 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
         return undefined;
     }
 
-    getVersions(group: string, id: string): VersionEntry[] | Thenable<VersionEntry[]> {
-        return this._getVersions(group, id);
+    getVersions(group: string, artifactId: string): VersionEntry[] | Thenable<VersionEntry[]> {
+        return this._getVersions(group, artifactId);
     }
 
-    async _getVersions(group: string, id: string): Promise<VersionEntry[]> {
+    async _getVersions(group: string, artifactId: string): Promise<VersionEntry[]> {
         const path = _.tools.getQueryPath(this.currentArtifact, 'versions');
         const children: any = await _.tools.query(path);
         const result: VersionEntry[] = [];
         for (let i = 0; i < children.versions.length; i++) {
             const child: VersionEntry = {
                 groupId: group,
-                id: id,
+                artifactId: artifactId,
                 name: children.versions[i].name,
                 description: '',
-                type: children.versions[i].type,
+                artifactType: children.versions[i].artifactType,
                 state: children.versions[i].state,
                 version: children.versions[i].version,
                 createdOn: children.versions[i].createdOn,
@@ -287,21 +287,21 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
     // tree data provider
 
     async getChildren(element?: SearchEntry): Promise<VersionEntry[]> {
-        let artifact: CurrentArtifact = { group: undefined, id: undefined };
+        let artifact: CurrentArtifact = { group: undefined, artifactId: undefined };
         if (this.currentArtifact.group) {
             artifact = {
                 group: this.currentArtifact.group,
-                id: this.currentArtifact.id,
+                artifactId: this.currentArtifact.artifactId,
             };
         }
         if (element) {
             artifact = {
                 group: element.groupId,
-                id: element.id,
+                artifactId: element.artifactId,
             };
         }
         if (artifact.group) {
-            const children: VersionEntry[] = await this.getVersions(artifact.group, artifact.id);
+            const children: VersionEntry[] = await this.getVersions(artifact.group, artifact.artifactId);
             return Promise.resolve(children);
         }
         return Promise.resolve([]);
