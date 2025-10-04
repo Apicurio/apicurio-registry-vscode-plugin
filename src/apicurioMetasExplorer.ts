@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { SearchEntry, VersionEntry, MetaEntry, CurrentArtifact } from './interfaces';
 import { ApicurioTools } from './tools';
+import { Setting } from 'vscode-extension-tester';
 
 namespace _ {
     export const tools = new ApicurioTools();
@@ -78,9 +79,20 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
     _activeMetaAsMetaEntry(element, activeMeta) {
         const result: MetaEntry[] = [];
         for (const i in element[activeMeta]) {
+                var data = {
+                    meta: i,
+                    value: element[activeMeta][i],
+                };
+                /* V2 */
+                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+                    data = {
+                        meta: activeMeta == 'labels' ? element[activeMeta][i] : i, // If meta is labels, display in meta instead of value.
+                        value: activeMeta == 'labels' ? '' : element[activeMeta][i], // If meta is labels, display in meta instead of value.
+                    };
+                }
             const met: MetaEntry = {
-                meta: activeMeta == 'labels' ? element[activeMeta][i] : i, // If meta is labels, display in meta instead of value.
-                value: activeMeta == 'labels' ? '' : element[activeMeta][i], // If meta is labels, display in meta instead of value.
+                meta: data.meta,
+                value: data.value,
                 groupId: element.group,
                 artifactId: element.artifactId,
                 name: '',
@@ -197,35 +209,43 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
 
     // Edit labels
     async _editLabels(currentMetaValue, updatedValue) {
-        const labelAction = await vscode.window.showQuickPick(_.tools.getLists('edit'), {
-            title: 'Choose action',
-            canPickMany: false,
-        });
-        if (labelAction == undefined) {
-            vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
-            return Promise.resolve();
-        }
-        let label = '';
-        switch (labelAction) {
-            case 'Delete':
-                label = await vscode.window.showQuickPick(currentMetaValue, {
-                    title: 'Choose label to delete',
-                    canPickMany: false,
-                });
-                for (const i in currentMetaValue) {
-                    if (currentMetaValue[i] != label) {
-                        updatedValue.push(currentMetaValue[i]);
+        /* V2 */
+        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+            const labelAction = await vscode.window.showQuickPick(_.tools.getLists('edit'), {
+                title: 'Choose action',
+                canPickMany: false,
+            });
+            if (labelAction == undefined) {
+                vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
+                return Promise.resolve();
+            }
+            let label = '';
+            switch (labelAction) {
+                case 'Delete':
+                    label = await vscode.window.showQuickPick(currentMetaValue, {
+                        title: 'Choose label to delete',
+                        canPickMany: false,
+                    });
+                    for (const i in currentMetaValue) {
+                        if (currentMetaValue[i] != label) {
+                            updatedValue.push(currentMetaValue[i]);
+                        }
                     }
-                }
-                break;
-            default:
-                label = await vscode.window.showInputBox({ title: `Add label` });
-                updatedValue = currentMetaValue;
-                updatedValue.push(label);
-                break;
+                    break;
+                default:
+                    label = await vscode.window.showInputBox({ title: `Add label` });
+                    updatedValue = currentMetaValue;
+                    updatedValue.push(label);
+                    break;
+            }
+            return updatedValue;
         }
+        /* V3+ */
+        /* V3 do not support properties. Labels are now having same behaviors as properties. */
+        updatedValue = await this._editProperties(currentMetaValue, updatedValue);
         return updatedValue;
-    }
+    } 
+
     // Edit properties
     async _editProperties(currentMetaValue, updatedValue) {
         const propertyAction = await vscode.window.showQuickPick(_.tools.getLists('edit'), {
@@ -284,6 +304,10 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
         // Edit value
         const editableMetas: any = await this.getEditableMetas();
         // Manage labels
+        /* V3+ - Force labels to behave as properties */
+        if (vscode.workspace.getConfiguration('apicurio.api').get('version') != "v2"){
+                metaType == 'properties';
+        }
         let updatedValue: any = metaType == 'labels' ? [] : metaType == 'properties' ? {} : '';
         const currentMetaValue: any = editableMetas[metaType]
             ? editableMetas[metaType]

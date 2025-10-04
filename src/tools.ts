@@ -26,7 +26,11 @@ export class ApicurioTools {
                 options = ['name', 'group', 'description', 'type', 'state', 'labels', 'properties'];
                 break;
             case 'editableMetas':
-                options = ['name', 'description', 'labels', 'properties'];
+                options = ['name', 'description', 'labels'];
+                /* V2 - Support both labels & properties. */
+                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+                    options.push('properties');
+                }
                 break;
             case 'states':
                 options = ['ENABLED', 'DISABLED', 'DEPRECATED'];
@@ -61,7 +65,11 @@ export class ApicurioTools {
         type = !type ? 'default' : type;
         switch (type) {
             case 'meta':
+                vscode.window.showErrorMessage(`Apicurio art-version: ${artifact.version}`);
                 path = `groups/${artifact.group}/artifacts/${artifact.artifactId}`; // @TODO: Manage versions.
+                if (artifact.version && artifact.version != 'latest') {
+                    path = `${path}/versions/${artifact.version}`;
+                }
                 break;
             case 'versions':
                 path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions`;
@@ -85,6 +93,7 @@ export class ApicurioTools {
          * Add some retro compatibility data when Apicurio is V2
          */
         if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+                vscode.window.showErrorMessage(`Apicurio V2 API mode`);
             switch (type) {
                 case 'meta':
                     path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
