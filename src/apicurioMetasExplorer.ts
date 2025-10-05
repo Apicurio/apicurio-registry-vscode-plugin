@@ -13,7 +13,7 @@ namespace _ {
  * Apicurio Metas Explorer Provider
  */
 
-export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<VersionEntry> {
+export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<MetaEntry> {
     private _currentArtifact: CurrentArtifact;
     protected get currentArtifact(): CurrentArtifact {
         return this._currentArtifact;
@@ -56,21 +56,16 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
         const children: any = await _.tools.query(path);
         const result: MetaEntry[] = [];
         for (const i in children) {
-            const met: MetaEntry = {
-                meta: i,
-                value: children[i],
-                groupId: group,
-                artifactId: artifactId,
-                name: '',
-                description: '',
-                artifactType: '',
-                state: '',
-                version: '',
-                createdOn: '',
-                labels: children.labels,
-                properties: children.properties,
-                parent: false,
-            };
+            const met: MetaEntry = {meta: i, value: ''};
+            if (i == 'labels') {
+                met.labels = children.labels;
+            }
+            else if (i == 'properties') {
+                met.properties = children.properties;
+            }
+            else {
+                met.value = children[i];
+            }
             result.push(met);
         }
         return Promise.resolve(result);
@@ -92,16 +87,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
                 }
             const met: MetaEntry = {
                 meta: data.meta,
-                value: data.value,
-                groupId: element.group,
-                artifactId: element.artifactId,
-                name: '',
-                description: '',
-                artifactType: '',
-                state: '',
-                version: '',
-                createdOn: '',
-                parent: false,
+                value: data.value
             };
             result.push(met);
         }
@@ -378,6 +364,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Ve
         }
         if (artifact.group) {
             const children: MetaEntry[] = await this.readMetas(artifact.group, artifact.artifactId, artifact.version);
+vscode.window.showErrorMessage(`Apicurio children: ${JSON.stringify(children)}`);
             return Promise.resolve(children);
         }
         return Promise.resolve([]);
