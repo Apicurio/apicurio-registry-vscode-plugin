@@ -364,7 +364,6 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         }
         if (artifact.group) {
             const children: MetaEntry[] = await this.readMetas(artifact.group, artifact.artifactId, artifact.version);
-vscode.window.showErrorMessage(`Apicurio children: ${JSON.stringify(children)}`);
             return Promise.resolve(children);
         }
         return Promise.resolve([]);
@@ -381,7 +380,8 @@ vscode.window.showErrorMessage(`Apicurio children: ${JSON.stringify(children)}`)
 
             default:
                 treeItem = new vscode.TreeItem(element.meta, vscode.TreeItemCollapsibleState.None); // None / Collapsed
-                treeItem.description = element.value;
+                treeItem.description = element.value.toString();
+                treeItem.tooltip = element.value.toString();
                 break;
         }
         return treeItem;

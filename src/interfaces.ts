@@ -17,14 +17,6 @@ interface VersionEntry extends SearchEntry {
     parent: boolean;
 }
 
-// interface MetaEntry extends VersionEntry {
-//     meta: string;
-//     value: string;
-//     labels?: string[];
-//     properties?: any;
-//     activeMeta?: string;
-// }
-
 interface MetaEntry {
     meta: string;
     value: string;
