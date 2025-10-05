@@ -65,7 +65,6 @@ export class ApicurioTools {
         type = !type ? 'default' : type;
         switch (type) {
             case 'meta':
-                vscode.window.showErrorMessage(`Apicurio art-version: ${artifact.version}`);
                 path = `groups/${artifact.group}/artifacts/${artifact.artifactId}`; // @TODO: Manage versions.
                 if (artifact.version && artifact.version != 'latest') {
                     path = `${path}/versions/${artifact.version}`;
@@ -193,7 +192,6 @@ export class ApicurioTools {
                         case 404:
                             // Fix resolution issue for 404 responses on Apicurio API
                             vscode.window.showErrorMessage('Apicurio : Not found.');
-vscode.window.showErrorMessage(`Apicurio requestPath: ${path}`);
                             resolve('');
                             break;
                         case 409:

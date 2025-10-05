@@ -70,7 +70,6 @@ class RegistryClient {
         for (const key in params) {
             query = `${query}${!query ? '?' : '&'}${key}=${params[key]}`;
         }
-vscode.window.showErrorMessage(`Apicurio requestPath: ${path}${query}`);
         return `${path}${query}`;
     }
 
@@ -140,7 +139,6 @@ vscode.window.showErrorMessage(`Apicurio requestPath: ${path}${query}`);
                                         }
                                     }
                                 }
-vscode.window.showErrorMessage(`Apicurio output: ${JSON.stringify(output)}`);
                             return resolve(output);
                         }
                     });

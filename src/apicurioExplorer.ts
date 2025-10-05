@@ -58,7 +58,6 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
         const children = await Services.get().getRegistryClient().searchArtifacts(searchParam);
         const result: SearchEntry[] = [];
         const currentGroup: string[] = [];
-vscode.window.showErrorMessage(`Apicurio children: ${JSON.stringify(children)}`);
         for (let i = 0; i < children.artifacts.length; i++) {
             // Manage parents
             if (!groupId && currentGroup.includes(children.artifacts[i].groupId)) {
