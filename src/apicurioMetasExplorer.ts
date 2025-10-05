@@ -291,10 +291,13 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         const editableMetas: any = await this.getEditableMetas();
         // Manage labels
         /* V3+ - Force labels to behave as properties */
-        if (vscode.workspace.getConfiguration('apicurio.api').get('version') != "v2"){
-                metaType == 'properties';
+        let updatedValue: any;
+        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+            updatedValue = (metaType == 'labels') ? [] : metaType == 'properties' ? {} : '';
         }
-        let updatedValue: any = metaType == 'labels' ? [] : metaType == 'properties' ? {} : '';
+        else{
+            updatedValue = (metaType == 'labels') ? {} : '';
+        }
         const currentMetaValue: any = editableMetas[metaType]
             ? editableMetas[metaType]
             : metaType == 'labels'

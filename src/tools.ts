@@ -92,7 +92,6 @@ export class ApicurioTools {
          * Add some retro compatibility data when Apicurio is V2
          */
         if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-                vscode.window.showErrorMessage(`Apicurio V2 API mode`);
             switch (type) {
                 case 'meta':
                     path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
