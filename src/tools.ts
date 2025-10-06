@@ -73,6 +73,9 @@ export class ApicurioTools {
             case 'versions':
                 path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions`;
                 break;
+            case 'versionComments':
+                path = `groups/${artifact.group}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comments`;
+                break;
             case 'group':
                 path = `groups/${artifact.group}/artifacts`;
                 break;

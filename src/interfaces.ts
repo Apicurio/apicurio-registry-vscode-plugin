@@ -17,6 +17,13 @@ interface VersionEntry extends SearchEntry {
     parent: boolean;
 }
 
+interface VersionCommentsEntry {
+    commentId: string;
+    value: string;
+    owner: string;
+    createdOn: string;
+}
+
 interface MetaEntry {
     meta: string;
     value: string;
@@ -36,4 +43,4 @@ interface Search {
     propertyValue: string;
 }
 
-export { SearchEntry, VersionEntry, MetaEntry, CurrentArtifact, Search };
+export { SearchEntry, VersionEntry, VersionCommentsEntry, MetaEntry, CurrentArtifact, Search };

@@ -84,6 +84,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
                 name: children.artifacts[i].name,
                 description: children.artifacts[i].description,
                 artifactType: children.artifacts[i].artifactType,
+                state: children.artifacts[i].state,
                 parent: !groupId,
             };
             result.push(child);

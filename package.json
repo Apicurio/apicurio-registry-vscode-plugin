@@ -55,6 +55,11 @@
                 {
                     "id": "apicurioMetasExplorer",
                     "name": "Apicurio Metas Explorer"
+                },
+                {
+                    "id": "apicurioVersionsCommentsExplorer",
+                    "name": "Apicurio Versions Comments Explorer",
+                    "visibility": "collapsed"
                 }
             ]
         },

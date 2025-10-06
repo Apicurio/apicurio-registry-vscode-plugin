@@ -5,6 +5,9 @@ import { SearchEntry, VersionEntry, CurrentArtifact } from './interfaces';
 import { ApicurioTools } from './tools';
 import * as mime from 'mime-types';
 import { isString } from './utils';
+import { ApicurioVersionsCommentsExplorer } from './apicurioVersionsCommentsExplorer';
+import { ApicurioMetasExplorer } from './apicurioMetasExplorer';
+import { version } from 'os';
 
 namespace _ {
     export const tools = new ApicurioTools();
@@ -125,7 +128,11 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
     }
 
     private changeCurrentArtifact(element: SearchEntry) {
-        this.currentArtifact = { group: element.groupId, artifactId: element.artifactId };
+        let artifact: CurrentArtifact = { group: element.groupId, artifactId: element.artifactId     };
+        if (element.version){
+            artifact.version = element.version;
+        }
+        this.currentArtifact = artifact;
     }
 
     public reverseDisplay() {
@@ -307,15 +314,29 @@ export class ApicurioVersionsExplorerProvider implements vscode.TreeDataProvider
         return Promise.resolve([]);
     }
 
+    refreshChildViews(element: VersionEntry) {
+        this.changeCurrentArtifact(element);
+        // var element: CurrentArtifact
+        if (element.version) {
+            vscode.commands.executeCommand('apicurioVersionsCommentsExplorer.getChildren', this.currentArtifact);
+        }
+        vscode.commands.executeCommand('apicurioMetasExplorer.getChildren', element);
+    }
     getTreeItem(element: VersionEntry): vscode.TreeItem {
         const treeItem = new vscode.TreeItem(element.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = element.createdOn;
         // treeItem.command = { command: 'apicurioVersionsExplorer.openVersion', title: "Display artifact versions", arguments: [element] };
+        
         treeItem.command = {
-            command: 'apicurioMetasExplorer.getChildren',
-            title: 'Display artifact versions Metas',
+            command: 'apicurioVersionsExplorer.refreshChildViews',
+            title: 'Display artifact version related datas',
             arguments: [element],
         };
+        // treeItem.command = {
+        //     command: 'apicurioMetasExplorer.getChildren',
+        //     title: 'Display artifact versions Metas',
+        //     arguments: [element],
+        // };
         return treeItem;
     }
 }
@@ -325,6 +346,7 @@ export class ApicurioVersionsExplorer {
         const treeDataProvider = new ApicurioVersionsExplorerProvider();
         context.subscriptions.push(vscode.window.createTreeView('apicurioVersionsExplorer', { treeDataProvider }));
         vscode.commands.registerCommand('apicurioVersionsExplorer.refresh', () => treeDataProvider.refresh());
+        vscode.commands.registerCommand('apicurioVersionsExplorer.refreshChildViews',  (element) => treeDataProvider.refreshChildViews(element));
         vscode.commands.registerCommand('apicurioVersionsExplorer.getChildren', (element) =>
             treeDataProvider.refreshElement(element)
         );
