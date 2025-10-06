@@ -193,6 +193,11 @@ export class ApicurioTools {
                             vscode.window.showErrorMessage('Apicurio : Not found.');
                             resolve('');
                             break;
+                        case 405:
+                            // Fix resolution issue for 405 responses on Apicurio API
+                            vscode.window.showErrorMessage('Apicurio : Fail due to method not allowed or disabled.');
+                            resolve('');
+                            break;
                         case 409:
                             // Fix resolution issue for 409 responses on Apicurio API
                             vscode.window.showErrorMessage('Apicurio : conflicts with existing data.');
