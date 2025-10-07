@@ -55,7 +55,7 @@ export class ApicurioVersionsCommentsProvider implements vscode.TreeDataProvider
         }
         if (artifact.group) {
             const children: string[] = await this.readComments(artifact);
-            let entries: VersionCommentsEntry[] = [];
+            let entries: any[] = [];
             if (Array.isArray(children)) {
                 entries = children;
             }
@@ -89,6 +89,11 @@ export class ApicurioVersionsCommentsProvider implements vscode.TreeDataProvider
     }
 
     displayComment(element:CurrentArtifact, value: VersionCommentsEntry) {
+        /**
+         *  Display in a webview Panel vs alert vs sidebar webview vs panel view ?
+         *  May a webview in panel ?
+         *  Could be used to edit the comment in the future ?
+         */
         // let message = element.group + '/' + element.artifactId + '/' + element.version + ' \n Comment value: ' + value;
         // vscode.window.showInformationMessage(message);
         vscode.window.createWebviewPanel(

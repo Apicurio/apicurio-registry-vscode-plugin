@@ -132,10 +132,10 @@ class RegistryClient {
                                  * Add some retro compatibility data when Apicurio is V2
                                  */
                                 if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-                                    if (isObject(output) && isArray(output.artifacts)) {
-                                        for (var i in output.artifacts) {
-                                            let v2 = {artifactId: output.artifacts[i].id, artifactType: output.artifacts[i].type}; // Fix missing fields on v2 API
-                                            output.artifacts[i] = Object.assign(v2, output.artifacts[i]);
+                                    if (isObject(output) && Array.isArray(output['artifacts'])) {
+                                        for (var i in output['artifacts']) {
+                                            let v2 = {artifactId: output['artifacts'][i].id, artifactType: output['artifacts'][i].type}; // Fix missing fields on v2 API
+                                            output['artifacts'][i] = Object.assign(v2, output['artifacts'][i]);
                                         }
                                     }
                                 }
