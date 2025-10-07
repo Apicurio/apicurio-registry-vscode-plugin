@@ -104,19 +104,29 @@ export class ApicurioVersionsCommentsProvider implements vscode.TreeDataProvider
         ).webview.html = `<html><body><h2>Comment for ${element.group}/${element.artifactId}/${element.version}</h2><p>${value.value.replace('\n', '<br>')}</p><p><i>by ${value.owner} on ${value.createdOn}</i></p></body></html>`;
     }
 
-    async refresh(): Promise<any> {
+    async refresh(clear?:boolean): Promise<any> {
+        if(clear){
+            this.changeCurrentArtifact();
+        }
         this._onDidChangeTreeData.fire(undefined);
     }
     async refreshEntry(element: CurrentArtifact): Promise<any> {
         this.changeCurrentArtifact(element);
         this.refresh();
     }
-    private changeCurrentArtifact(element: CurrentArtifact) {
-        this.currentArtifact = {
-            group: element.group,
-            artifactId: element.artifactId,
-            version: element.version ? element.version : 'latest',
-        };
+    private changeCurrentArtifact(element?: CurrentArtifact) {
+        let artifact: CurrentArtifact = {
+                group: null,
+                artifactId: null
+            }
+        if(element){
+            artifact = {
+                group: element.group,
+                artifactId: element.artifactId,
+                version: element.version ? element.version : 'latest',
+            };
+        }
+        this.currentArtifact = artifact;
     }
 }
 
@@ -129,6 +139,7 @@ export class ApicurioVersionsCommentsExplorer {
             })
         );
         vscode.commands.registerCommand('apicurioVersionsCommentsExplorer.refresh', () => treeDataProvider.refresh());
+        vscode.commands.registerCommand('apicurioVersionsCommentsExplorer.clear', () => treeDataProvider.refresh(true));
         vscode.commands.registerCommand('apicurioVersionsCommentsExplorer.getChildren', (element: CurrentArtifact) =>
             treeDataProvider.refreshEntry(element)
         );

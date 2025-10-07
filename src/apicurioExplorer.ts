@@ -124,6 +124,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchE
     refreshChildViews(element: SearchEntry) {
         vscode.commands.executeCommand('apicurioVersionsExplorer.getChildren', element);
         vscode.commands.executeCommand('apicurioMetasExplorer.getChildren', element);
+        vscode.commands.executeCommand('apicurioVersionsCommentsExplorer.clear');
     }
 
     // Add artifact
