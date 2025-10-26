@@ -1,5 +1,79 @@
 import { TreeItem } from "vscode";
 
+interface ActiveElement {
+    id: string;
+    type: ElementType;
+}
+interface GroupList {
+    groups: Group[];
+    count?: number;
+}
+interface Group {
+    groupId: string;
+    name?: string;
+    description?: string;
+    owner?: string;
+    createdOn?: string;
+    createdBy?: string;
+    modifiedOn?: string;
+    modifiedBy?: string;
+    artifactList?: ArtifactList;
+}
+
+interface MetaList {
+}
+
+interface Meta extends Object {} {
+}
+
+interface ArtifactList{
+    artifacts: Artifact[];
+    count?: number;
+}
+interface Artifact {
+    groupId: string;
+    artifactId: string;
+    globalId?: string;
+    name?: string;
+    description?: string;
+    artifactType?: string;
+    owner?: string;
+    createdOn?: string;
+    modifiedBy?: string;
+    modifiedOn?: string;
+}
+interface BranchList{
+    branches: Branch[]
+    count?: number;
+}
+interface Branch{
+    groupId: string;
+    artifactId: string;
+    branchId: string;
+    createdOn?: string;
+    modifiedBy?: string;
+    modifiedOn?: string;
+    owner?: string;
+    systemDefined?: string;
+}
+interface ArtifactVersionsList{
+    versions: ArtifactVersion[];
+    count?: number;
+}
+interface ArtifactVersion {
+    groupId: string;
+    artifactId: string;
+    version: string;
+    globalId?: string;
+    name?: string;
+    description?: string;
+    artifactType?: string;
+    owner?: string;
+    createdOn?: string;
+    modifiedBy?: string;
+    modifiedOn?: string;
+}
+
 interface SearchEntry {
     groupId: string;
     artifactId: string;
@@ -11,13 +85,13 @@ interface SearchEntry {
     parent: boolean;
 }
 
-interface VersionEntry extends SearchEntry {
+interface ArtifactVersionEntry extends SearchEntry {
     version: string;
     createdOn: string;
     parent: boolean;
 }
 
-interface VersionCommentsEntry {
+interface ArtifactVersionCommentsEntry {
     commentId: string;
     value: string;
     owner: string;
@@ -43,4 +117,19 @@ interface Search {
     propertyValue: string;
 }
 
-export { SearchEntry, VersionEntry, VersionCommentsEntry, MetaEntry, CurrentArtifact, Search };
+enum ElementType {
+    GROUP = "group",
+    ARTIFACT = "artifact",
+    VERSION = "version",
+    BRANCH = "branch",
+    META = "meta",
+    COMMENT = "comment"
+}
+enum ArtifactType {
+    AVRO = "AVRO",
+    PROTOBUF = "PROTOBUF",
+    GRAPHQL = "GRAPHQL",
+    OPENAPI = "OPENAPI"
+}
+
+export { ActiveElement, ElementType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };

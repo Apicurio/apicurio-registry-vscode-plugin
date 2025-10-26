@@ -5,6 +5,69 @@ import { CurrentArtifact } from './interfaces';
 import { isObject } from './utils';
 
 export class ApicurioTools {
+
+    /**
+     * Manage Apicurio default values.
+     */
+    public getDefault(value:string){
+        let defaultValue:string;
+        switch (value) {
+            case 'group':
+                defaultValue = 'default';
+                break;
+            case 'branch':
+                defaultValue = 'latest';
+                break;
+            default:
+                defaultValue = null;
+                break;
+        }
+        return defaultValue;
+    }
+    /**
+     * End of Manage Apicurio default values.
+     */
+
+
+    /**
+     * Manage Apicurio plugin Settings.
+     */
+
+    /**
+     * Check if display name is set in settings.
+     * @returns boolean
+     */
+    public displayName(): boolean {
+        return vscode.workspace.getConfiguration('apicurio.explorer').get('name') ? true : false;
+    }
+
+    /**
+     * Retrive Apicurio API version
+     *
+     * @returns string
+     */
+    public getApicurioApiVersion(): string {
+        return vscode.workspace.getConfiguration('apicurio.api').get('version');
+    }
+
+    /**
+     * Retrive Apicurio http settings
+     *
+     * @returns object
+     */
+    getApicurioHttpSettings(): any {
+        const settings: any = {
+            hostname: vscode.workspace.getConfiguration('apicurio.http').get('host'),
+            port: vscode.workspace.getConfiguration('apicurio.http').get('port'),
+            path: vscode.workspace.getConfiguration('apicurio.http').get('path'),
+        };
+        return settings;
+    }
+    
+    /**
+     * End of Apicurio Plugin Settings.
+     */
+
     /**
      * Retrive standard list of values, could be API Enums or tooltips options.
      *
@@ -28,7 +91,7 @@ export class ApicurioTools {
             case 'editableMetas':
                 options = ['name', 'description', 'labels'];
                 /* V2 - Support both labels & properties. */
-                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+                if (this.getApicurioApiVersion() == "v2"){
                     options.push('properties');
                 }
                 break;
@@ -94,7 +157,7 @@ export class ApicurioTools {
         /**
          * Add some retro compatibility data when Apicurio is V2
          */
-        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
+        if (this.getApicurioApiVersion() == "v2"){
             switch (type) {
                 case 'meta':
                     path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
@@ -121,20 +184,6 @@ export class ApicurioTools {
             parameters = `${parameters}${!parameters ? '?' : '&'}${key}=${params[key]}`;
         }
         return `${path}${parameters}`;
-    }
-
-    /**
-     * Retrive Apicurio http settings
-     *
-     * @returns object
-     */
-    getApicurioHttpSettings(): any {
-        const settings: any = {
-            hostname: vscode.workspace.getConfiguration('apicurio.http').get('host'),
-            port: vscode.workspace.getConfiguration('apicurio.http').get('port'),
-            path: vscode.workspace.getConfiguration('apicurio.http').get('path'),
-        };
-        return settings;
     }
 
     /**

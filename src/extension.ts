@@ -2,13 +2,17 @@
 
 import * as vscode from 'vscode';
 import { ApicurioExplorer } from './apicurioExplorer';
-import { ApicurioVersionsExplorer } from './apicurioVersionsExplorer';
+import { ApicurioArtifactsExplorer } from './apicurioArtifactsExplorer';
+import { ApicurioBranchesExplorer } from "./apicurioBranchesExplorer";
+import { ApicurioArtifactVersionsExplorer } from './apicurioArtifactVersionsExplorer';
 import { ApicurioMetasExplorer } from './apicurioMetasExplorer';
-import { ApicurioVersionsCommentsExplorer } from './apicurioVersionsCommentsExplorer';
+// import { ApicurioVersionsCommentsExplorer } from './apicurioVersionsCommentsExplorer';
 
 export function activate(context: vscode.ExtensionContext) {
     new ApicurioExplorer(context);
-    new ApicurioVersionsExplorer(context);
+    new ApicurioBranchesExplorer(context);
+    new ApicurioArtifactsExplorer(context);
+    new ApicurioArtifactVersionsExplorer(context);
     new ApicurioMetasExplorer(context);
-    new ApicurioVersionsCommentsExplorer(context);
+    // new ApicurioVersionsCommentsExplorer(context);
 }

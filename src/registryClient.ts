@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { Services, Settings } from './services';
 import { isObject } from './utils';
 import { isArray } from 'util';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType } from './interfaces';
+import path from 'path';
 
 interface SearchedArtifact {
     groupId: string | undefined;
@@ -33,8 +35,32 @@ interface ArtifactSearchResult {
 const DEFAULT_GROUP_ID = 'default';
 
 class RegistryClient {
-    public getArtifacts(): Promise<ArtifactSearchResult> {
-        return this.searchArtifacts();
+    public getArtifacts(group: ActiveElement, options?: object): Promise<ArtifactList> {
+        const res = this.executeRequest(
+            this.requestPath(`groups/${group.id}/artifacts`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<ArtifactList>;
+        return res;
+    }
+    public getBranches(group:ActiveElement, artifact: ActiveElement, options?: object): Promise<BranchList> {
+        const res = this.executeRequest(
+            this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<BranchList>;
+        return res;
+    }
+    public getArtifacttVersions(group:ActiveElement, artifact: ActiveElement, branch: ActiveElement, options?: object): Promise<ArtifactVersionsList> {
+        const res = this.executeRequest(
+            this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches/${branch.id}/versions`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<ArtifactVersionsList>;
+        return res;
     }
 
     public searchArtifacts(options?: object): Promise<ArtifactSearchResult> {
@@ -47,13 +73,42 @@ class RegistryClient {
         return res.then((x) => this.fixDefaultGroup(x));
     }
 
-    public async getGroups(): Promise<string[]> {
-        const response = await this.getArtifacts();
-        const groups = new Set<string>();
-        for (const artifact of response.artifacts) {
-            groups.add(artifact.groupId);
+    public async getGroups(options?: object): Promise<GroupList>{
+        const res = this.executeRequest(
+            this.requestPath(`groups`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<GroupList>;
+        return res;
+    }
+
+    public async getMetas(element: ActiveElement, options?: object): Promise<any>{
+        let path = '';
+        switch (element.type) {
+            case ElementType.GROUP:
+                path = `groups/${element.id}`;
+                break;
+            default:
+                break;
         }
-        return [...groups];
+        const res = this.executeRequest(
+            this.requestPath(`${path}`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
+        return res;
+    }
+    public async getGroupRules(element: ActiveElement, options?: object): Promise<any>{
+        let path = `groups/${element.id}/rules`;
+        const res = this.executeRequest(
+            this.requestPath(`${path}`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
+        return res;
     }
 
     private fixDefaultGroup(result: ArtifactSearchResult) {
@@ -73,6 +128,15 @@ class RegistryClient {
         return `${path}${query}`;
     }
 
+    /**
+     *  Execute HTTP request to Apicurio Registry API
+     * @param path The API endpoint path
+     * @param method The HTTP method to use (GET, POST, etc.)
+     * @param headers Headers to include in the request
+     * @param body The request body
+     * @returns A promise that resolves with the response data
+     */
+
     private executeRequest(path: string, method?: string, headers?: any, body?: any): Promise<object | string | null> {
         return new Promise<object | string>((resolve, reject) => {
             const settings = Services.get().getSettings();
@@ -89,6 +153,7 @@ class RegistryClient {
                 headers['Content-Type'] = 'application/x-yaml';
             }
 
+vscode.window.showInformationMessage(`Path is ${JSON.stringify(path)}`);
             const req = client.request(
                 {
                     hostname: settings.hostname,
@@ -113,6 +178,7 @@ class RegistryClient {
                                 output = data.toString();
                             }
                         }
+        // vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                         if (res.statusCode < 200 || res.statusCode >= 300) {
                             if (output != null && typeof output !== 'string') {
                                 if ('name' in output && 'message' in output) {
@@ -139,6 +205,7 @@ class RegistryClient {
                                         }
                                     }
                                 }
+        vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                             return resolve(output);
                         }
                     });

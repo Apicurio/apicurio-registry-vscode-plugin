@@ -1,9 +1,8 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Search, SearchEntry } from './interfaces';
+import { Group, ActiveElement, ElementType } from './interfaces';
 import { ApicurioTools } from './tools';
-import * as mime from 'mime-types';
 import { Services } from './services';
 
 namespace _ {
@@ -14,291 +13,114 @@ namespace _ {
  * Apicurio Explorer Provider
  */
 
-export class ApicurioExplorerProvider implements vscode.TreeDataProvider<SearchEntry> {
+/**
+ * Tree data provider for Apicurio Explorer view
+ * 
+ * This view retrive groups and manage callbacks for :
+ *  - Display Group Branches and artifacts in the apropriate view
+ *  - Contextual menu on group
+ *  - Display group metas and configs in apropriate view
+ * 
+ */
+
+export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> {
     private readonly extensionUri: any;
 
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
 
-    private currentSearch: Search;
+    private GroupList: Promise<Group[]>;
+    private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
-
+        // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
-
-        this.currentSearch = { property: '', propertyValue: '' };
     }
 
-    public refresh(search?: Search): any {
-        this.currentSearch = search ? search : { property: '', propertyValue: '' };
+    /**
+     * General management of the view
+     */
+
+    // Refresh the view
+    public refresh(keepCache?: boolean): any {
+        // Clear cached groups to force re-fetching from the server.
+        if(!keepCache){
+            this.GroupList = null;
+            this.ActiveGroup.id = null;
+            // Clear children and refresh view
+            vscode.commands.executeCommand('apicurioArtifactsExplorer.refresh', this.ActiveGroup);
+            vscode.commands.executeCommand('apicurioBranchesExplorer.refresh', this.ActiveGroup, true);
+            vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.refresh', {groupId:null}, null);
+        }
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveGroup, true);
         this.onDidChangeTreeDataEmitter.fire();
     }
 
     // Get Groups
-
-    private getGroups(): Promise<string[]> {
-        return Services.get().getRegistryClient().getGroups();
+    private getGroups(): Promise<Group[]> {
+        // Avoid API request if we already have the groups.
+        if (this.GroupList){
+            return this.GroupList.then(res => res);
+        }
+        let result = Services.get().getRegistryClient().getGroups();
+        let groups: Promise<Group[]> = result.then(res => res.groups);
+        this.GroupList = groups; // Cache result to avoid future requests.
+        return groups;
     }
 
-    // Read Directory
 
-    private async readDirectory(groupId: string): Promise<SearchEntry[]> {
-        const searchParam = {};
-        // Manage search parameters
-        if (this.currentSearch.property) {
-            searchParam[this.currentSearch.property] = this.currentSearch.propertyValue;
-        }
-        if (groupId) {
-            searchParam['group'] = groupId;
-        }
+    /**
+     * End of general management of the view
+     */
 
-        // Manage request
-        const children = await Services.get().getRegistryClient().searchArtifacts(searchParam);
-        const result: SearchEntry[] = [];
-        const currentGroup: string[] = [];
-        for (let i = 0; i < children.artifacts.length; i++) {
-            // Manage parents
-            if (!groupId && currentGroup.includes(children.artifacts[i].groupId)) {
-                continue;
-            }
-            currentGroup.push(children.artifacts[i].groupId);
-            // for all items
-            // Manage custom searches (not available on Apicurio API)
-            if (
-                this.currentSearch.property == 'artifactType' &&
-                this.currentSearch.propertyValue != children.artifacts[i].artifactType
-            ) {
-                continue;
-            }
-            if (
-                this.currentSearch.property == 'state' &&
-                this.currentSearch.propertyValue != children.artifacts[i].state
-            ) {
-                continue;
-            }
-            const child: SearchEntry = {
-                groupId: children.artifacts[i].groupId,
-                artifactId: children.artifacts[i].artifactId,
-                name: children.artifacts[i].name,
-                description: children.artifacts[i].description,
-                artifactType: children.artifacts[i].artifactType,
-                state: children.artifacts[i].state,
-                parent: !groupId,
-            };
-            result.push(child);
-        }
-        // Return empty result
-        if (result.length == 0) {
-            const isEmpty: SearchEntry = {
-                groupId: 'No content',
-                artifactId: '',
-                name: '',
-                description: '',
-                artifactType: '',
-                state: '',
-                parent: true,
-            };
-            return Promise.resolve([isEmpty]);
-        }
-        // Sort result, as the API do not allow sort by Group or artifactId but only by name or update date
-        result.sort(function (a, b) {
-            const nameA = a.groupId.toLowerCase() + a.artifactId.toLowerCase(); // ignore upper and lowercase
-            const nameB = b.groupId.toLowerCase() + b.artifactId.toLowerCase(); // ignore upper and lowercase
-            if (nameA < nameB) {
-                return -1;
-            }
-            if (nameA > nameB) {
-                return 1;
-            }
-            // names must be equal
-            return 0;
-        });
+    /**
+     * Contextual menu actions
+     */
 
-        return Promise.resolve(result);
+    /**
+     * Select a group from the explorer view
+     * @param group The selected group
+     */
+    public selectGroup(group: Group): void {
+        // Refresh Group view to select current Group
+        this.ActiveGroup.id = group.groupId;
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveGroup);
+        vscode.commands.executeCommand('apicurioArtifactsExplorer.refresh', this.ActiveGroup);
+        this.refresh(true);
     }
 
-    // custom command
-
-    refreshChildViews(element: SearchEntry) {
-        vscode.commands.executeCommand('apicurioVersionsExplorer.getChildren', element);
-        vscode.commands.executeCommand('apicurioMetasExplorer.getChildren', element);
-        vscode.commands.executeCommand('apicurioVersionsCommentsExplorer.clear');
-    }
-
-    // Add artifact
-
-    async addArtifact() {
-        const existingGroup = await vscode.window.showQuickPick(_.tools.getLists('add'), {
-            title: 'New or existing group ?',
-        });
-        let groupId = '';
-        if (existingGroup == 'NEW') {
-            groupId = await vscode.window.showInputBox({
-                title: 'Create a new Group ID',
-            });
-            const confirmGroupId = await vscode.window.showInputBox({
-                title: 'Confirm new Group ID',
-            });
-            if (groupId != confirmGroupId) {
-                vscode.window.showErrorMessage('Group ID did not match with confirmation.');
-                return Promise.resolve();
-            }
-        }
-        if (existingGroup == 'EXISTING') {
-            const groups = this.getGroups();
-            groupId = await vscode.window.showQuickPick(groups, {
-                title: 'Choose group :',
-            });
-            // Confirm box
-            const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-                title: `Do you want to use group : '${groupId}'`,
-                canPickMany: false,
-            });
-            if (confirm != 'yes') {
-                return Promise.resolve();
-            }
-        }
-        if (!groupId || groupId == '') {
-            vscode.window.showErrorMessage('No group defined.');
-            return Promise.resolve();
-        }
-        const artifactType = await vscode.window.showQuickPick(_.tools.getLists('artifactType'), {
-            title: 'Choose an artifact type to push :',
-        });
-        if (!artifactType) {
-            vscode.window.showErrorMessage('No defined type.');
-            return Promise.resolve();
-        }
-        const artifactId = await vscode.window.showInputBox({
-            title: 'Artifact ID',
-        });
-        if (!artifactId) {
-            vscode.window.showErrorMessage('No defined artifact ID.');
-            return Promise.resolve();
-        }
-        const version = await vscode.window.showInputBox({
-            title: 'Initial version',
-            placeHolder: '1.0.0',
-        });
-        if (!version) {
-            vscode.window.showErrorMessage('No defined version.');
-            return Promise.resolve();
-        }
-        const searchQuery = await vscode.window.showInputBox({
-            title: 'Search for file :',
-            placeHolder: '**/*.json',
-        });
-        const finds: any = await vscode.workspace.findFiles(searchQuery);
-        const elements: string[] = [];
-        for (const i in finds) {
-            if (finds[i].scheme == 'file') {
-                elements.push(finds[i].path);
-            }
-        }
-        const currentFile = await vscode.window.showQuickPick(elements, {
-            title: 'Select file :',
-        });
-        if (currentFile == undefined) {
-            vscode.window.showErrorMessage('No selected files.');
-            return Promise.resolve();
-        }
-        const fileBody = await vscode.workspace.fs.readFile(vscode.Uri.file(currentFile));
-        if (fileBody == undefined) {
-            vscode.window.showErrorMessage(`Unnable to load the file '${currentFile}'.`);
-            return Promise.resolve();
-        }
-        const body = fileBody.toString();
-
-        // Confirm box
-        const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-            title: `Create ${artifactType} artifact with identifiers '${groupId}:${artifactId}:${version}' ?`,
-            canPickMany: false,
-        });
-        if (confirm != 'yes') {
-            return Promise.resolve();
-        }
-        const path = _.tools.getQueryPath({ artifactId: null, group: groupId }, 'group', {
-            ifExists: 'FAIL',
-        });
-        const mimeType = mime.lookup(currentFile);
-        const headers = {
-            'X-Registry-Version': version,
-            'X-Registry-ArtifactId': artifactId,
-            'X-Registry-ArtifactType': artifactType,
-            'Content-Type': mimeType,
-        };
-        await _.tools.query(path, 'POST', body, headers);
-        // Refresh view to display version.
-        this.onDidChangeTreeDataEmitter.fire();
-    }
-
-    // Search
-
-    async search() {
-        const title = 'Apicurio Search Artifact By';
-        const option = await vscode.window.showQuickPick(_.tools.getLists('search'), {
-            title: `${title}`,
-            canPickMany: false,
-        });
-        let search: string;
-        switch (option) {
-            case 'artifactType':
-                search = await vscode.window.showQuickPick(_.tools.getLists('artifactType'), {
-                    title: `${title} ${option}`,
-                    canPickMany: false,
-                });
-                break;
-            case 'state':
-                search = await vscode.window.showQuickPick(_.tools.getLists('states'), {
-                    title: `${title} ${option}`,
-                    canPickMany: false,
-                });
-                break;
-            default:
-                search = await vscode.window.showInputBox({
-                    title: `${title} ${option}`,
-                });
-                break;
-        }
-        const searchRequest: Search = { property: option, propertyValue: search };
-        return this.refresh(searchRequest);
-    }
-
-    // tree data provider
-
-    async getChildren(element?: SearchEntry): Promise<SearchEntry[]> {
-        const children: SearchEntry[] = await this.readDirectory(element ? element.groupId : '');
+    /**
+     * End of Contextual menu actions
+     */
+    
+    // Get all tree Datas
+    async getChildren(group?: Group): Promise<Group[]> {
+        // @Todo: Manage empty registry case. (Using the "default" group).
+        const children: Group[] = await this.getGroups();
         return Promise.resolve(children);
     }
 
-    getTreeItem(element: SearchEntry): vscode.TreeItem {
-        if (element.parent) {
-            // Manage display of empty results (not collapsible).
-            return new vscode.TreeItem(
-                element.groupId,
-                element.artifactId ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
-            );
-        }
-        const displayName = vscode.workspace.getConfiguration('apicurio.explorer').get('name');
-        const name = !displayName || !element.name ? element.artifactId : element.name;
-        const tooltip = !displayName && element.name ? element.name : element.artifactId;
+    // Get each tree items.
+    getTreeItem(group: Group): vscode.TreeItem {
+        // Manage display of group in the tree view.
+        const displayName = _.tools.displayName();
+        const name = (!displayName || !group.name) ? group.groupId : group.name;
+        const tooltip = (!displayName && group.name) ? group.name : group.groupId;
+        // Manage tree item
         const treeItem = new vscode.TreeItem(name, vscode.TreeItemCollapsibleState.None); // None / Collapsed
-        treeItem.command = {
-            command: 'apicurioExplorer.refreshChildViews',
-            title: 'Display artifact versions',
-            arguments: [element],
-        };
         treeItem.tooltip = tooltip;
-        // treeItem.iconPath = new vscode.ThemeIcon('key');
-        treeItem.iconPath = {
-            dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', element.artifactType.toLowerCase() + '.svg'),
-            light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', element.artifactType.toLowerCase() + '.svg'),
+        treeItem.iconPath = new vscode.ThemeIcon((this.ActiveGroup.id === group.groupId) ? 'folder-opened' : 'folder');
+        treeItem.command = {
+            command: 'apicurioExplorer.selectGroup',
+            title: 'Display artifact versions',
+            arguments: [group],
         };
         return treeItem;
     }
 }
+
 
 export class ApicurioExplorer {
     constructor(context: vscode.ExtensionContext) {
@@ -309,13 +131,8 @@ export class ApicurioExplorer {
                 showCollapseAll: true,
             })
         );
-        vscode.commands.registerCommand('apicurioExplorer.refreshChildViews', (element) =>
-            treeDataProvider.refreshChildViews(element)
-        );
-        vscode.commands.registerCommand('apicurioExplorer.refreshEntry', () => treeDataProvider.refresh());
-        vscode.commands.registerCommand('apicurioExplorer.search', () => treeDataProvider.search());
-        vscode.commands.registerCommand('apicurioExplorer.addArtifact', () => treeDataProvider.addArtifact());
-
-        //vscode.commands.registerCommand('apicurioExplorer.test', () => Services.get().test());
+        // Register commands
+        vscode.commands.registerCommand('apicurioExplorer.refresh', () => treeDataProvider.refresh());
+        vscode.commands.registerCommand('apicurioExplorer.selectGroup', (group: Group) => treeDataProvider.selectGroup(group));
     }
 }

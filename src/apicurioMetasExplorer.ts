@@ -1,9 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { SearchEntry, VersionEntry, MetaEntry, CurrentArtifact } from './interfaces';
+import { Meta, ActiveElement, ElementType, Group } from './interfaces';
 import { ApicurioTools } from './tools';
-import { Setting } from 'vscode-extension-tester';
+import { Services } from './services';
 
 namespace _ {
     export const tools = new ApicurioTools();
@@ -13,383 +13,253 @@ namespace _ {
  * Apicurio Metas Explorer Provider
  */
 
-export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<MetaEntry> {
-    private _currentArtifact: CurrentArtifact;
-    protected get currentArtifact(): CurrentArtifact {
-        return this._currentArtifact;
-    }
-    protected set currentArtifact(value: CurrentArtifact) {
-        this._currentArtifact = value;
-    }
-    private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
-    readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+/**
+ * Tree data provider for Apicurio Meta Explorer view
+ * 
+ * This view retrive metas and manage callbacks for :
+ *  - Display Meta Branches and artifacts in the apropriate view
+ *  - Contextual menu on meta
+ *  - Display meta metas and configs in apropriate view
+ * 
+ */
+
+export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Meta> {
+
+    private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
+    readonly onDidChangeTreeData: vscode.Event<void>;
+
+    private ActiveElement: ActiveElement = { id: null, type: null };
 
     constructor() {
-        this._currentArtifact = {
-            group: undefined,
-            artifactId: undefined,
-            version: undefined,
-        };
+        // Manage events for window refresh.
+        this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
+        this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
     }
 
-    async refresh(): Promise<any> {
-        this._onDidChangeTreeData.fire(undefined);
-    }
-    async refreshEntry(element: SearchEntry | VersionEntry): Promise<any> {
-        this.changeCurrentArtifact(element);
-        this.refresh();
-    }
-    private changeCurrentArtifact(element: SearchEntry | VersionEntry) {
-        this.currentArtifact = {
-            group: element.groupId,
-            artifactId: element.artifactId,
-            version: element.version ? element.version : 'latest',
-        };
-    }
+    /**
+     * General management of the view
+     */
 
-    readMetas(group: string, artifactId: string, version?: string): MetaEntry[] | Thenable<MetaEntry[]> {
-        return this._readMetas(group, artifactId, version ? version : 'latest');
+    // Refresh the view
+    public refresh(element: ActiveElement, clear?: boolean): any {
+        this.ActiveElement = element;
+        if (clear) {
+            this.ActiveElement = { id: null, type: null };
+        }
+        this.onDidChangeTreeDataEmitter.fire();
+        return;
     }
+    // Get Metas
+    private async getMetas(element: ActiveElement): Promise<Meta[]> {
+        // If no element or invalid element provided, fallback to default group
+        if (!element || !element.id) {
+            // Use default group id expected by the registry client
+            element = { id: 'default', type: ElementType.GROUP } as ActiveElement;
+        }
+        try {
+            let result = [];
+            // Fetch metas for the active group and await the promise
+            result = await Services.get().getRegistryClient().getMetas(element);
+            let metas = this.queryResultToMetas(result);
 
-    async _readMetas(group: string, artifactId: string, version?: string): Promise<MetaEntry[]> {
-        const path = _.tools.getQueryPath(this.currentArtifact, 'meta');
-        const children: any = await _.tools.query(path);
-        const result: MetaEntry[] = [];
-        for (const i in children) {
-            const met: MetaEntry = {meta: i, value: ''};
-            if (i == 'labels') {
-                met.labels = children.labels;
+            // Fetch Group rules for the active group and await the promise
+            result = await Services.get().getRegistryClient().getGroupRules(element);
+            if(result.length !== 0){
+                metas.push(this.queryResultToMetas(result, true));
             }
-            else if (i == 'properties') {
-                met.properties = children.properties;
+            return metas;
+        } catch (err) {
+            vscode.window.showErrorMessage(`Error fetching metas: ${err}`);
+            return [];
+        }
+    }
+
+    private queryResultToMetas(result, rules?: boolean){
+        // @Todo: Manage proper display of Rules.
+        // @Todo: request for rules settigns and display it.
+        const metas: Meta[] = [];
+        const children: Meta[] = [];
+        // Rules managment
+        if(rules){
+            for (let i in result) {
+                metas.push({ [`rule-${result[i]}`]: result.length } as Meta);
             }
-            else {
-                met.value = children[i];
-            }
-            result.push(met);
         }
-        return Promise.resolve(result);
-    }
-
-    _activeMetaAsMetaEntry(element, activeMeta) {
-        const result: MetaEntry[] = [];
-        for (const i in element[activeMeta]) {
-                var data = {
-                    meta: i,
-                    value: element[activeMeta][i],
-                };
-                /* V2 */
-                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-                    data = {
-                        meta: activeMeta == 'labels' ? element[activeMeta][i] : i, // If meta is labels, display in meta instead of value.
-                        value: activeMeta == 'labels' ? '' : element[activeMeta][i], // If meta is labels, display in meta instead of value.
-                    };
-                }
-            const met: MetaEntry = {
-                meta: data.meta,
-                value: data.value
-            };
-            result.push(met);
-        }
-        return result;
-    }
-
-    // Edit state
-
-    async editState(): Promise<any> {
-        if (!this._currentArtifact.artifactId) {
-            vscode.window.showErrorMessage('An artifact must be selected.');
-            return Promise.resolve();
-        }
-        // Confirm box
-        const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-            title: 'Are you sure you want to edit artifact state ?',
-            canPickMany: false,
-        });
-        if (confirm != 'yes') {
-            return Promise.resolve();
-        }
-        // Select state
-        const state = await vscode.window.showQuickPick(_.tools.getLists('states'), {
-            title: 'Choose new artifact state',
-            canPickMany: false,
-        });
-        // No update if user escape inputbox.
-        if (state == undefined) {
-            vscode.window.showInformationMessage('Arborted Apicurio state edition.');
-            return Promise.resolve();
-        }
-        // User confirmation.
-        const confirmState = await vscode.window.showQuickPick(_.tools.getLists('states'), {
-            title: 'Confirm new artifact state',
-            canPickMany: false,
-        });
-        if (state != confirmState) {
-            vscode.window.showErrorMessage('Arborted, state do not match to confirmation state.');
-            return Promise.resolve();
-        }
-        // Manage state
-        const status = await this.registryStateUpdate(state);
-        // Refresh views
-        vscode.commands.executeCommand('apicurioExplorer.refreshEntry');
-        vscode.commands.executeCommand('apicurioVersionsExplorer.refresh');
-        this._onDidChangeTreeData.fire(undefined);
-        return Promise.resolve();
-    }
-
-    _getCurrentStatePath() {
-        const group = this._currentArtifact.group;
-        const artifactId = this._currentArtifact.artifactId;
-        const version = this._currentArtifact.version;
-        let queryPath = `groups/${group}/artifacts/${artifactId}`;
-        if (version != 'latest') {
-            queryPath = `${queryPath}/versions/${version}`;
-        }
-        queryPath = `${queryPath}/state`;
-        return queryPath;
-    }
-    registryStateUpdate(state): any[] | Thenable<MetaEntry[]> {
-        return this._registryStateUpdate(state);
-    }
-    async _registryStateUpdate(state): Promise<MetaEntry[]> {
-        const path = this._getCurrentStatePath();
-        const body = { state: state };
-        const result: any = await _.tools.query(path, 'PUT', body);
-        return Promise.resolve(result);
-    }
-
-    // Edit metas
-
-    getEditableMetas(): any[] | Thenable<MetaEntry[]> {
-        return this._getEditableMetas();
-    }
-    async _getEditableMetas(): Promise<MetaEntry[]> {
-        const query = _.tools.getQueryPath(this.currentArtifact, 'meta');
-        const atrifactMetas: any = await _.tools.query(query);
-        const editableMetas: any = {};
-        if (atrifactMetas.name) {
-            editableMetas.name = atrifactMetas.name;
-        }
-        if (atrifactMetas.description) {
-            editableMetas.description = atrifactMetas.description;
-        }
-        if (atrifactMetas.labels) {
-            editableMetas.labels = atrifactMetas.labels;
-        }
-        if (atrifactMetas.properties) {
-            editableMetas.properties = atrifactMetas.properties;
-        }
-        return Promise.resolve(editableMetas);
-    }
-
-    registryMetaUpdate(metaType, editableMetas, updatedValue): any[] | Thenable<MetaEntry[]> {
-        return this._registryMetaUpdate(metaType, editableMetas, updatedValue);
-    }
-    async _registryMetaUpdate(metaType, editableMetas, updatedValue): Promise<MetaEntry[]> {
-        const path = _.tools.getQueryPath(this.currentArtifact, 'meta');
-        const newProperty = { [metaType]: updatedValue };
-        const body = Object.assign({}, editableMetas, newProperty);
-        const result: any = await _.tools.query(path, 'PUT', body);
-        return Promise.resolve(result);
-    }
-
-    // Edit labels
-    async _editLabels(currentMetaValue, updatedValue) {
-        /* V2 */
-        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-            const labelAction = await vscode.window.showQuickPick(_.tools.getLists('edit'), {
-                title: 'Choose action',
-                canPickMany: false,
-            });
-            if (labelAction == undefined) {
-                vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
-                return Promise.resolve();
-            }
-            let label = '';
-            switch (labelAction) {
-                case 'Delete':
-                    label = await vscode.window.showQuickPick(currentMetaValue, {
-                        title: 'Choose label to delete',
-                        canPickMany: false,
-                    });
-                    for (const i in currentMetaValue) {
-                        if (currentMetaValue[i] != label) {
-                            updatedValue.push(currentMetaValue[i]);
-                        }
-                    }
-                    break;
-                default:
-                    label = await vscode.window.showInputBox({ title: `Add label` });
-                    updatedValue = currentMetaValue;
-                    updatedValue.push(label);
-                    break;
-            }
-            return updatedValue;
-        }
-        /* V3+ */
-        /* V3 do not support properties. Labels are now having same behaviors as properties. */
-        updatedValue = await this._editProperties(currentMetaValue, updatedValue);
-        return updatedValue;
-    } 
-
-    // Edit properties
-    async _editProperties(currentMetaValue, updatedValue) {
-        const propertyAction = await vscode.window.showQuickPick(_.tools.getLists('edit'), {
-            title: 'Choose action',
-            canPickMany: false,
-        });
-        if (propertyAction == undefined) {
-            vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
-            return Promise.resolve();
-        }
-        let propertyName = '';
-        let propertyValue = '';
-        let deleteProperty = '';
-        switch (propertyAction) {
-            case 'Delete':
-                deleteProperty = await vscode.window.showQuickPick(Object.keys(currentMetaValue), {
-                    title: 'Choose property to delete',
-                    canPickMany: false,
-                });
-                for (const i in currentMetaValue) {
-                    if (i != deleteProperty) {
-                        updatedValue[i] = currentMetaValue[i];
-                    }
-                }
-                break;
-            default:
-                propertyName = await vscode.window.showInputBox({
-                    title: `Add property name`,
-                });
-                propertyValue = await vscode.window.showInputBox({
-                    title: `Add property value`,
-                });
-                updatedValue = currentMetaValue;
-                updatedValue[propertyName] = propertyValue;
-                break;
-        }
-        return updatedValue;
-    }
-    // Edit metas
-
-    async editMetas(): Promise<any> {
-        if (!this._currentArtifact.artifactId) {
-            vscode.window.showErrorMessage('An artifact version must be selected.');
-            return Promise.resolve();
-        }
-        // Select meta
-        const metaType = await vscode.window.showQuickPick(_.tools.getLists('editableMetas'), {
-            title: 'Choose Meta to edit',
-            canPickMany: false,
-        });
-        // No update if user escape inputbox.
-        if (metaType == undefined) {
-            vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
-            return Promise.resolve();
-        }
-        // Edit value
-        const editableMetas: any = await this.getEditableMetas();
-        // Manage labels
-        /* V3+ - Force labels to behave as properties */
-        let updatedValue: any;
-        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-            updatedValue = (metaType == 'labels') ? [] : metaType == 'properties' ? {} : '';
-        }
+        // Others metas managment
         else{
-            updatedValue = (metaType == 'labels') ? {} : '';
+            for (let i in result) {
+                // As the object key is dynamic, extract it here.
+                if (typeof result[i] === 'object' && result[i] !== null) {
+                    children.length = 0; // Clear children array
+                    for (const key of Object.keys(result[i])) {
+                        children.push({ [key]: result[i][key] } as Meta);
+                    }
+                    metas.push({ [i]: children } as Meta);
+                } else {
+                    metas.push({ [i]: result[i] } as Meta);
+                }
+            }
         }
-        const currentMetaValue: any = editableMetas[metaType]
-            ? editableMetas[metaType]
-            : metaType == 'labels'
-              ? []
-              : metaType == 'properties'
-                ? {}
-                : '';
-        switch (metaType) {
-            // Manage labels
-            case 'labels':
-                updatedValue = await this._editLabels(currentMetaValue, updatedValue);
-                break;
-            // Manage properties
-            case 'properties':
-                updatedValue = await this._editProperties(currentMetaValue, updatedValue);
-                break;
-            // Manage Standard Metas
-            default:
-                updatedValue = await vscode.window.showInputBox({
-                    title: `Update the ${metaType} value(s)`,
-                    value: currentMetaValue,
-                });
-                break;
-        }
-        // No update if user escape inputbox.
-        if (updatedValue == undefined) {
-            vscode.window.showInformationMessage('Arborted Apicurio meta edition.');
-            return Promise.resolve();
-        }
-        // Update metas
-        const confirm = await vscode.window.showQuickPick(_.tools.getLists('confirm'), {
-            title: 'Confirm the meta update',
-            canPickMany: false,
+        return metas;
+    }
+
+    /**
+     * End of general management of the view
+     */
+
+    /**
+     * Contextual menu actions
+     */
+
+    /**
+     * Display Metas Values in a Text Document for clarity.
+     */
+    public displayMetasValue() {
+        this.getMetas(this.ActiveElement).then(metas => {
+            let value: string = '';
+            for (const meta of metas) {
+                const key = Object.keys(meta)[0];
+                const val = (meta as any)[key];
+
+                // If the value is an array, iterate children (each child is a { key: value } Meta)
+                if (Array.isArray(val)) {
+                    value += `\n## ${key}\n`;
+                    for (const child of val) {
+                        const childKey = Object.keys(child)[0];
+                        value += `\n### ${childKey}\n\n${child[childKey]}\n`;
+                    }
+                } else if (val && typeof val === 'object') {
+                    // If it's an object (map), list its properties
+                    value += `\n## ${key}\n`;
+                    for (const prop of Object.keys(val)) {
+                        value += `\n### ${prop}\n\n${val[prop]}\n`;
+                    }
+                } else {
+                    // Primitive value
+                    value += `\n## ${key}\n\n${val}\n`;
+                }
+            }
+            vscode.workspace.openTextDocument({
+                content: `# ${this.ActiveElement.type}: ${this.ActiveElement.id}\n\n${value}`,
+                language: 'markdown'
+            }).then(doc => {
+                vscode.window.showTextDocument(doc, { preview: false });
+            });
         });
-        if (confirm == 'yes') {
-            const status = await this.registryMetaUpdate(metaType, editableMetas, updatedValue);
-            // Refresh view.
-            this._onDidChangeTreeData.fire(undefined);
-        }
-        return Promise.resolve();
     }
 
-    // tree data provider
+    /**
+     * End of Contextual menu actions
+     */
+    
+    // Get all tree Datas
+    // NOTE: when `element` is undefined, VS Code asks for root items; when `element` is a Meta,
+    // VS Code asks for the children of that Meta node.
+    async getChildren(element?: Meta): Promise<Meta[]> {
+        // Root request: fetch metas for the active group
+        if (!element) {
+            if (!this.ActiveElement || this.ActiveElement.id == null) {
+                return [];
+            }
+            return await this.getMetas(this.ActiveElement);
+        }
 
-    async getChildren(element?: any): Promise<MetaEntry[]> {
-        // Retrive Active Meta (AKA : meta tree item children such as labels or properties)
-        if (element && element.activeMeta) {
-            element.meta = element.activeMeta;
-            const metaObject: MetaEntry[] = this._activeMetaAsMetaEntry(element, element.activeMeta);
-            return Promise.resolve(metaObject);
+        // Child request: element is a Meta object with a single dynamic key -> its value may be
+        // an array (children), an object (map of children), or a primitive (leaf).
+        const m: any = element as any;
+        const keys = Object.keys(m);
+        if (keys.length === 0) {
+            return [];
         }
-        // Retrive Artivact version metas
-        let artifact: CurrentArtifact = this.currentArtifact;
-        if (this.currentArtifact.group) {
-            artifact = {
-                group: this.currentArtifact.group,
-                artifactId: this.currentArtifact.artifactId,
-                version: this.currentArtifact.version ? this.currentArtifact.version : 'latest',
-            };
+        const value = m[keys[0]];
+
+        if (value == null) {
+            return [];
         }
-        if (element) {
-            artifact = {
-                group: element.groupId,
-                artifactId: element.artifactId,
-                version: element.version ? element.version : 'latest',
-            };
+
+        if (Array.isArray(value)) {
+            // Already an array of Meta nodes (as produced by getMetas)
+            return value as Meta[];
         }
-        if (artifact.group) {
-            const children: MetaEntry[] = await this.readMetas(artifact.group, artifact.artifactId, artifact.version);
-            return Promise.resolve(children);
+
+        if (typeof value === 'object') {
+            // Convert object properties into Meta nodes { key: value }
+            const children: Meta[] = [];
+            for (const k of Object.keys(value)) {
+                children.push({ [k]: value[k] } as Meta);
+            }
+            return children;
         }
-        return Promise.resolve([]);
+
+        // Primitive value -> no children
+        return [];
     }
 
-    getTreeItem(element: MetaEntry): vscode.TreeItem {
-        let treeItem: vscode.TreeItem = {};
-        switch (element.meta) {
-            case 'labels':
+    // Get each tree items.
+    getTreeItem(meta: Meta): vscode.TreeItem {
+        const m: any = meta as any;
+        let label: string | undefined;
+        let value: any;
+        // As the object key is dynamic, extract it here.
+        for (const key of Object.keys(m)) {
+            label = key;
+            value = m[key];
+            break; // only first key expected
+        }
+
+        if (!label) {
+            return new vscode.TreeItem('?', vscode.TreeItemCollapsibleState.None);
+        }
+
+        // Determine collapsible state: expanded if the node has children (object or array)
+        let state = vscode.TreeItemCollapsibleState.None;
+        if (value !== null && (Array.isArray(value) || typeof value === 'object')) {
+            state = vscode.TreeItemCollapsibleState.Expanded; // show expanded by default
+        }
+        const treeItem = new vscode.TreeItem(label, state); // None / Collapsed / Expanded
+
+        // Description: for primitives show the value, for objects show a summary
+        if (value == null) {
+            treeItem.description = '';
+        } else if (typeof value === 'object') {
+            if (Array.isArray(value)) {
+                treeItem.description = `(${value.length})`;
+            } else {
+                const keys = Object.keys(value);
+                treeItem.description = `(${keys.length})`;
+            }
+        } else {
+            treeItem.description = String(value);
+        }
+
+        // Trim long descriptions when the label is 'description' so the tree remains readable.
+        if (label === 'description' && typeof treeItem.description === 'string') {
+            const MAX = 25;
+            // Trim long descriptions and add a command to show full description on click.
+            if (treeItem.description.length > (MAX-3)) {
+                treeItem.description = treeItem.description.substring(0, MAX).trimEnd() + '...';
+            }
+        }
+
+        // Use a ThemeIcon so the icon displays correctly in the tree view
+        switch (label) {
             case 'properties':
-                element.activeMeta = element.meta;
-                treeItem = new vscode.TreeItem(element.meta, vscode.TreeItemCollapsibleState.Collapsed); // None / Collapsed
+            case 'labels':
+                treeItem.iconPath = new vscode.ThemeIcon('tag');
                 break;
-
+            case 'owner':
+                treeItem.iconPath = new vscode.ThemeIcon('account');
+                break;
+            case 'description':
+                treeItem.iconPath = new vscode.ThemeIcon('comment');
+                break;
             default:
-                treeItem = new vscode.TreeItem(element.meta, vscode.TreeItemCollapsibleState.None); // None / Collapsed
-                treeItem.description = element.value.toString();
-                treeItem.tooltip = element.value.toString();
-                break;
+                treeItem.iconPath = new vscode.ThemeIcon('symbol-property');
         }
         return treeItem;
     }
 }
+
 
 export class ApicurioMetasExplorer {
     constructor(context: vscode.ExtensionContext) {
@@ -397,13 +267,14 @@ export class ApicurioMetasExplorer {
         context.subscriptions.push(
             vscode.window.createTreeView('apicurioMetasExplorer', {
                 treeDataProvider,
+                showCollapseAll: true,
             })
         );
-        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', () => treeDataProvider.refresh());
+        // Register commands
+        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', (element: ActiveElement) => treeDataProvider.refresh(element));
         vscode.commands.registerCommand('apicurioMetasExplorer.getChildren', (element) =>
-            treeDataProvider.refreshEntry(element)
+            treeDataProvider.getChildren(element)
         );
-        vscode.commands.registerCommand('apicurioMetasExplorer.editMetas', () => treeDataProvider.editMetas());
-        vscode.commands.registerCommand('apicurioMetasExplorer.editState', () => treeDataProvider.editState());
+        vscode.commands.registerCommand('apicurioMetasExplorer.displayMetasValue', () => treeDataProvider.displayMetasValue());
     }
 }

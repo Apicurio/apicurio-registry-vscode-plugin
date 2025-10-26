@@ -49,65 +49,42 @@
                     "contextualTitle": "Apicurio Explorer"
                 },
                 {
-                    "id": "apicurioVersionsExplorer",
-                    "name": "Apicurio Versions Explorer"
+                    "id": "apicurioArtifactsExplorer",
+                    "name": "Apicurio Artifacts Explorer",
+                    "icon": "resources/apicurio_icon.svg"
+                },
+                {
+                    "id": "apicurioBranchesExplorer",
+                    "name": "Apicurio Branches Explorer",
+                    "icon": "resources/apicurio_icon.svg"
+                },
+                {
+                    "id": "apicurioArtifactVersionsExplorer",
+                    "name": "Apicurio Versions Explorer",
+                    "icon": "resources/apicurio_icon.svg"
                 },
                 {
                     "id": "apicurioMetasExplorer",
-                    "name": "Apicurio Metas Explorer"
-                },
-                {
-                    "id": "apicurioVersionsCommentsExplorer",
-                    "name": "Apicurio Versions Comments Explorer",
-                    "visibility": "collapsed"
+                    "name": "Apicurio Metas Explorer",
+                    "icon": "resources/apicurio_icon.svg"
                 }
             ]
         },
         "commands": [
             {
-                "command": "apicurioExplorer.refreshEntry",
+                "command": "apicurioExplorer.refresh",
                 "title": "Refresh",
                 "icon": "$(refresh)"
             },
             {
-                "command": "apicurioExplorer.search",
-                "title": "Search",
-                "icon": "$(search)"
+                "command": "apicurioArtifactsExplorer.refresh",
+                "title": "Refresh",
+                "icon": "$(refresh)"
             },
             {
-                "command": "apicurioExplorer.addArtifact",
-                "title": "Add artifact",
-                "icon": "$(add)"
-            },
-            {
-                "command": "apicurioVersionsExplorer.deleteArtifact",
-                "title": "Delete artifact",
-                "icon": "$(notebook-delete-cell)"
-            },
-            {
-                "command": "apicurioVersionsExplorer.openVersion",
-                "title": "Open",
-                "icon": "$(open-preview)"
-            },
-            {
-                "command": "apicurioVersionsExplorer.reverseDisplay",
-                "title": "Reverse order",
-                "icon": "$(symbol-null)"
-            },
-            {
-                "command": "apicurioVersionsExplorer.addVersion",
-                "title": "Add artifact version",
-                "icon": "$(add)"
-            },
-            {
-                "command": "apicurioMetasExplorer.editMetas",
-                "title": "Edit metas",
-                "icon": "$(edit)"
-            },
-            {
-                "command": "apicurioMetasExplorer.editState",
-                "title": "Change state",
-                "icon": "$(eye)"
+                "command": "apicurioMetasExplorer.displayMetasValue",
+                "title": "Display Metas Value",
+                "icon": "$(zoom-in)"
             }
         ],
         "_": {
@@ -118,51 +95,24 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "apicurioExplorer.refreshEntry"
+                    "command": "apicurioExplorer.refresh"
                 }
             ],
             "view/title": [
                 {
-                    "command": "apicurioExplorer.refreshEntry",
+                    "command": "apicurioExplorer.refresh",
                     "when": "view == apicurioExplorer",
                     "group": "navigation"
                 },
                 {
-                    "command": "apicurioExplorer.search",
-                    "when": "view == apicurioExplorer",
+                    "command": "apicurioArtifactsExplorer.refresh",
+                    "when": "view == apicurioArtifactsExplorer",
                     "group": "navigation"
                 },
                 {
-                    "command": "apicurioExplorer.addArtifact",
-                    "when": "view == apicurioExplorer"
-                },
-                {
-                    "command": "apicurioVersionsExplorer.reverseDisplay",
-                    "when": "view == apicurioVersionsExplorer"
-                },
-                {
-                    "command": "apicurioVersionsExplorer.addVersion",
-                    "when": "view == apicurioVersionsExplorer"
-                },
-                {
-                    "command": "apicurioVersionsExplorer.deleteArtifact",
-                    "when": "view == apicurioVersionsExplorer"
-                },
-                {
-                    "command": "apicurioMetasExplorer.editMetas",
+                    "command": "apicurioMetasExplorer.displayMetasValue",
                     "when": "view == apicurioMetasExplorer",
                     "group": "navigation"
-                },
-                {
-                    "command": "apicurioMetasExplorer.editState",
-                    "when": "view == apicurioMetasExplorer"
-                }
-            ],
-            "view/item/context": [
-                {
-                    "command": "apicurioVersionsExplorer.openVersion",
-                    "when": "view == apicurioVersionsExplorer",
-                    "group": "inline"
                 }
             ]
         },
@@ -180,8 +130,8 @@
                         "default": "v3",
                         "enum": ["v3", "v2"],
                         "markdownEnumDescriptions": [
-                        "Core Registry API v3",
-                        "Core Registry API v2"
+                            "Core Registry API v3",
+                            "Core Registry API v2"
                         ],
                         "enumItemLabels": ["Core API v3", "Core API v2"]
                     },

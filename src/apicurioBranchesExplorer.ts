@@ -1,0 +1,128 @@
+'use strict';
+
+import * as vscode from 'vscode';
+import { Group, ActiveElement, ElementType, Branch, Artifact } from './interfaces';
+import { ApicurioTools } from './tools';
+import { Services } from './services';
+
+namespace _ {
+    export const tools = new ApicurioTools();
+}
+
+/**
+ * Apicurio Explorer Provider
+ */
+
+/**
+ * Tree data provider for Apicurio Artifact Explorer view
+ * 
+ * This view retrive groups and manage callbacks for :
+ *  - Display Group Branches and artifacts in the apropriate view
+ *  - Contextual menu on group
+ *  - Display group metas and configs in apropriate view
+ * 
+ */
+
+export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider<Group> {
+    private readonly extensionUri: any;
+
+    private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
+    readonly onDidChangeTreeData: vscode.Event<void>;
+
+    private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
+    private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
+
+    constructor(extensionUri: vscode.Uri) {
+        this.extensionUri = extensionUri;
+        // Manage events for window refresh.
+        this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
+        this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
+    }
+
+    /**
+     * General management of the view
+     */
+
+    // Refresh the view
+    public refresh(group?: ActiveElement): any {
+        if(group){
+            this.ActiveGroup.id = group.id;
+        }
+        // vscode.window.showInformationMessage(`Refresh ${JSON.stringify(this.ActiveGroup)}`);
+        // Clear children and refresh view
+        // vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, true);
+        this.onDidChangeTreeDataEmitter.fire();
+    }
+
+    // Get Artifacts
+    private getBranches(): Promise<Branch[]> {
+        let result = Services.get().getRegistryClient().getBranches(this.ActiveGroup, this.ActiveArtifact);
+        let branches: Promise<Branch[]> = result.then(res => res.branches);
+        return branches;
+    }
+
+    /**
+     * End of general management of the view
+     */
+
+    /**
+     * Contextual menu actions
+     */
+
+    /**
+     * Select a artifact from the explorer view
+     * @param artifact The selected group
+     */
+    public selectArtifact(artifact: Artifact): void {
+        // Refresh Group view to select current Group
+        this.ActiveArtifact.id = artifact.artifactId;
+        this.ActiveGroup.id = artifact.groupId;
+        // @TODO: display artifacts versions
+        // @TODO: display artifacts metas
+        // vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact);
+        this.refresh();
+    }
+
+    /**
+     * End of Contextual menu actions
+     */
+    
+    // Get all tree Datas
+    async getChildren(): Promise<Branch[]> {
+        // @Todo: Manage empty registry case. (Using the "default" group).
+        if(!this.ActiveGroup.id){
+            return [];
+        }
+        const children: Branch[] = await this.getBranches();
+        return Promise.resolve(children);
+    }
+
+    // Get each tree items.
+    getTreeItem(branch: Branch): vscode.TreeItem {
+        // Manage display of group in the tree view.
+        const treeItem = new vscode.TreeItem(branch.branchId, vscode.TreeItemCollapsibleState.None); // None / Collapsed
+        treeItem.iconPath = new vscode.ThemeIcon('git-branch');
+        treeItem.command = {
+            command: 'apicurioArtifactVersionsExplorer.selectArtifact',
+            title: 'Display artifact versions',
+            arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
+        };
+        return treeItem;
+    }
+}
+
+
+export class ApicurioBranchesExplorer {
+    constructor(context: vscode.ExtensionContext) {
+        const treeDataProvider = new ApicurioBranchesExplorerProvider(context.extensionUri);
+        context.subscriptions.push(
+            vscode.window.createTreeView('apicurioBranchesExplorer', {
+                treeDataProvider,
+                showCollapseAll: true,
+            })
+        );
+        // Register commands
+        vscode.commands.registerCommand('apicurioBranchesExplorer.refresh', (group: ActiveElement) => treeDataProvider.refresh(group));
+        vscode.commands.registerCommand('apicurioBranchesExplorer.selectArtifact', (artifact: Artifact) => treeDataProvider.selectArtifact(artifact));
+    }
+}
