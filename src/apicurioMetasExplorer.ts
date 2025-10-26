@@ -77,6 +77,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     break;
                 case ElementType.ARTIFACT:
                 case ElementType.BRANCH:
+                case ElementType.VERSION:
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     break;

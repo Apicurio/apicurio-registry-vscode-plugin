@@ -89,11 +89,6 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
         branch.groupId = this.ActiveGroup.id;
         vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', {groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch);
         vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:branch.branchId, type:ElementType.BRANCH} as ActiveElement, branch);
-        //     command: 'apicurioArtifactVersionsExplorer.selectArtifact',
-        //     title: 'Display artifact versions',
-        //     arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
-        //Refresh metas
-        // this.refresh();
     }
 
     /**
@@ -120,11 +115,6 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
             title: 'Display artifact branch',
             arguments: [branch],
         };
-        // treeItem.command = {
-        //     command: 'apicurioArtifactVersionsExplorer.selectArtifact',
-        //     title: 'Display artifact versions',
-        //     arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
-        // };
         return treeItem;
     }
 }

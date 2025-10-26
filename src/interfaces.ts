@@ -65,6 +65,7 @@ interface ArtifactVersion {
     groupId: string;
     artifactId: string;
     version: string;
+    branchId?: string;
     globalId?: string;
     name?: string;
     state?: string;

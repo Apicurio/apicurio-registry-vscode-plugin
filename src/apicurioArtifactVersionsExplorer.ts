@@ -96,6 +96,14 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         this.refresh();
     }
 
+    public selectArtifactVersion(artifactVersion: ArtifactVersion): void {
+        // As api do not return full Barnch object, compement it here
+        artifactVersion.artifactId = this.ActiveArtifact.id;
+        artifactVersion.groupId = this.ActiveGroup.id;
+        // vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifactVersion', {groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id, branchId:this.ActiveBranch.id} as ArtifactVersion, artifactVersion);
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:artifactVersion.artifactId, type:ElementType.VERSION} as ActiveElement, artifactVersion);
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -116,6 +124,11 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         // Manage tree item
         const treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = artifact.state;
+        treeItem.command = {
+            command: 'apicurioArtifactVersionsExplorer.selectArtifactVersion',
+            title: 'Display artifact version',
+            arguments: [artifact],
+        };
         return treeItem;
     }
 }
@@ -133,5 +146,6 @@ export class ApicurioArtifactVersionsExplorer {
         // Register commands
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.refresh', (group: ActiveElement, artifact: ActiveElement) => treeDataProvider.refresh(group, artifact));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifact', (artifact: Artifact, branch?: Branch) => treeDataProvider.selectArtifact(artifact, branch));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifactVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.selectArtifactVersion(artifactVersion));
     }
 }

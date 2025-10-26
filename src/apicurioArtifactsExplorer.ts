@@ -76,13 +76,13 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
 
     // Filter artifacts by type.
     public filter(): any {
-        // @TODO
-        // return Promise.resolve(children);
-        this.ArtifactList.sort((a, b) => {
-            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
-            // modifiedOn
-        });
-        this.onDidChangeTreeDataEmitter.fire();
+        // // @TODO
+        // // return Promise.resolve(children);
+        // this.ArtifactList.sort((a, b) => {
+        //     return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
+        //     // modifiedOn
+        // });
+        // this.onDidChangeTreeDataEmitter.fire();
     }
     /**
      * Select a artifact from the explorer view
