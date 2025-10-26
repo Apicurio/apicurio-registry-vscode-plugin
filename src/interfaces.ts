@@ -35,6 +35,7 @@ interface Artifact {
     artifactId: string;
     globalId?: string;
     name?: string;
+    state?: string;
     description?: string;
     artifactType?: string;
     owner?: string;
@@ -66,6 +67,7 @@ interface ArtifactVersion {
     version: string;
     globalId?: string;
     name?: string;
+    state?: string;
     description?: string;
     artifactType?: string;
     owner?: string;

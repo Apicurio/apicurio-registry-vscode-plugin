@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Meta, ActiveElement, ElementType, Group } from './interfaces';
+import { Meta, ActiveElement, ElementType, Group, Artifact, ArtifactVersion } from './interfaces';
 import { ApicurioTools } from './tools';
 import { Services } from './services';
 
@@ -29,6 +29,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
     readonly onDidChangeTreeData: vscode.Event<void>;
 
     private ActiveElement: ActiveElement = { id: null, type: null };
+    private ActiveDataObject: Artifact|ArtifactVersion;
 
     constructor() {
         // Manage events for window refresh.
@@ -41,16 +42,18 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
      */
 
     // Refresh the view
-    public refresh(element: ActiveElement, clear?: boolean): any {
-        this.ActiveElement = element;
+    public refresh(element: ActiveElement, data?:Artifact, clear?: boolean): any {
+        this.ActiveElement = { id: element.id, type: element.type };
+        if(data){ this.ActiveDataObject = data; }
         if (clear) {
             this.ActiveElement = { id: null, type: null };
+            this.ActiveDataObject = null;
         }
         this.onDidChangeTreeDataEmitter.fire();
         return;
     }
     // Get Metas
-    private async getMetas(element: ActiveElement): Promise<Meta[]> {
+    private async getMetas(element: ActiveElement, data?: Group|Artifact|ArtifactVersion): Promise<Meta[]> {
         // If no element or invalid element provided, fallback to default group
         if (!element || !element.id) {
             // Use default group id expected by the registry client
@@ -58,17 +61,33 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         }
         try {
             let result = [];
-            // Fetch metas for the active group and await the promise
-            result = await Services.get().getRegistryClient().getMetas(element);
-            let metas = this.queryResultToMetas(result);
+            let metas = [];
+            // Fetch metas for the active element and await the promise
+            switch (this.ActiveElement.type) {
+                case ElementType.GROUP:
+                    
+                    result = await Services.get().getRegistryClient().getMetas(element);
+                    metas = this.queryResultToMetas(result);
+                    // metas.push(this.queryResultToMetas(result));
+                    // Fetch Group rules for the active group and await the promise
+                    result = await Services.get().getRegistryClient().getGroupRules(element);
+                    if(result.length !== 0){
+                        metas.push(this.queryResultToMetas(result, true));
+                    }
+                    break;
+                case ElementType.ARTIFACT:
+                case ElementType.BRANCH:
+                    result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
+                    metas = this.queryResultToMetas(result);
+                    break;
 
-            // Fetch Group rules for the active group and await the promise
-            result = await Services.get().getRegistryClient().getGroupRules(element);
-            if(result.length !== 0){
-                metas.push(this.queryResultToMetas(result, true));
+                default:
+                    break;
             }
+            // Fetch Refer
             return metas;
-        } catch (err) {
+        }
+        catch (err) {
             vscode.window.showErrorMessage(`Error fetching metas: ${err}`);
             return [];
         }
@@ -155,41 +174,41 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
     // Get all tree Datas
     // NOTE: when `element` is undefined, VS Code asks for root items; when `element` is a Meta,
     // VS Code asks for the children of that Meta node.
-    async getChildren(element?: Meta): Promise<Meta[]> {
+    async getChildren(element?: Meta, data?:Group|Artifact|ArtifactVersion): Promise<Meta[]> {
         // Root request: fetch metas for the active group
         if (!element) {
             if (!this.ActiveElement || this.ActiveElement.id == null) {
                 return [];
             }
-            return await this.getMetas(this.ActiveElement);
+            return await this.getMetas(this.ActiveElement, data);
         }
 
-        // Child request: element is a Meta object with a single dynamic key -> its value may be
-        // an array (children), an object (map of children), or a primitive (leaf).
-        const m: any = element as any;
-        const keys = Object.keys(m);
-        if (keys.length === 0) {
-            return [];
-        }
-        const value = m[keys[0]];
+        // // Child request: element is a Meta object with a single dynamic key -> its value may be
+        // // an array (children), an object (map of children), or a primitive (leaf).
+        // const m: any = element as any;
+        // const keys = Object.keys(m);
+        // if (keys.length === 0) {
+        //     return [];
+        // }
+        // const value = m[keys[0]];
 
-        if (value == null) {
-            return [];
-        }
+        // if (value == null) {
+        //     return [];
+        // }
 
-        if (Array.isArray(value)) {
-            // Already an array of Meta nodes (as produced by getMetas)
-            return value as Meta[];
-        }
+        // if (Array.isArray(value)) {
+        //     // Already an array of Meta nodes (as produced by getMetas)
+        //     return value as Meta[];
+        // }
 
-        if (typeof value === 'object') {
-            // Convert object properties into Meta nodes { key: value }
-            const children: Meta[] = [];
-            for (const k of Object.keys(value)) {
-                children.push({ [k]: value[k] } as Meta);
-            }
-            return children;
-        }
+        // if (typeof value === 'object') {
+        //     // Convert object properties into Meta nodes { key: value }
+        //     const children: Meta[] = [];
+        //     for (const k of Object.keys(value)) {
+        //         children.push({ [k]: value[k] } as Meta);
+        //     }
+        //     return children;
+        // }
 
         // Primitive value -> no children
         return [];
@@ -271,9 +290,9 @@ export class ApicurioMetasExplorer {
             })
         );
         // Register commands
-        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', (element: ActiveElement) => treeDataProvider.refresh(element));
-        vscode.commands.registerCommand('apicurioMetasExplorer.getChildren', (element) =>
-            treeDataProvider.getChildren(element)
+        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', (element: ActiveElement, data?:Artifact, clear?: boolean) => treeDataProvider.refresh(element, data, clear));
+        vscode.commands.registerCommand('apicurioMetasExplorer.getChildren', (element, data) =>
+            treeDataProvider.getChildren(element, data)
         );
         vscode.commands.registerCommand('apicurioMetasExplorer.displayMetasValue', () => treeDataProvider.displayMetasValue());
     }

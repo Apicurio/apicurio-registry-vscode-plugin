@@ -19,7 +19,8 @@ namespace _ {
  * 
  * This view retrive ArtifactVersions in Branch and manage callbacks for :
  *  - Display artifactVersionss
- *  - Contextual menu on artifactVersionss artifactVersions and Branches
+ *  - Contextual menu on artifactVersionss
+ *  - @TODO Manage References (in & Outbound)
  * 
  */
 
@@ -114,6 +115,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         // Manage display of group in the tree view.
         // Manage tree item
         const treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
+        treeItem.description = artifact.state;
         return treeItem;
     }
 }

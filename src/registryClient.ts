@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { Services, Settings } from './services';
 import { isObject } from './utils';
 import { isArray } from 'util';
-import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType } from './interfaces';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group } from './interfaces';
 import path from 'path';
 
 interface SearchedArtifact {
@@ -83,11 +83,20 @@ class RegistryClient {
         return res;
     }
 
-    public async getMetas(element: ActiveElement, options?: object): Promise<any>{
+    public async getMetas(element: ActiveElement, data?:Group|Artifact|ArtifactVersion, options?: object): Promise<any>{
         let path = '';
         switch (element.type) {
             case ElementType.GROUP:
                 path = `groups/${element.id}`;
+                break;
+            case ElementType.ARTIFACT:
+                path = `groups/${data.groupId}/artifacts/${data.artifactId}`;
+                break;
+            case ElementType.VERSION:
+                path = `groups/${data.groupId}/artifacts/${data.artifactId}/versions/${data.version}`;
+                break;
+            case ElementType.BRANCH:
+                path = `groups/${data.groupId}/artifacts/${data.artifactId}/branches/${data.branchId}`;
                 break;
             default:
                 break;
@@ -178,7 +187,7 @@ class RegistryClient {
                                 output = data.toString();
                             }
                         }
-vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
+// vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                         if (res.statusCode < 200 || res.statusCode >= 300) {
                             if (output != null && typeof output !== 'string') {
                                 if ('name' in output && 'message' in output) {
@@ -205,7 +214,7 @@ vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                                         }
                                     }
                                 }
-        vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
+        // vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                             return resolve(output);
                         }
                     });

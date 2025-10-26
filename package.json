@@ -77,9 +77,9 @@
                 "icon": "$(refresh)"
             },
             {
-                "command": "apicurioArtifactsExplorer.refresh",
-                "title": "Refresh",
-                "icon": "$(refresh)"
+                "command": "apicurioArtifactsExplorer.filter",
+                "title": "Filter",
+                "icon": "$(filter)"
             },
             {
                 "command": "apicurioMetasExplorer.displayMetasValue",
@@ -105,7 +105,7 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "apicurioArtifactsExplorer.refresh",
+                    "command": "apicurioArtifactsExplorer.filter",
                     "when": "view == apicurioArtifactsExplorer",
                     "group": "navigation"
                 },

@@ -29,6 +29,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
 
+    private ArtifactList: Promise<Artifact[]>;
     private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
     private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
 
@@ -49,12 +50,17 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
             this.ActiveGroup.id = group.id;
         }
         // Clear children and refresh view
+        // this.GroupList = null;
         // vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, true);
         this.onDidChangeTreeDataEmitter.fire();
     }
 
     // Get Artifacts
     private getArtifacts(): Promise<Artifact[]> {
+        // Avoid API request if we already have the groups.
+        if (this.ArtifactList){
+            return this.ArtifactList.then(res => res);
+        }
         let result = Services.get().getRegistryClient().getArtifacts(this.ActiveGroup);
         let artifacts: Promise<Artifact[]> = result.then(res => res.artifacts);
         return artifacts;
@@ -68,16 +74,27 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
      * Contextual menu actions
      */
 
+    // Filter artifacts by type.
+    public filter(): any {
+        // @TODO
+        // return Promise.resolve(children);
+        this.ArtifactList.sort((a, b) => {
+            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
+            // modifiedOn
+        });
+        this.onDidChangeTreeDataEmitter.fire();
+    }
     /**
      * Select a artifact from the explorer view
-     * @param artifact The selected group
+     * @param artifact The selected artifact
      */
     public selectArtifact(artifact: Artifact): void {
         // Refresh Group view to select current Group
         this.ActiveArtifact.id = artifact.artifactId;
-        // @TODO: display artifacts metas
+        // @TODO display artifacts metas
         vscode.commands.executeCommand('apicurioBranchesExplorer.selectArtifact', artifact);
         vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', artifact);
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, artifact);
         this.refresh();
     }
 
@@ -87,7 +104,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     
     // Get all tree Datas
     async getChildren(): Promise<Artifact[]> {
-        // @Todo: Manage empty registry case. (Using the "default" group).
+        // @TODO: Manage empty registry case. (Using the "default" group).
         if(!this.ActiveGroup.id){
             return [];
         }
@@ -129,6 +146,7 @@ export class ApicurioArtifactsExplorer {
         );
         // Register commands
         vscode.commands.registerCommand('apicurioArtifactsExplorer.refresh', (group: ActiveElement) => treeDataProvider.refresh(group));
+        vscode.commands.registerCommand('apicurioArtifactsExplorer.filter', () => treeDataProvider.filter());
         vscode.commands.registerCommand('apicurioArtifactsExplorer.selectArtifact', (artifact: Artifact) => treeDataProvider.selectArtifact(artifact));
     }
 }

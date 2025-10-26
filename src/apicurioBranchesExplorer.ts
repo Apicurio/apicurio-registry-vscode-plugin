@@ -77,10 +77,23 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
         // Refresh Group view to select current Group
         this.ActiveArtifact.id = artifact.artifactId;
         this.ActiveGroup.id = artifact.groupId;
-        // @TODO: display artifacts versions
-        // @TODO: display artifacts metas
-        // vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact);
         this.refresh();
+    }
+    /**
+     * Select a Branch from the explorer view
+     * @param branch The selected branch
+     */
+    public selectBranch(branch: Branch): void {
+        // As api do not return full Barnch object, compement it here
+        branch.artifactId = this.ActiveArtifact.id;
+        branch.groupId = this.ActiveGroup.id;
+        vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', {groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch);
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:branch.branchId, type:ElementType.BRANCH} as ActiveElement, branch);
+        //     command: 'apicurioArtifactVersionsExplorer.selectArtifact',
+        //     title: 'Display artifact versions',
+        //     arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
+        //Refresh metas
+        // this.refresh();
     }
 
     /**
@@ -103,10 +116,15 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
         const treeItem = new vscode.TreeItem(branch.branchId, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.iconPath = new vscode.ThemeIcon('git-branch');
         treeItem.command = {
-            command: 'apicurioArtifactVersionsExplorer.selectArtifact',
-            title: 'Display artifact versions',
-            arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
+            command: 'apicurioBranchesExplorer.selectBranch',
+            title: 'Display artifact branch',
+            arguments: [branch],
         };
+        // treeItem.command = {
+        //     command: 'apicurioArtifactVersionsExplorer.selectArtifact',
+        //     title: 'Display artifact versions',
+        //     arguments: [{groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch],
+        // };
         return treeItem;
     }
 }
@@ -124,5 +142,6 @@ export class ApicurioBranchesExplorer {
         // Register commands
         vscode.commands.registerCommand('apicurioBranchesExplorer.refresh', (group: ActiveElement) => treeDataProvider.refresh(group));
         vscode.commands.registerCommand('apicurioBranchesExplorer.selectArtifact', (artifact: Artifact) => treeDataProvider.selectArtifact(artifact));
+        vscode.commands.registerCommand('apicurioBranchesExplorer.selectBranch', (branch: Branch) => treeDataProvider.selectBranch(branch));
     }
 }
