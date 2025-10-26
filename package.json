@@ -82,6 +82,21 @@
                 "icon": "$(filter)"
             },
             {
+                "command": "apicurioArtifactVersionsExplorer.openVersion",
+                "title": "Open",
+                "icon": "$(open-preview)"
+            },
+            {
+                "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
+                "title": "Open with references",
+                "icon": "$(go-to-file)"
+            },
+            {
+                "command": "apicurioArtifactVersionsExplorer.openComments",
+                "title": "Open Comments",
+                "icon": "$(comment)"
+            },
+            {
                 "command": "apicurioMetasExplorer.displayMetasValue",
                 "title": "Display Metas Value",
                 "icon": "$(zoom-in)"
@@ -113,6 +128,23 @@
                     "command": "apicurioMetasExplorer.displayMetasValue",
                     "when": "view == apicurioMetasExplorer",
                     "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "apicurioArtifactVersionsExplorer.openVersion",
+                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "group": "inline"
+                },
+                {
+                    "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
+                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "group": "inline"
+                },
+                {
+                    "command": "apicurioArtifactVersionsExplorer.openComments",
+                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "group": "inline"
                 }
             ]
         },

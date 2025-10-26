@@ -65,19 +65,22 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             // Fetch metas for the active element and await the promise
             switch (this.ActiveElement.type) {
                 case ElementType.GROUP:
-                    
                     result = await Services.get().getRegistryClient().getMetas(element);
-                    metas = this.queryResultToMetas(result);
-                    // metas.push(this.queryResultToMetas(result));
+                    metas.push(...this.queryResultToMetas(result));
                     // Fetch Group rules for the active group and await the promise
                     result = await Services.get().getRegistryClient().getGroupRules(element);
                     if(result.length !== 0){
-                        metas.push(this.queryResultToMetas(result, true));
+                        let rules = {'Rules':this.queryResultToMetas(result, true)};
+                        // @TODO Get rules configs
+                        // @TODO Get rules for all available entities.
+                        // result = await Services.get().getRegistryClient().getRulesConfig(element);
+                        metas.push(rules);
                     }
                     break;
                 case ElementType.ARTIFACT:
                 case ElementType.BRANCH:
                 case ElementType.VERSION:
+                    // @TODO Get references
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     break;
@@ -85,7 +88,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 default:
                     break;
             }
-            // Fetch Refer
+vscode.window.showInformationMessage(`${JSON.stringify(metas)}`);
             return metas;
         }
         catch (err) {
@@ -102,7 +105,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         // Rules managment
         if(rules){
             for (let i in result) {
-                metas.push({ [`rule-${result[i]}`]: result.length } as Meta);
+                metas.push({ [`${result[i]}`]: '-' } as Meta);
             }
         }
         // Others metas managment
@@ -184,32 +187,32 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             return await this.getMetas(this.ActiveElement, data);
         }
 
-        // // Child request: element is a Meta object with a single dynamic key -> its value may be
-        // // an array (children), an object (map of children), or a primitive (leaf).
-        // const m: any = element as any;
-        // const keys = Object.keys(m);
-        // if (keys.length === 0) {
-        //     return [];
-        // }
-        // const value = m[keys[0]];
+        // Child request: element is a Meta object with a single dynamic key -> its value may be
+        // an array (children), an object (map of children), or a primitive (leaf).
+        const m: any = element as any;
+        const keys = Object.keys(m);
+        if (keys.length === 0) {
+            return [];
+        }
+        const value = m[keys[0]];
 
-        // if (value == null) {
-        //     return [];
-        // }
+        if (value == null) {
+            return [];
+        }
 
-        // if (Array.isArray(value)) {
-        //     // Already an array of Meta nodes (as produced by getMetas)
-        //     return value as Meta[];
-        // }
+        if (Array.isArray(value)) {
+            // Already an array of Meta nodes (as produced by getMetas)
+            return value as Meta[];
+        }
 
-        // if (typeof value === 'object') {
-        //     // Convert object properties into Meta nodes { key: value }
-        //     const children: Meta[] = [];
-        //     for (const k of Object.keys(value)) {
-        //         children.push({ [k]: value[k] } as Meta);
-        //     }
-        //     return children;
-        // }
+        if (typeof value === 'object') {
+            // Convert object properties into Meta nodes { key: value }
+            const children: Meta[] = [];
+            for (const k of Object.keys(value)) {
+                children.push({ [k]: value[k] } as Meta);
+            }
+            return children;
+        }
 
         // Primitive value -> no children
         return [];
@@ -272,6 +275,9 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 break;
             case 'description':
                 treeItem.iconPath = new vscode.ThemeIcon('comment');
+                break;
+            case 'Rules':
+                treeItem.iconPath = new vscode.ThemeIcon('gear');
                 break;
             default:
                 treeItem.iconPath = new vscode.ThemeIcon('symbol-property');

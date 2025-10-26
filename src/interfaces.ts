@@ -134,5 +134,10 @@ enum ArtifactType {
     GRAPHQL = "GRAPHQL",
     OPENAPI = "OPENAPI"
 }
+enum ReferencesQueryParam{
+    PRESERVE = "PRESERVE",
+    DEREFERENCE = "DEREFERENCE",
+    REWRITE = "REWRITE"
+}
 
-export { ActiveElement, ElementType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };
+export { ActiveElement, ElementType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, ReferencesQueryParam, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };

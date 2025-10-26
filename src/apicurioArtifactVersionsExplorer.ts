@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, ActiveElement, ElementType, ArtifactVersionsList, ArtifactVersion, BranchList, Branch, Artifact } from './interfaces';
+import { Group, ActiveElement, ElementType, ArtifactVersionsList, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
 import { ApicurioTools } from './tools';
 import { Services } from './services';
 import { version } from 'os';
@@ -104,6 +104,85 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:artifactVersion.artifactId, type:ElementType.VERSION} as ActiveElement, artifactVersion);
     }
 
+    public openVersionReferences(artifact:ArtifactVersion){
+        this.openVersion(artifact, ReferencesQueryParam.REWRITE);
+    }
+    public openVersion(artifact:ArtifactVersion, references?:ReferencesQueryParam){
+        let result = Services.get().getRegistryClient().getArtifactContent(artifact, references);
+        let artifactContent: Promise<any> = result.then(res => res.versions);
+        // Get Type From header : X-Registry-ArtifactType
+        // Type Content-Type: application/x-yaml
+        let contentType;
+        let extention;
+        // extention = this.getFileExtention(artifact.artifactType, contentType);
+
+        // Manage document
+        const wsDirPath = this.getWorkspaceDirPath();
+        let fileName: string = `${artifact.groupId}--${artifact.artifactId}--${artifact.version}.${extention}`;
+        if (wsDirPath != undefined) {
+            fileName = `${wsDirPath}/${fileName}`;
+        } else {
+            vscode.window.showWarningMessage(`Could not determine full workspace path for file '${fileName}'.`);
+        }
+        const newUri = vscode.Uri.file(fileName).with({ scheme: 'untitled', path: fileName });
+        vscode.workspace.openTextDocument(newUri).then(
+            (a: vscode.TextDocument) => {
+                vscode.window.showTextDocument(a, 1, false).then((e) => {
+                    e.edit((edit) => {
+                        edit.insert(new vscode.Position(0, 0), JSON.stringify(artifactContent));
+                    });
+                });
+            },
+            (error: any) => {
+                console.error(error);
+            }
+        );
+        // Format Document
+        if (vscode.workspace.getConfiguration('apicurio.tools.preview').get('format')) {
+            // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
+            setTimeout(() => {
+                vscode.commands.executeCommand('editor.action.formatDocument');
+            }, 500);
+        }
+        // Preview if available
+        if (
+            vscode.workspace.getConfiguration('apicurio.tools.preview').get('OPENAPI') &&
+            vscode.extensions.getExtension('Arjun.swagger-viewer')
+        ) {
+            if (artifact.artifactType == 'OPENAPI') {
+                // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger preview command...
+                setTimeout(() => {
+                    vscode.commands.executeCommand('swagger.preview');
+                }, 500);
+            }
+        }
+        return Promise.resolve();
+    }
+
+    getFileExtention(artifactType, contentType){
+        return '';
+    }
+    getWorkspaceDirPath(): string | undefined {
+        const lastOpenFilePath: string | undefined = vscode.window.activeTextEditor?.document.fileName;
+        const workspaces = vscode.workspace.workspaceFolders?.map((dir) => dir.uri.fsPath);
+        if (workspaces !== undefined) {
+            if (workspaces.length === 1) {
+                return workspaces[0];
+            }
+            if (lastOpenFilePath !== undefined && workspaces.length > 1) {
+                return workspaces.filter((fsPath) => lastOpenFilePath.startsWith(fsPath))[0];
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Manage comments
+     */
+    public openComments(artifact:ArtifactVersion){
+        
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -147,5 +226,8 @@ export class ApicurioArtifactVersionsExplorer {
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.refresh', (group: ActiveElement, artifact: ActiveElement) => treeDataProvider.refresh(group, artifact));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifact', (artifact: Artifact, branch?: Branch) => treeDataProvider.selectArtifact(artifact, branch));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifactVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.selectArtifactVersion(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersion(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionReferences', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionReferences(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openComments', (artifactVersion: ArtifactVersion) => treeDataProvider.openComments(artifactVersion));
     }
 }

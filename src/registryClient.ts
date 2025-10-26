@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { Services, Settings } from './services';
 import { isObject } from './utils';
 import { isArray } from 'util';
-import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group } from './interfaces';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
 import path from 'path';
 
 interface SearchedArtifact {
@@ -60,6 +60,17 @@ class RegistryClient {
                 ...options,
             })
         ) as Promise<ArtifactVersionsList>;
+        return res;
+    }
+
+    public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object){
+        // @TODO Manage references in query path.
+        const res = this.executeRequest(
+            this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
         return res;
     }
 
