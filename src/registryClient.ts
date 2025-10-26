@@ -73,6 +73,16 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
+    public getArtifactComment(artifact:ArtifactVersion, options?: object){
+        // @TODO Manage references in query path.
+        const res = this.executeRequest(
+            this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comment`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
+        return res;
+    }
 
     public searchArtifacts(options?: object): Promise<ArtifactSearchResult> {
         const res = this.executeRequest(
