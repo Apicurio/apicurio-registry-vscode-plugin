@@ -153,12 +153,12 @@ class RegistryClient {
                 headers['Content-Type'] = 'application/x-yaml';
             }
 
-vscode.window.showInformationMessage(`Path is ${JSON.stringify(path)}`);
+// vscode.window.showInformationMessage(`Path is ${JSON.stringify(path)}`);
             const req = client.request(
                 {
                     hostname: settings.hostname,
                     port: settings.port,
-                    path: `${settings.path}${path}`,
+                    path: `${encodeURI(settings.path.concat(path))}`,
                     method: method ? method : 'GET',
                     headers: headers,
                 },
@@ -178,7 +178,7 @@ vscode.window.showInformationMessage(`Path is ${JSON.stringify(path)}`);
                                 output = data.toString();
                             }
                         }
-        // vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
+vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
                         if (res.statusCode < 200 || res.statusCode >= 300) {
                             if (output != null && typeof output !== 'string') {
                                 if ('name' in output && 'message' in output) {
