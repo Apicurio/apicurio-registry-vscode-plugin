@@ -180,11 +180,13 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
      * Manage comments
      */
     public openComments(artifact:ArtifactVersion){
-        let comments = Services.get().getRegistryClient().getArtifactComment(artifact);
-
-        let artifactContent: Promise<any> = comments.then(res => res);
-vscode.window.showInformationMessage(JSON.stringify(artifactContent));
-        this.displayComment(artifact, comments);
+        // Ensure we await the comments promise before trying to display them
+        this.getComments(artifact).then((comments) => this.displayComment(artifact, comments));
+    }
+    public getComments(artifact:ArtifactVersion): Promise<any[]>{
+        // getArtifactComment returns a Promise; return it directly and log the resolved value
+        const commentsPromise = Services.get().getRegistryClient().getArtifactComment(artifact);
+        return commentsPromise.then(res => res);
     }
     public displayComment(artifact, comments) {
         // /**
@@ -193,17 +195,20 @@ vscode.window.showInformationMessage(JSON.stringify(artifactContent));
         //  *  Could be used to edit the comment in the future ?
         //  */
         let content = [];
-        for (let i in comments) {
-            content.push(`<p>${comments[i].value.replace('\n', '<br>')}</p><p>${comments[i].commentId}<i>by ${comments[i].owner} on ${comments[i].createdOn}</i></p>`)
-            
+        if(comments.length){
+            for (let i in comments) {
+                content.push(`<h2>${comments[i].commentId}</h2><p>${comments[i].value.replace('\n', '<br>')}</p><p><i>by ${comments[i].owner} on ${comments[i].createdOn}</i></p>`)
+            }
         }
-vscode.window.showInformationMessage(JSON.stringify(content));
+        else{
+            content = ["<p>No comments.</p>"];
+        }
         vscode.window.createWebviewPanel(
             'apicurioArtifactVersionsExplorer.displayComment',
             'Display Comment', 
             vscode.ViewColumn.One,
             { enableScripts: true }
-        ).webview.html = `<html><body><h2>Comments for ${artifact.groupId} > ${artifact.artifactId} > ${artifact.version}</h2>${content.toString()}</body></html>`;
+        ).webview.html = `<html><body><h1>Comments for ${artifact.groupId} > ${artifact.artifactId} > ${artifact.version}</h1>${content.toString()}</body></html>`;
     }
 
     /**

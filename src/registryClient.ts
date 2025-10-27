@@ -76,7 +76,7 @@ class RegistryClient {
     public getArtifactComment(artifact:ArtifactVersion, options?: object){
         // @TODO Manage references in query path.
         const res = this.executeRequest(
-            this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comment`, {
+            this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comments`, {
                 ...Services.get().getSettings().limits(),
                 ...options,
             })
