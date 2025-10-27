@@ -21,6 +21,8 @@ namespace _ {
  *  - Contextual menu on group
  *  - Display group metas and configs in apropriate view
  * 
+ * - @TODO : Manage default group (if no exist, artifact in fefault are not accessible...)
+ * 
  */
 
 export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> {
@@ -98,8 +100,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     
     // Get all tree Datas
     async getChildren(group?: Group): Promise<Group[]> {
-        // @Todo: Manage empty registry case. (Using the "default" group).
-        const children: Group[] = await this.getGroups();
+        const children = await this.getGroups();
         return Promise.resolve(children);
     }
 

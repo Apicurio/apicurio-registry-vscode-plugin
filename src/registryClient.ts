@@ -130,6 +130,16 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
+    public async getArtifactrReferences(element: ArtifactVersion, options?: object): Promise<any>{
+        let path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
+        const res = this.executeRequest(
+            this.requestPath(`${path}`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
+        return res;
+    }
     public async getGroupRules(element: ActiveElement, options?: object): Promise<any>{
         let path = `groups/${element.id}/rules`;
         const res = this.executeRequest(
