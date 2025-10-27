@@ -167,7 +167,7 @@ class RegistryClient {
      * @returns A promise that resolves with the response data
      */
 
-    private executeRequest(path: string, method?: string, headers?: any, body?: any): Promise<object | string | null> {
+    private executeRequest(path: string, method?: string, headers?: any, body?: any, returnHeaders?:boolean): Promise<object | string | null> {
         return new Promise<object | string>((resolve, reject) => {
             const settings = Services.get().getSettings();
             const client = settings.useHttps ? https : http;

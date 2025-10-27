@@ -34,6 +34,19 @@ export class ApicurioTools {
      */
 
     /**
+     * 
+     */
+    public getPreview(){
+        return vscode.workspace.getConfiguration('apicurio.tools.preview').get('OPENAPI');
+    }
+    /**
+     * 
+     */
+    public getFormat(){
+        return vscode.workspace.getConfiguration('apicurio.tools.preview').get('format');
+    }
+
+    /**
      * Check if display name is set in settings.
      * @returns boolean
      */

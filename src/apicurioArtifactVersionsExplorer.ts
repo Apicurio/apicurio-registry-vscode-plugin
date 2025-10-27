@@ -97,19 +97,22 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     }
 
     public selectArtifactVersion(artifactVersion: ArtifactVersion): void {
-        // As api do not return full Barnch object, compement it here
+        // As api do not return full Barnch object, complement it here
         artifactVersion.artifactId = this.ActiveArtifact.id;
         artifactVersion.groupId = this.ActiveGroup.id;
-        // vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifactVersion', {groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id, branchId:this.ActiveBranch.id} as ArtifactVersion, artifactVersion);
         vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:artifactVersion.artifactId, type:ElementType.VERSION} as ActiveElement, artifactVersion);
     }
 
+    /**
+     * Open an artifact Version
+     */
     public openVersionReferences(artifact:ArtifactVersion){
         this.openVersion(artifact, ReferencesQueryParam.REWRITE);
     }
-    public openVersion(artifact:ArtifactVersion, references?:ReferencesQueryParam){
-        let result = Services.get().getRegistryClient().getArtifactContent(artifact, references);
-        let artifactContent: Promise<any> = result.then(res => res.versions);
+    public async openVersion(artifact:ArtifactVersion, references?:ReferencesQueryParam): Promise<void> {
+        // Await the registry client response so we work with the resolved content (not a Promise)
+        const result = await Services.get().getRegistryClient().getArtifactContent(artifact, references);
+        const artifactContent: any = result;
         // Get Type From header : X-Registry-ArtifactType
         // Type Content-Type: application/x-yaml
         let contentType;
@@ -125,38 +128,39 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             vscode.window.showWarningMessage(`Could not determine full workspace path for file '${fileName}'.`);
         }
         const newUri = vscode.Uri.file(fileName).with({ scheme: 'untitled', path: fileName });
-        vscode.workspace.openTextDocument(newUri).then(
-            (a: vscode.TextDocument) => {
-                vscode.window.showTextDocument(a, 1, false).then((e) => {
-                    e.edit((edit) => {
-                        edit.insert(new vscode.Position(0, 0), JSON.stringify(artifactContent));
-                    });
-                });
-            },
-            (error: any) => {
-                console.error(error);
+        // Choose representation: if the content is already a string use it, otherwise stringify nicely
+        const contentToInsert = typeof artifactContent === 'string' ? artifactContent : JSON.stringify(artifactContent, null, 2);
+
+        try {
+            const doc = await vscode.workspace.openTextDocument(newUri);
+            const editor = await vscode.window.showTextDocument(doc, 1, false);
+            // Replace entire document content if it already exists, otherwise insert.
+            const currentText = doc.getText();
+            const fullRange = new vscode.Range(doc.positionAt(0), doc.positionAt(currentText.length));
+            await editor.edit((edit) => {
+                edit.replace(fullRange, contentToInsert);
+            });
+            // Format document.
+            if (_.tools.getFormat()) {
+                // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
+                setTimeout(() => {vscode.commands.executeCommand('editor.action.formatDocument');}, 500);
             }
-        );
-        // Format Document
-        if (vscode.workspace.getConfiguration('apicurio.tools.preview').get('format')) {
-            // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
-            setTimeout(() => {
-                vscode.commands.executeCommand('editor.action.formatDocument');
-            }, 500);
-        }
-        // Preview if available
-        if (
-            vscode.workspace.getConfiguration('apicurio.tools.preview').get('OPENAPI') &&
-            vscode.extensions.getExtension('Arjun.swagger-viewer')
-        ) {
-            if (artifact.artifactType == 'OPENAPI') {
-                // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger preview command...
-                setTimeout(() => {
-                    vscode.commands.executeCommand('swagger.preview');
-                }, 500);
+            // Preview if available
+            if (
+                _.tools.getPreview() &&
+                vscode.extensions.getExtension('Arjun.swagger-viewer')
+            ) {
+                if (artifact.artifactType == 'OPENAPI') {
+                    // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
+                    setTimeout(() => {vscode.commands.executeCommand('swagger.preview');}, 500);
+                }
             }
+        } catch (error) {
+            console.error(error);
+            vscode.window.showErrorMessage(`Failed to open artifact content: ${error}`);
+            return;
         }
-        return Promise.resolve();
+        return;
     }
 
     getFileExtention(artifactType, contentType){
