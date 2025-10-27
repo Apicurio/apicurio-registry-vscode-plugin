@@ -70,10 +70,13 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     // Fetch Group rules for the active group and await the promise
                     result = await Services.get().getRegistryClient().getGroupRules(element);
                     if(result.length !== 0){
-                        let rules = {'Rules':this.queryResultToMetas(result, true)};
-                        // @TODO Get rules configs
+                        let rulesConfigs = [];
+                        for(let i in result){
+                            let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
+                            rulesConfigs.push(rulesResult);
+                        }
+                        let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
                         // @TODO Get rules for all available entities.
-                        // result = await Services.get().getRegistryClient().getRulesConfig(element);
                         metas.push(rules);
                     }
                     break;
@@ -88,7 +91,6 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 default:
                     break;
             }
-vscode.window.showInformationMessage(`${JSON.stringify(metas)}`);
             return metas;
         }
         catch (err) {
@@ -105,7 +107,7 @@ vscode.window.showInformationMessage(`${JSON.stringify(metas)}`);
         // Rules managment
         if(rules){
             for (let i in result) {
-                metas.push({ [`${result[i]}`]: '-' } as Meta);
+                metas.push({ [`${result[i].ruleType}`]: `${result[i].config}` } as Meta);
             }
         }
         // Others metas managment
@@ -263,6 +265,8 @@ vscode.window.showInformationMessage(`${JSON.stringify(metas)}`);
                 treeItem.description = treeItem.description.substring(0, MAX).trimEnd() + '...';
             }
         }
+        treeItem.tooltip
+         = treeItem.description;
 
         // Use a ThemeIcon so the icon displays correctly in the tree view
         switch (label) {

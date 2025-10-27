@@ -140,6 +140,16 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
+    public async getGroupRulesConfig(element: ActiveElement, rule: string, options?: object): Promise<any>{
+        let path = `groups/${element.id}/rules/${rule}`;
+        const res = this.executeRequest(
+            this.requestPath(`${path}`, {
+                ...Services.get().getSettings().limits(),
+                ...options,
+            })
+        ) as Promise<any>;
+        return res;
+    }
 
     private fixDefaultGroup(result: ArtifactSearchResult) {
         for (const i in result.artifacts) {
