@@ -135,7 +135,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
 
         // Manage document
         const wsDirPath = this.getWorkspaceDirPath();
-        let fileName: string = `${artifact.groupId}--${artifact.artifactId}--${artifact.version}${extention ? `.${extention}` : ''}`;
+        let fileName: string = `${artifact.groupId}--${artifact.artifactId}--${artifact.version}${extention ? `.${extention}` : 'txt'}`;
         if (wsDirPath != undefined) {
             fileName = `${wsDirPath}/${fileName}`;
         } else {
@@ -184,9 +184,6 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         return;
     }
 
-    getFileExtention(artifactType, contentType){
-        return '';
-    }
     getWorkspaceDirPath(): string | undefined {
         const lastOpenFilePath: string | undefined = vscode.window.activeTextEditor?.document.fileName;
         const workspaces = vscode.workspace.workspaceFolders?.map((dir) => dir.uri.fsPath);
