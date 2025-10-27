@@ -2,12 +2,13 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "es2019",
-        "lib": ["ES2019"],
+        "lib": ["ES2019", "DOM"],
         "outDir": "out",
         "sourceMap": true,
         "rootDir": "src",
         "resolveJsonModule": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "skipLibCheck": true
     },
-    "exclude": ["node_modules", ".vscode-test"],
+    "exclude": ["node_modules", ".vscode-test", "src/bck"],
 }

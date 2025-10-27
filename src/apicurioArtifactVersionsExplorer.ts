@@ -110,18 +110,32 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         this.openVersion(artifact, ReferencesQueryParam.REWRITE);
     }
     public async openVersion(artifact:ArtifactVersion, references?:ReferencesQueryParam): Promise<void> {
-        // Await the registry client response so we work with the resolved content (not a Promise)
-        const result = await Services.get().getRegistryClient().getArtifactContent(artifact, references);
-        const artifactContent: any = result;
-        // Get Type From header : X-Registry-ArtifactType
-        // Type Content-Type: application/x-yaml
-        let contentType;
-        let extention;
-        // extention = this.getFileExtention(artifact.artifactType, contentType);
+        // Request the content and include response headers for accurate detection
+        // @TODO test all artifacts types in the registry.
+        const result = await Services.get().getRegistryClient().getArtifactContent(artifact, references, undefined, true);
+
+        let artifactContent: any = result;
+        let responseHeaders: any = {};
+        if (result && result._response) {
+            artifactContent = result._response._body;
+            responseHeaders = result._response._headers || {};
+        }
+
+        // Detect file extension and language from response headers or artifact type
+        let contentType = responseHeaders['content-type'] || responseHeaders['Content-Type'] || '';
+        let extention = '';
+        if (contentType.includes('yaml') || contentType.includes('yml') || artifact.artifactType === 'OPENAPI') {
+            extention = 'yaml';
+        } else if (contentType.includes('json')) {
+            extention = 'json';
+        } else if (artifact.artifactType) {
+            // Fallback based on artifact type
+            extention = artifact.artifactType.toLowerCase();
+        }
 
         // Manage document
         const wsDirPath = this.getWorkspaceDirPath();
-        let fileName: string = `${artifact.groupId}--${artifact.artifactId}--${artifact.version}.${extention}`;
+        let fileName: string = `${artifact.groupId}--${artifact.artifactId}--${artifact.version}${extention ? `.${extention}` : ''}`;
         if (wsDirPath != undefined) {
             fileName = `${wsDirPath}/${fileName}`;
         } else {
@@ -140,16 +154,23 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             await editor.edit((edit) => {
                 edit.replace(fullRange, contentToInsert);
             });
-            // Format document.
+            // Attempt to set language based on detected type
+            try {
+                const lang = extention === 'yaml' ? 'yaml' : extention === 'json' ? 'json' : undefined;
+                if (lang) {
+                    await vscode.languages.setTextDocumentLanguage(doc, lang);
+                }
+            } catch (e) {
+                // Non-fatal
+            }
+
+            // Format document if enabled
             if (_.tools.getFormat()) {
                 // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
                 setTimeout(() => {vscode.commands.executeCommand('editor.action.formatDocument');}, 500);
             }
             // Preview if available
-            if (
-                _.tools.getPreview() &&
-                vscode.extensions.getExtension('Arjun.swagger-viewer')
-            ) {
+            if (_.tools.getPreview() && vscode.extensions.getExtension('Arjun.swagger-viewer')) {
                 if (artifact.artifactType == 'OPENAPI') {
                     // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
                     setTimeout(() => {vscode.commands.executeCommand('swagger.preview');}, 500);

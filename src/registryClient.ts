@@ -63,14 +63,14 @@ class RegistryClient {
         return res;
     }
 
-    public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object){
+    public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object, returnHeaders?: boolean){
         // @TODO Manage references in query path.
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
                 ...Services.get().getSettings().limits(),
                 ...options,
             })
-        ) as Promise<any>;
+        , undefined, undefined, returnHeaders) as Promise<any>;
         return res;
     }
     public getArtifactComment(artifact:ArtifactVersion, options?: object){
@@ -111,13 +111,13 @@ class RegistryClient {
                 path = `groups/${element.id}`;
                 break;
             case ElementType.ARTIFACT:
-                path = `groups/${data.groupId}/artifacts/${data.artifactId}`;
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}`;
                 break;
             case ElementType.VERSION:
-                path = `groups/${data.groupId}/artifacts/${data.artifactId}/versions/${data.version}`;
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/versions/${(data as any).version}`;
                 break;
             case ElementType.BRANCH:
-                path = `groups/${data.groupId}/artifacts/${data.artifactId}/branches/${data.branchId}`;
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/branches/${(data as any).branchId}`;
                 break;
             default:
                 break;
@@ -164,11 +164,12 @@ class RegistryClient {
      * @param method The HTTP method to use (GET, POST, etc.)
      * @param headers Headers to include in the request
      * @param body The request body
+     * @param returnHeaders Retuns a formated output.
      * @returns A promise that resolves with the response data
      */
 
-    private executeRequest(path: string, method?: string, headers?: any, body?: any, returnHeaders?:boolean): Promise<object | string | null> {
-        return new Promise<object | string>((resolve, reject) => {
+    private executeRequest(path: string, method?: string, headers?: any, body?: any, returnHeaders?: boolean): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             const settings = Services.get().getSettings();
             const client = settings.useHttps ? https : http;
 
@@ -183,64 +184,73 @@ class RegistryClient {
                 headers['Content-Type'] = 'application/x-yaml';
             }
 
-// vscode.window.showInformationMessage(`Path is ${JSON.stringify(path)}`);
-            const req = client.request(
-                {
-                    hostname: settings.hostname,
-                    port: settings.port,
-                    path: `${encodeURI(settings.path.concat(path))}`,
-                    method: method ? method : 'GET',
-                    headers: headers,
-                },
-                function (res) {
-                    const chunks = [];
-                    res.on('data', function (chunk) {
-                        chunks.push(chunk);
-                    });
+            // Build request options so we can return them if requested
+            const requestOptions = {
+                hostname: settings.hostname,
+                port: settings.port,
+                path: `${encodeURI(settings.path.concat(path))}`,
+                method: method ? method : 'GET',
+                headers: headers,
+            } as any;
 
-                    res.on('end', () => {
-                        let output: object | string | null = null;
-                        const data = Buffer.concat(chunks);
-                        if (data.length > 0) {
-                            try {
-                                output = JSON.parse(data.toString());
-                            } catch (e) {
-                                output = data.toString();
-                            }
+            const req = client.request(requestOptions, function (res) {
+                const chunks: any[] = [];
+                res.on('data', function (chunk) {
+                    chunks.push(chunk);
+                });
+
+                res.on('end', () => {
+                    let output: object | string | null = null;
+                    const data = Buffer.concat(chunks);
+                    if (data.length > 0) {
+                        try {
+                            output = JSON.parse(data.toString());
+                        } catch (e) {
+                            output = data.toString();
                         }
-// vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
-                        if (res.statusCode < 200 || res.statusCode >= 300) {
-                            if (output != null && typeof output !== 'string') {
-                                if ('name' in output && 'message' in output) {
-                                    vscode.window.showErrorMessage(
-                                        `Apicurio Registry client error: ${output.name}: ${output.message}`
-                                    );
-                                    return reject(output);
-                                }
-                            } else {
+                    }
+
+                    const responseWrapper = {
+                        _request: requestOptions,
+                        _response: {
+                            _headers: res.headers,
+                            _body: output,
+                            _statusCode: res.statusCode,
+                        },
+                    };
+
+                    if (res.statusCode < 200 || res.statusCode >= 300) {
+                        // Try to surface structured error info when available
+                        if (output != null && typeof output !== 'string') {
+                            if ('name' in output && 'message' in output) {
                                 vscode.window.showErrorMessage(
-                                    `Apicurio Registry client error: Unknown: HTTP code ${res.statusCode}`
+                                    `Apicurio Registry client error: ${output.name}: ${output.message}`
                                 );
-                                return reject(output);
+                                return reject(returnHeaders ? responseWrapper : output);
                             }
-                        } else {
-                                /**
-                                 * Add some retro compatibility data when Apicurio is V2
-                                 */
-                                if (vscode.workspace.getConfiguration('apicurio.api').get('version') == "v2"){
-                                    if (isObject(output) && Array.isArray(output['artifacts'])) {
-                                        for (var i in output['artifacts']) {
-                                            let v2 = {artifactId: output['artifacts'][i].id, artifactType: output['artifacts'][i].type}; // Fix missing fields on v2 API
-                                            output['artifacts'][i] = Object.assign(v2, output['artifacts'][i]);
-                                        }
-                                    }
-                                }
-        // vscode.window.showInformationMessage(`output is ${JSON.stringify(output)}`);
-                            return resolve(output);
                         }
-                    });
-                }
-            );
+                        vscode.window.showErrorMessage(
+                            `Apicurio Registry client error: Unknown: HTTP code ${res.statusCode}`
+                        );
+                        return reject(returnHeaders ? responseWrapper : output);
+                    } else {
+                        /**
+                         * Add some retro compatibility data when Apicurio is V2
+                         */
+                        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == 'v2') {
+                            if (isObject(output) && Array.isArray((output as any)['artifacts'])) {
+                                for (var i in (output as any)['artifacts']) {
+                                    let v2 = { artifactId: (output as any)['artifacts'][i].id, artifactType: (output as any)['artifacts'][i].type }; // Fix missing fields on v2 API
+                                    (output as any)['artifacts'][i] = Object.assign(v2, (output as any)['artifacts'][i]);
+                                }
+                            }
+                        }
+
+                        // Return either the raw body or the wrapper containing headers and request
+                        return resolve(returnHeaders ? responseWrapper : output);
+                    }
+                });
+            });
 
             req.on('error', (e) => {
                 vscode.window.showErrorMessage(`Apicurio Registry client error: ${e.name}: ${e.message}`);
