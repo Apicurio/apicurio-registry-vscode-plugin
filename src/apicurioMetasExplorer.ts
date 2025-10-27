@@ -81,14 +81,28 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     }
                     break;
                 case ElementType.ARTIFACT:
-                case ElementType.BRANCH:
+                    result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
+                    metas = this.queryResultToMetas(result);
+                    // Fetch Group rules for the active group and await the promise
+                    result = await Services.get().getRegistryClient().getArtifactRules(this.ActiveDataObject);
+                    if(result.length !== 0){
+                        let rulesConfigs = [];
+                        for(let i in result){
+                            let rulesResult = await Services.get().getRegistryClient().getArtifactRulesConfig(this.ActiveDataObject, result[i]);
+                            rulesConfigs.push(rulesResult);
+                        }
+                        let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
+                        // @TODO Get rules for all available entities.
+                        metas.push(rules);
+                    break
                 case ElementType.VERSION:
                     // @TODO Get references
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     break;
-
                 default:
+                    result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
+                    metas = this.queryResultToMetas(result);
                     break;
             }
             return metas;
@@ -284,7 +298,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 treeItem.iconPath = new vscode.ThemeIcon('gear');
                 break;
             default:
-                treeItem.iconPath = new vscode.ThemeIcon('symbol-property');
+                treeItem.iconPath = new vscode.ThemeIcon('dash');
         }
         return treeItem;
     }
