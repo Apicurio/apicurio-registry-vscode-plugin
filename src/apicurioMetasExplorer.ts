@@ -319,12 +319,12 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             case 'References':
                 treeItem.iconPath = new vscode.ThemeIcon('references');
                 break;
-            // case 'artifactType':
-            //     treeItem.iconPath = {
-            //         dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', value.toLowerCase() + '.svg'),
-            //         light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', value.toLowerCase() + '.svg'),
-            //     };
-            //     break;
+            case 'artifactType':
+                treeItem.iconPath = {
+                    dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', value.toLowerCase() + '.svg'),
+                    light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', value.toLowerCase() + '.svg')
+                };
+                break;
             default:
                 treeItem.iconPath = new vscode.ThemeIcon('dash');
         }
@@ -335,7 +335,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
 
 export class ApicurioMetasExplorer {
     constructor(context: vscode.ExtensionContext) {
-        const treeDataProvider = new ApicurioMetasExplorerProvider();
+        const treeDataProvider = new ApicurioMetasExplorerProvider(context.extensionUri);
         context.subscriptions.push(
             vscode.window.createTreeView('apicurioMetasExplorer', {
                 treeDataProvider,
