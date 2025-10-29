@@ -32,6 +32,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     private ArtifactList: Promise<Artifact[]>;
     private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
     private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
+    private filterBy: any = null;
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
@@ -74,15 +75,17 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
      * Contextual menu actions
      */
 
+    public filter (){
+        this.filterBy = (this.filterBy==null) ? "type" : null;
+        this.onDidChangeTreeDataEmitter.fire();
+    }
     // Filter artifacts by type.
-    public filter(): any {
-        // // @TODO
-        // // return Promise.resolve(children);
-        // this.ArtifactList.sort((a, b) => {
-        //     return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
-        //     // modifiedOn
-        // });
-        // this.onDidChangeTreeDataEmitter.fire();
+    public filterArtifacts(artifacts): any {
+        artifacts.sort((a, b) => {
+            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
+            // modifiedOn
+        });
+        return artifacts;
     }
     /**
      * Select a artifact from the explorer view
@@ -108,7 +111,10 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         if(!this.ActiveGroup.id){
             return [];
         }
-        const children: Artifact[] = await this.getArtifacts();
+        let children: Artifact[] = await this.getArtifacts();
+        if(this.filterBy){
+            children = this.filterArtifacts(children);
+        }
         return Promise.resolve(children);
     }
 
