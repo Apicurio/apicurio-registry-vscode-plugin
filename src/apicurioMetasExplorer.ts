@@ -71,7 +71,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     metas.push(...this.queryResultToMetas(result));
                     // Fetch Group rules for the active group and await the promise
                     result = await Services.get().getRegistryClient().getGroupRules(element);
-                    if(result.length !== 0){
+                    if(result.length != 0){
                         let rulesConfigs = [];
                         for(let i in result){
                             let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
@@ -93,9 +93,11 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                             let rulesResult = await Services.get().getRegistryClient().getArtifactRulesConfig(this.ActiveDataObject, result[i]);
                             rulesConfigs.push(rulesResult);
                         }
-                        let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
-                        // @TODO Get rules for all available entities.
-                        metas.push(rules);
+                        if(rulesConfigs.length){
+                            let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
+                            // @TODO Get rules for all available entities.
+                            metas.push(rules);
+                        }
                     break
                 case ElementType.VERSION:
                     // @TODO Get references
@@ -108,7 +110,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                         let refs:any[] = [];
                         for(let i in result){
                             refs[i]={};
-                            refs[i][result[i].name]= `${result[i].groupId} / ${result[i].artifactId} / ${result[i].version}`;
+                            refs[i][result[i].name]= result[i];
                         }
                         let references = {'References':refs};
                         metas.push(references);

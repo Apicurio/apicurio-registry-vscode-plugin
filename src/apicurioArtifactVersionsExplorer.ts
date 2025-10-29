@@ -256,6 +256,7 @@ vscode.window.showErrorMessage("DEREFERENCE");
         // Manage tree item
         const treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = artifact.state;
+        // treeItem.tooltip = new vscode.MarkdownString(`**${artifact.version}**`);
         treeItem.command = {
             command: 'apicurioArtifactVersionsExplorer.selectArtifactVersion',
             title: 'Display artifact version',
