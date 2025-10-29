@@ -65,6 +65,10 @@ class RegistryClient {
 
     public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object, returnHeaders?: boolean){
         // @TODO Manage references in query path.
+        if (references){
+            let refParams = {'references':references};
+            options = Object.assign((options)?options:{}, refParams)
+        }
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
                 ...Services.get().getSettings().limits(),
@@ -231,8 +235,11 @@ class RegistryClient {
                 path: `${encodeURI(settings.path.concat(path))}`,
                 method: method ? method : 'GET',
                 headers: headers,
+                // query: {
+                //     key: value
+                // }
             } as any;
-
+// vscode.window.showErrorMessage(JSON.stringify(requestOptions));
             const req = client.request(requestOptions, function (res) {
                 const chunks: any[] = [];
                 res.on('data', function (chunk) {
@@ -274,18 +281,6 @@ class RegistryClient {
                         );
                         return reject(returnHeaders ? responseWrapper : output);
                     } else {
-                        /**
-                         * Add some retro compatibility data when Apicurio is V2
-                         */
-                        if (vscode.workspace.getConfiguration('apicurio.api').get('version') == 'v2') {
-                            if (isObject(output) && Array.isArray((output as any)['artifacts'])) {
-                                for (var i in (output as any)['artifacts']) {
-                                    let v2 = { artifactId: (output as any)['artifacts'][i].id, artifactType: (output as any)['artifacts'][i].type }; // Fix missing fields on v2 API
-                                    (output as any)['artifacts'][i] = Object.assign(v2, (output as any)['artifacts'][i]);
-                                }
-                            }
-                        }
-
                         // Return either the raw body or the wrapper containing headers and request
                         return resolve(returnHeaders ? responseWrapper : output);
                     }

@@ -24,6 +24,7 @@ namespace _ {
  */
 
 export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Meta> {
+    private readonly extensionUri: any;
 
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
@@ -31,7 +32,8 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
     private ActiveElement: ActiveElement = { id: null, type: null };
     private ActiveDataObject: Artifact|ArtifactVersion;
 
-    constructor() {
+    constructor(extensionUri: vscode.Uri) {
+        this.extensionUri = extensionUri;
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
@@ -102,6 +104,15 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     // Fetch References rules for the active artifact Version and await the promise
                     // @TODO Manage the display.
                     result = await Services.get().getRegistryClient().getArtifactrReferences(this.ActiveDataObject);
+                    if(result.length){
+                        let refs:any[] = [];
+                        for(let i in result){
+                            refs[i]={};
+                            refs[i][result[i].name]= `${result[i].groupId} / ${result[i].artifactId} / ${result[i].version}`;
+                        }
+                        let references = {'References':refs};
+                        metas.push(references);
+                    }
                     break;
                 default:
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
@@ -282,8 +293,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 treeItem.description = treeItem.description.substring(0, MAX).trimEnd() + '...';
             }
         }
-        treeItem.tooltip
-         = treeItem.description;
+        treeItem.tooltip = treeItem.description;
 
         // Use a ThemeIcon so the icon displays correctly in the tree view
         switch (label) {
@@ -300,6 +310,21 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             case 'Rules':
                 treeItem.iconPath = new vscode.ThemeIcon('gear');
                 break;
+            case 'version':
+                treeItem.iconPath = new vscode.ThemeIcon('check');
+                break;
+            case 'systemDefined':
+                treeItem.iconPath = new vscode.ThemeIcon('hubot');
+                break;
+            case 'References':
+                treeItem.iconPath = new vscode.ThemeIcon('references');
+                break;
+            // case 'artifactType':
+            //     treeItem.iconPath = {
+            //         dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', value.toLowerCase() + '.svg'),
+            //         light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', value.toLowerCase() + '.svg'),
+            //     };
+            //     break;
             default:
                 treeItem.iconPath = new vscode.ThemeIcon('dash');
         }

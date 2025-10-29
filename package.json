@@ -84,7 +84,7 @@
             {
                 "command": "apicurioArtifactVersionsExplorer.openVersion",
                 "title": "Open",
-                "icon": "$(open-preview)"
+                "icon": "$(file)"
             },
             {
                 "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
