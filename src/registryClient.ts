@@ -74,7 +74,7 @@ class RegistryClient {
                 ...Services.get().getSettings().limits(),
                 ...options,
             })
-        , undefined, undefined, returnHeaders) as Promise<any>;
+        , undefined, undefined, undefined, returnHeaders) as Promise<any>;
         return res;
     }
     public getArtifactComment(artifact:ArtifactVersion, options?: object){
@@ -134,7 +134,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getArtifactrReferences(element: ArtifactVersion, options?: object): Promise<any>{
+    public async getArtifactReferences(element: ArtifactVersion, options?: object): Promise<any>{
         let path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -239,7 +239,7 @@ class RegistryClient {
                 //     key: value
                 // }
             } as any;
-// vscode.window.showErrorMessage(JSON.stringify(requestOptions));
+
             const req = client.request(requestOptions, function (res) {
                 const chunks: any[] = [];
                 res.on('data', function (chunk) {

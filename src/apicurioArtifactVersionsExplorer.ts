@@ -152,13 +152,16 @@ vscode.window.showErrorMessage("DEREFERENCE");
         // Detect file extension and language from response headers or artifact type
         let contentType = responseHeaders['content-type'] || responseHeaders['Content-Type'] || '';
         let extention = '';
-        if (contentType.includes('yaml') || contentType.includes('yml') || artifact.artifactType === 'OPENAPI') {
+        if (contentType.includes('yaml') || contentType.includes('yml')) {
             extention = 'yaml';
         } else if (contentType.includes('json')) {
             extention = 'json';
         } else if (artifact.artifactType) {
             // Fallback based on artifact type
             extention = artifact.artifactType.toLowerCase();
+        } else {
+            // Fallback
+            extention = 'txt';
         }
 
         // Manage document

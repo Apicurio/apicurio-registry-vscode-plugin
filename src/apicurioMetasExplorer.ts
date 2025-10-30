@@ -98,14 +98,14 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                             // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
-                    break
+                    break;
                 case ElementType.VERSION:
                     // @TODO Get references
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     // Fetch References rules for the active artifact Version and await the promise
                     // @TODO Manage the display.
-                    result = await Services.get().getRegistryClient().getArtifactrReferences(this.ActiveDataObject);
+                    result = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject);
                     if(result.length){
                         let refs:any[] = [];
                         for(let i in result){

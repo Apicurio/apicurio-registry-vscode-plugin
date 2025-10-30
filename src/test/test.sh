@@ -47,20 +47,20 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExi
         }
     }'
 
-# # Create Artifact Version.
-# curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions" \
-#   -H "Content-Type: application/json" \
-#   -d '{
-#         "artifactType": "JSON",
-#         "version": "1.0.0",
-#         "content": {
-#             "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\",\"email\"]}",
-#             "contentType": "application/json"
-#         },
-#         "name": "User Schema 1.0.0",
-#         "description": "Initial version of the user schema",
-#         "isDraft": false
-#     }'
+# Create Artifact Version.
+curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "artifactType": "JSON",
+        "version": "1.0.0",
+        "content": {
+            "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\",\"email\"]}",
+            "contentType": "application/json"
+        },
+        "name": "User Schema 1.0.0",
+        "description": "Initial version of the user schema",
+        "isDraft": false
+    }'
 
 
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExists=CREATE_VERSION" \
@@ -89,22 +89,22 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
   -H "Content-Type: application/json" \
   -d '{
     "artifactType": "OPENAPI",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "content": {
         "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.2\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"urn:apicurio:registry:test:demo-user-schema:1\"}}}}}}}}}",
-        "contentType": "application/json"
+        "contentType": "application/json",
+        "references": [
+            {
+            "groupId": "test",
+            "artifactId": "demo-user-schema",
+            "version": "1.0.0",
+            "name": "urn:apicurio:registry:test:demo-user-schema:1"
+            }
+        ]
       },
-      "references": [
-        {
-          "groupId": "test",
-          "artifactId": "demo-user-schema",
-          "version": "1.0.0",
-          "name": "urn:apicurio:registry:test:demo-user-schema:1"
-        }
-      ],
       "name": "User API 1.0.1",
       "description": "Initial OpenAPI specification referencing demo-user-schema",
-      "isDraft": false
+      "isDraft": true
   }'
 
 
