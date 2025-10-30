@@ -261,7 +261,6 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             value = m[key];
             break; // only first key expected
         }
-
         if (!label) {
             return new vscode.TreeItem('?', vscode.TreeItemCollapsibleState.None);
         }

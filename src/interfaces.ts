@@ -42,6 +42,7 @@ interface Artifact {
     createdOn?: string;
     modifiedBy?: string;
     modifiedOn?: string;
+    children?: Artifact[];
 }
 interface BranchList{
     branches: Branch[]

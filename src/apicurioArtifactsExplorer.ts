@@ -80,12 +80,20 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         this.onDidChangeTreeDataEmitter.fire();
     }
     // Filter artifacts by type.
-    public filterArtifacts(artifacts): any {
+    private filterArtifacts(artifacts): any {
         artifacts.sort((a, b) => {
             return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
             // modifiedOn
         });
-        return artifacts;
+        let grouped = Object.values(
+            artifacts.reduce((acc, item) => {
+                const key = item.artifactType;
+                if (!acc[key]) acc[key] = {'name':key, 'children':[]};
+                acc[key]['children'].push(item); // keep full object
+                return acc;
+            }, {})
+        );
+        return grouped;
     }
     /**
      * Select a artifact from the explorer view
@@ -106,7 +114,11 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
      */
     
     // Get all tree Datas
-    async getChildren(): Promise<Artifact[]> {
+    async getChildren(element?:Artifact): Promise<Artifact[]> {
+        // If filtered child element.
+        if (element){
+            return element.children;
+        }
         // @TODO: Manage empty registry case. (Using the "default" group).
         if(!this.ActiveGroup.id){
             return [];
@@ -120,7 +132,11 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
 
     // Get each tree items.
     getTreeItem(artifact: Artifact): vscode.TreeItem {
-        // Manage display of group in the tree view.
+        // IF filtered view, return filter
+        if (artifact.artifactType == undefined) {
+            return new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+        }
+        // Manage display of artifacts in the tree view.
         const displayName = _.tools.displayName();
         const name = (!displayName || !artifact.name) ? artifact.artifactId : artifact.name;
         const tooltip = (!displayName && artifact.name) ? artifact.name : artifact.artifactId;

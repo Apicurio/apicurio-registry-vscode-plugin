@@ -247,6 +247,7 @@ vscode.window.showErrorMessage("DEREFERENCE");
             return [];
         }
         const children: ArtifactVersion[] = await this.getArtifactsVersions();
+// vscode.window.showErrorMessage(`version: ${JSON.stringify(children)}`);
         return Promise.resolve(children);
     }
 
