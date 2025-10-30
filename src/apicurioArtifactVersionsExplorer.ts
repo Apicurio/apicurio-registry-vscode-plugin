@@ -132,8 +132,6 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
      * Open an artifact Version
      */
     public openVersionReferences(artifact:ArtifactVersion){
-vscode.window.showErrorMessage("DEREFERENCE");
-// @TODO Manage references in query path.
         this.openVersion(artifact, ReferencesQueryParam.DEREFERENCE);
     }
 

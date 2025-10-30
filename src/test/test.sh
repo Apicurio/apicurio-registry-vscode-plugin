@@ -89,7 +89,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
   -H "Content-Type: application/json" \
   -d '{
     "artifactType": "OPENAPI",
-      "version": "1.0.5",
+      "version": "1.0.6",
       "content": {
         "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.2\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"urn:apicurio:registry:test:demo-user-schema:1\"}}}}}}}}}",
         "contentType": "application/json",
