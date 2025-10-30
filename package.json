@@ -82,6 +82,11 @@
                 "icon": "$(filter)"
             },
             {
+                "command": "apicurioArtifactVersionsExplorer.filter",
+                "title": "Filter",
+                "icon": "$(filter)"
+            },
+            {
                 "command": "apicurioArtifactVersionsExplorer.openVersion",
                 "title": "Open",
                 "icon": "$(file)"
@@ -125,6 +130,11 @@
                     "group": "navigation"
                 },
                 {
+                    "command": "apicurioArtifactVersionsExplorer.filter",
+                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "group": "navigation"
+                },
+                {
                     "command": "apicurioMetasExplorer.displayMetasValue",
                     "when": "view == apicurioMetasExplorer",
                     "group": "navigation"
@@ -133,17 +143,17 @@
             "view/item/context": [
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersion",
-                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "inline"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
-                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "inline"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openComments",
-                    "when": "view == apicurioArtifactVersionsExplorer",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "inline"
                 }
             ]

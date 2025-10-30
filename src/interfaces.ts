@@ -76,6 +76,7 @@ interface ArtifactVersion {
     createdOn?: string;
     modifiedBy?: string;
     modifiedOn?: string;
+    children?: ArtifactVersion[];
 }
 
 interface SearchEntry {
