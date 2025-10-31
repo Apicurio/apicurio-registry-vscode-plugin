@@ -89,17 +89,17 @@
             {
                 "command": "apicurioArtifactVersionsExplorer.openVersion",
                 "title": "Open",
-                "icon": "$(file)"
+                "icon": "$(go-to-file)"
             },
             {
                 "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
-                "title": "Open with references",
-                "icon": "$(go-to-file)"
+                "title": "Open & replace references",
+                "icon": "$(find-replace)"
             },
             {
                 "command": "apicurioArtifactVersionsExplorer.openComments",
                 "title": "Open Comments",
-                "icon": "$(comment)"
+                "icon": "$(comment-discussion)"
             },
             {
                 "command": "apicurioMetasExplorer.displayMetasValue",

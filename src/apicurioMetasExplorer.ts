@@ -320,6 +320,10 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             case 'References':
                 treeItem.iconPath = new vscode.ThemeIcon('references');
                 break;
+            case 'modifiedOn':
+            case 'createdOn':
+                treeItem.iconPath = new vscode.ThemeIcon('clock');
+                break;
             case 'artifactType':
                 treeItem.iconPath = {
                     dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', value.toLowerCase() + '.svg'),
