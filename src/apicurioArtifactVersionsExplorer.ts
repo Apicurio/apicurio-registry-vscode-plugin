@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, ActiveElement, ElementType, ArtifactVersionsList, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
+import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
 import { ApicurioTools } from './tools';
 import { Services } from './services';
 import { version } from 'os';
@@ -152,6 +152,8 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         let extention = '';
         if (contentType.includes('yaml') || contentType.includes('yml')) {
             extention = 'yaml';
+        } else if (contentType.includes('avro') || artifact.artifactType === ArtifactType.AVRO) {
+            extention = 'avsc';
         } else if (contentType.includes('json')) {
             extention = 'json';
         } else if (artifact.artifactType) {

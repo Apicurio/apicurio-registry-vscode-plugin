@@ -134,7 +134,12 @@ enum ArtifactType {
     AVRO = "AVRO",
     PROTOBUF = "PROTOBUF",
     GRAPHQL = "GRAPHQL",
-    OPENAPI = "OPENAPI"
+    OPENAPI = "OPENAPI",
+    JSONSchema = "JSON",
+    KafkaConnect = "KCONNECT",
+    AsyncAPI = "ASYNCAPI",
+    WebServicesDescriptionLanguage = "WSDL",
+    XMLSchema = "XSD"
 }
 enum ReferencesQueryParam{
     PRESERVE = "PRESERVE",
@@ -142,4 +147,4 @@ enum ReferencesQueryParam{
     REWRITE = "REWRITE"
 }
 
-export { ActiveElement, ElementType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, ReferencesQueryParam, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };
+export { ActiveElement, ElementType, ArtifactType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, ReferencesQueryParam, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };

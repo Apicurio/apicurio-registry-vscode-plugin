@@ -89,16 +89,16 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
   -H "Content-Type: application/json" \
   -d '{
     "artifactType": "OPENAPI",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "content": {
-        "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.2\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"urn:apicurio:registry:test:demo-user-schema:1\"}}}}}}}}}",
+        "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.2\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"user\"}}}}}}}}}",
         "contentType": "application/json",
         "references": [
             {
             "groupId": "test",
             "artifactId": "demo-user-schema",
             "version": "1.0.0",
-            "name": "urn:apicurio:registry:test:demo-user-schema:1"
+            "name": "user"
             }
         ]
       },
@@ -141,3 +141,7 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
 		}
 	}
 }'
+
+
+
+curl -s "http://localhost:8080/apis/registry/v3/groups/json-demo/artifacts/profile/versions/1.0.0" | jq .
