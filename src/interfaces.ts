@@ -1,5 +1,3 @@
-import { TreeItem } from "vscode";
-
 interface ActiveElement {
     id: string;
     type: ElementType;
@@ -13,6 +11,7 @@ interface Group {
     name?: string;
     description?: string;
     owner?: string;
+    labels?: string[];
     createdOn?: string;
     createdBy?: string;
     modifiedOn?: string;
@@ -147,4 +146,25 @@ enum ReferencesQueryParam{
     REWRITE = "REWRITE"
 }
 
-export { ActiveElement, ElementType, ArtifactType, Group, GroupList, ArtifactList, Artifact, BranchList, Branch, ArtifactVersion, ArtifactVersionsList, MetaList, Meta, ReferencesQueryParam, SearchEntry, ArtifactVersionEntry, ArtifactVersionCommentsEntry, MetaEntry, CurrentArtifact, Search };
+export { 
+    ActiveElement,
+    ElementType,
+    ArtifactType,
+    Group,
+    GroupList,
+    ArtifactList,
+    Artifact,
+    BranchList,
+    Branch,
+    ArtifactVersion,
+    ArtifactVersionsList,
+    MetaList,
+    Meta,
+    ReferencesQueryParam,
+    SearchEntry,
+    ArtifactVersionEntry,
+    ArtifactVersionCommentsEntry,
+    MetaEntry,
+    CurrentArtifact,
+    Search
+};

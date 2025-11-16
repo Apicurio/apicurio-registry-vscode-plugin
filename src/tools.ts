@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
 import * as https from 'https';
-import { CurrentArtifact } from './interfaces';
+import { CurrentArtifact, Group } from './interfaces';
 import { isObject } from './utils';
 
 export class ApicurioTools {
@@ -23,6 +23,10 @@ export class ApicurioTools {
                 break;
         }
         return defaultValue;
+    }
+
+    public getDefaultGroup(){
+        return { groupId: this.getDefault('group'), description: 'Default group, system generated.' } as Group;
     }
     /**
      * End of Manage Apicurio default values.

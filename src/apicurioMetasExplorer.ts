@@ -67,19 +67,25 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             // Fetch metas for the active element and await the promise
             switch (this.ActiveElement.type) {
                 case ElementType.GROUP:
-                    result = await Services.get().getRegistryClient().getMetas(element);
-                    metas.push(...this.queryResultToMetas(result));
-                    // Fetch Group rules for the active group and await the promise
-                    result = await Services.get().getRegistryClient().getGroupRules(element);
-                    if(result.length != 0){
-                        let rulesConfigs = [];
-                        for(let i in result){
-                            let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
-                            rulesConfigs.push(rulesResult);
+                    // Manage exception for default Group metas fetching
+                    if(element.id === _.tools.getDefaultGroup().groupId){
+                        metas = [{'groupId': _.tools.getDefaultGroup().groupId}, {'description': _.tools.getDefaultGroup().description}];
+                    }
+                    else {
+                        result = await Services.get().getRegistryClient().getMetas(element);
+                        metas.push(...this.queryResultToMetas(result));
+                        // Fetch Group rules for the active group and await the promise
+                        result = await Services.get().getRegistryClient().getGroupRules(element);
+                        if(result.length != 0){
+                            let rulesConfigs = [];
+                            for(let i in result){
+                                let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
+                                rulesConfigs.push(rulesResult);
+                            }
+                            let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
+                            // @TODO Get rules for all available entities.
+                            metas.push(rules);
                         }
-                        let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
-                        // @TODO Get rules for all available entities.
-                        metas.push(rules);
                     }
                     break;
                 case ElementType.ARTIFACT:

@@ -69,6 +69,10 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
         }
         let result = Services.get().getRegistryClient().getGroups();
         let groups: Promise<Group[]> = result.then(res => res.groups);
+        groups = groups.then(res => {
+            const defaultGroup: Group = _.tools.getDefaultGroup();
+            return [defaultGroup, ...res];
+        });
         this.GroupList = groups; // Cache result to avoid future requests.
         return groups;
     }
@@ -97,6 +101,35 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     /**
      * End of Contextual menu actions
      */
+
+    /**
+     * Groups editions
+     */
+    
+    // Create a new group   
+    public async createGroup(): Promise<void> {
+        const groupId = await vscode.window.showInputBox({ prompt: 'Enter the ID of the new group:' });
+        if (groupId) {
+            const description = await vscode.window.showInputBox({ prompt: 'Enter a description for the new group (optional):' });
+            try {
+                await Services.get().getRegistryClient().createGroup({ groupId: groupId, description: description} as Group);
+                vscode.window.showInformationMessage(`Group '${groupId}' created successfully.`);
+                this.refresh();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to create group '${groupId}': ${error.message}`);
+            }
+        } else {
+            vscode.window.showWarningMessage('Group creation cancelled or no ID provided.');
+        }
+    }
+
+    // NOTE : Edition must be managed over the meta edition view. ( Not implemented Yet. )
+    // NOTE : Deletion must be managed over the registry web interface.
+
+    /**
+     * End of Groups editions
+     */
+
     
     // Get all tree Datas
     async getChildren(group?: Group): Promise<Group[]> {
@@ -136,5 +169,6 @@ export class ApicurioExplorer {
         // Register commands
         vscode.commands.registerCommand('apicurioExplorer.refresh', () => treeDataProvider.refresh());
         vscode.commands.registerCommand('apicurioExplorer.selectGroup', (group: Group) => treeDataProvider.selectGroup(group));
+        vscode.commands.registerCommand('apicurioExplorer.createGroup', () => treeDataProvider.createGroup());
     }
 }

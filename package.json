@@ -77,6 +77,11 @@
                 "icon": "$(refresh)"
             },
             {
+                "command": "apicurioExplorer.createGroup",
+                "title": "Create Group",
+                "icon": "$(add)"
+            },
+            {
                 "command": "apicurioArtifactsExplorer.filter",
                 "title": "Filter",
                 "icon": "$(filter)"
@@ -123,6 +128,11 @@
                     "command": "apicurioExplorer.refresh",
                     "when": "view == apicurioExplorer",
                     "group": "navigation"
+                },
+                {
+                    "command": "apicurioExplorer.createGroup",
+                    "when": "view == apicurioExplorer",
+                    "group": "sidebar"
                 },
                 {
                     "command": "apicurioArtifactsExplorer.filter",

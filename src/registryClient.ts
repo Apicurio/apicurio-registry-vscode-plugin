@@ -35,6 +35,10 @@ interface ArtifactSearchResult {
 const DEFAULT_GROUP_ID = 'default';
 
 class RegistryClient {
+    /**
+     * GET ACTIONS
+     */
+
     public getArtifacts(group: ActiveElement, options?: object): Promise<ArtifactList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts`, {
@@ -62,7 +66,6 @@ class RegistryClient {
         ) as Promise<ArtifactVersionsList>;
         return res;
     }
-
     public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object, returnHeaders?: boolean){
         // @TODO Manage references in query path.
         if (references){
@@ -185,6 +188,29 @@ class RegistryClient {
         return res;
     }
 
+    /**
+     * END of GET ACTIONS
+     */
+
+
+    /**
+     * EDIT ACTIONS
+     */
+    public async createGroup(group: Group): Promise<Group>{
+        let body = group;
+        const res = this.executeRequest(
+            this.requestPath(`groups`, {
+                ...Services.get().getSettings().limits()
+            }),
+            'POST',
+            undefined,
+            body
+        ) as Promise<Group>;
+        return res;
+    }
+    /**
+     * END of EDIT ACTIONS
+     */
     private fixDefaultGroup(result: ArtifactSearchResult) {
         for (const i in result.artifacts) {
             if (!result.artifacts[i].groupId) {
