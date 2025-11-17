@@ -6,6 +6,11 @@ import { isObject } from './utils';
 import { isArray } from 'util';
 import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
 import path from 'path';
+import { ApicurioTools } from './tools';
+
+namespace _ {
+    export const tools = new ApicurioTools();
+}
 
 interface SearchedArtifact {
     groupId: string | undefined;
@@ -24,15 +29,6 @@ interface ArtifactSearchResult {
     artifacts: [SearchedArtifact];
     count: number;
 }
-
-// interface ApicurioError {
-//     message: string,
-//     error_code: number,
-//     detail: string,
-//     name: string
-// }
-
-const DEFAULT_GROUP_ID = 'default';
 
 class RegistryClient {
     /**
@@ -214,7 +210,7 @@ class RegistryClient {
     private fixDefaultGroup(result: ArtifactSearchResult) {
         for (const i in result.artifacts) {
             if (!result.artifacts[i].groupId) {
-                result.artifacts[i].groupId = DEFAULT_GROUP_ID;
+                result.artifacts[i].groupId = _.tools.getDefaultGroup().groupId;
             }
         }
         return result;
@@ -297,13 +293,13 @@ class RegistryClient {
                         if (output != null && typeof output !== 'string') {
                             if ('name' in output && 'message' in output) {
                                 vscode.window.showErrorMessage(
-                                    `Apicurio Registry client error: ${output.name}: ${output.message}`
+                                    `Apicurio Registry client error: ${output.name}: ${output.message} on path ${path}`
                                 );
                                 return reject(returnHeaders ? responseWrapper : output);
                             }
                         }
                         vscode.window.showErrorMessage(
-                            `Apicurio Registry client error: Unknown: HTTP code ${res.statusCode}`
+                            `Apicurio Registry client error: Unknown: HTTP code ${res.statusCode} on path ${path}`
                         );
                         return reject(returnHeaders ? responseWrapper : output);
                     } else {
@@ -314,7 +310,7 @@ class RegistryClient {
             });
 
             req.on('error', (e) => {
-                vscode.window.showErrorMessage(`Apicurio Registry client error: ${e.name}: ${e.message}`);
+                vscode.window.showErrorMessage(`Apicurio Registry client error: ${e.name}: ${e.message} on path ${path}`);
                 return reject(e);
             });
 

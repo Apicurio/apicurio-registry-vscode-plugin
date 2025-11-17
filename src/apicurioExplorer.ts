@@ -20,8 +20,7 @@ namespace _ {
  *  - Display Group Branches and artifacts in the apropriate view
  *  - Contextual menu on group
  *  - Display group metas and configs in apropriate view
- * 
- * - @TODO : Manage default group (if no exist, artifact in fefault are not accessible...)
+ *  - Create new group
  * 
  */
 

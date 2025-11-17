@@ -105,8 +105,8 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         // @TODO display artifacts metas
         vscode.commands.executeCommand('apicurioBranchesExplorer.selectArtifact', artifact);
         vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', artifact);
-        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, artifact);
-        this.refresh();
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, artifact); 
+        // this.refresh(); // No need of refreshing curent artifacts view.
     }
 
     /**
@@ -135,6 +135,10 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         // IF filtered view, return filter
         if (artifact.artifactType == undefined) {
             return new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+        }
+        // Manage default Group as not in artifact property when default.
+        if (!artifact.groupId) {
+            artifact.groupId = _.tools.getDefaultGroup().groupId;
         }
         // Manage display of artifacts in the tree view.
         const displayName = _.tools.displayName();
