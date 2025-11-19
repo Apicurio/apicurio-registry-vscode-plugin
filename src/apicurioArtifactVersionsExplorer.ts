@@ -228,7 +228,14 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
                 return workspaces[0];
             }
             if (lastOpenFilePath !== undefined && workspaces.length > 1) {
-                return workspaces.filter((fsPath) => lastOpenFilePath.startsWith(fsPath))[0];
+                const filtered = workspaces.filter((fsPath) => lastOpenFilePath.startsWith(fsPath));
+                if (filtered.length > 0) {
+                    return filtered[0];
+                }
+            }
+            // Fallback to the first workspace if we can't determine the correct one
+            if (workspaces.length > 0) {
+                return workspaces[0];
             }
         }
         return undefined;

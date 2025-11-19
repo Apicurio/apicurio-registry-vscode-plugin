@@ -178,31 +178,34 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
      */
     public displayMetasValue() {
         this.getMetas(this.ActiveElement).then(metas => {
-            let value: string = '';
+            let value: string = '\n| Meta      | Value |\n| ----------- | ----------- |';
+            let values: string[] = [];
             for (const meta of metas) {
                 const key = Object.keys(meta)[0];
                 const val = (meta as any)[key];
-
+                let i = 0;
                 // If the value is an array, iterate children (each child is a { key: value } Meta)
                 if (Array.isArray(val)) {
-                    value += `\n## ${key}\n`;
+                    values[i] = `\n## ${key}\n| Meta      | Value |\n| ----------- | ----------- |`;
                     for (const child of val) {
                         const childKey = Object.keys(child)[0];
-                        value += `\n### ${childKey}\n\n${child[childKey]}\n`;
+                        values[i] += `\n| ${childKey} | ${child[childKey]} |`;
                     }
                 } else if (val && typeof val === 'object') {
                     // If it's an object (map), list its properties
-                    value += `\n## ${key}\n`;
+                    values[i] = `\n## ${key}\n| Meta      | Value |\n| ----------- | ----------- |`;
                     for (const prop of Object.keys(val)) {
-                        value += `\n### ${prop}\n\n${val[prop]}\n`;
+                        values[i] += `\n| ${prop} | ${val[prop]} |`;
                     }
                 } else {
                     // Primitive value
-                    value += `\n## ${key}\n\n${val}\n`;
+                    value += `\n| ${key} | ${val} |`;
                 }
+                i++;
             }
+            value += `\n${values.join("")}`;
             vscode.workspace.openTextDocument({
-                content: `# ${this.ActiveElement.type}: ${this.ActiveElement.id}\n\n${value}`,
+                content: `# ${this.ActiveElement.type}: ${this.ActiveElement.id}\n${value}\n`,
                 language: 'markdown'
             }).then(doc => {
                 vscode.window.showTextDocument(doc, { preview: false });
