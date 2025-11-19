@@ -38,7 +38,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
     private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
     private ActiveBranch: ActiveElement = { id: _.tools.getDefault('branch'), type: ElementType.BRANCH };
-    private filterBy:any = null;
+    private filterBy: any = null;
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
@@ -53,16 +53,16 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
 
     // Refresh the view
     public refresh(group?: ActiveElement, artifact?: ActiveElement, branch?: ActiveElement): any {
-        if(group){
+        if (group) {
             this.ActiveGroup.id = group.id;
         }
-        if(artifact){
+        if (artifact) {
             this.ActiveArtifact.id = artifact.id;
         }
-        if(branch){
+        if (branch) {
             this.ActiveBranch.id = (branch.id) ? branch.id : _.tools.getDefault('branch');
         }
-        else if (!this.ActiveBranch.id){
+        else if (!this.ActiveBranch.id) {
             this.ActiveBranch.id = _.tools.getDefault('branch');
         }
         this.onDidChangeTreeDataEmitter.fire();
@@ -86,8 +86,8 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     /**
      * Filter artifactsVersions
      */
-    public filter (){
-        this.filterBy = (this.filterBy==null) ? "type" : null;
+    public filter() {
+        this.filterBy = (this.filterBy == null) ? "type" : null;
         this.onDidChangeTreeDataEmitter.fire();
     }
     // Filter artifacts by type.
@@ -99,7 +99,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         let grouped = Object.values(
             artifacts.reduce((acc, item) => {
                 const key = item.state;
-                if (!acc[key]) acc[key] = {'name':key, 'children':[]};
+                if (!acc[key]) acc[key] = { 'name': key, 'children': [] };
                 acc[key]['children'].push(item); // keep full object
                 return acc;
             }, {})
@@ -111,11 +111,11 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
      * Select a artifactVersions from the explorer view
      * @param artifact The selected group
      */
-    public selectArtifact(artifact: Artifact, branch?:Branch): void {
+    public selectArtifact(artifact: Artifact, branch?: Branch): void {
         this.ActiveArtifact.id = artifact.artifactId;
         this.ActiveGroup.id = artifact.groupId;
         this.ActiveBranch.id = _.tools.getDefault('brach');
-        if(branch){
+        if (branch) {
             this.ActiveBranch.id = branch.branchId;
         }
         this.refresh();
@@ -125,19 +125,24 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         // As api do not return full Barnch object, complement it here
         artifactVersion.artifactId = this.ActiveArtifact.id;
         artifactVersion.groupId = this.ActiveGroup.id;
-        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:artifactVersion.artifactId, type:ElementType.VERSION} as ActiveElement, artifactVersion);
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', { id: artifactVersion.artifactId, type: ElementType.VERSION } as ActiveElement, artifactVersion);
     }
 
     /**
      * Open an artifact Version
      */
-    public openVersionReferences(artifact:ArtifactVersion){
+    public openVersionReferences(artifact: ArtifactVersion) {
         this.openVersion(artifact, ReferencesQueryParam.DEREFERENCE);
     }
 
-    public async openVersion(artifact:ArtifactVersion, references?:ReferencesQueryParam): Promise<void> {
+    public async openVersion(artifact: ArtifactVersion, references?: ReferencesQueryParam): Promise<void> {
         // Request the content and include response headers for accurate detection
         // @TODO test all artifacts types in the registry.
+        // Manage default group issue.
+        // If groupId undefined, add default group.
+        if (!artifact.groupId) {
+            artifact.groupId = _.tools.getDefault('group');
+        }
         const result = await Services.get().getRegistryClient().getArtifactContent(artifact, references, undefined, true);
 
         let artifactContent: any = result;
@@ -198,13 +203,13 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             // Format document if enabled
             if (_.tools.getFormat()) {
                 // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
-                setTimeout(() => {vscode.commands.executeCommand('editor.action.formatDocument');}, 500);
+                setTimeout(() => { vscode.commands.executeCommand('editor.action.formatDocument'); }, 500);
             }
             // Preview if available
             if (_.tools.getPreview() && vscode.extensions.getExtension('Arjun.swagger-viewer')) {
                 if (artifact.artifactType == 'OPENAPI') {
                     // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
-                    setTimeout(() => {vscode.commands.executeCommand('swagger.preview');}, 500);
+                    setTimeout(() => { vscode.commands.executeCommand('swagger.preview'); }, 500);
                 }
             }
         } catch (error) {
@@ -232,11 +237,11 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     /**
      * Manage comments
      */
-    public openComments(artifact:ArtifactVersion){
+    public openComments(artifact: ArtifactVersion) {
         // Ensure we await the comments promise before trying to display them
         this.getComments(artifact).then((comments) => this.displayComment(artifact, comments));
     }
-    public getComments(artifact:ArtifactVersion): Promise<any[]>{
+    public getComments(artifact: ArtifactVersion): Promise<any[]> {
         // getArtifactComment returns a Promise; return it directly and log the resolved value
         const commentsPromise = Services.get().getRegistryClient().getArtifactComment(artifact);
         return commentsPromise.then(res => res);
@@ -248,17 +253,17 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         //  *  Could be used to edit the comment in the future ?
         //  */
         let content = [];
-        if(comments.length){
+        if (comments.length) {
             for (let i in comments) {
                 content.push(`<h2>${comments[i].commentId}</h2><p>${comments[i].value.replace('\n', '<br>')}</p><p><i>by ${comments[i].owner} on ${comments[i].createdOn}</i></p>`)
             }
         }
-        else{
+        else {
             content = ["<p>No comments.</p>"];
         }
         vscode.window.createWebviewPanel(
             'apicurioArtifactVersionsExplorer.displayComment',
-            'Display Comment', 
+            'Display Comment',
             vscode.ViewColumn.One,
             { enableScripts: true }
         ).webview.html = `<html><body><h1>Comments for ${artifact.groupId} > ${artifact.artifactId} > ${artifact.version}</h1>${content.toString()}</body></html>`;
@@ -267,22 +272,22 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     /**
      * End of Contextual menu actions
      */
-    
+
     // Get all tree Datas
-    async getChildren(element?:ArtifactVersion): Promise<ArtifactVersion[]> {
+    async getChildren(element?: ArtifactVersion): Promise<ArtifactVersion[]> {
         // If filtered child element.
-        if (element){
+        if (element) {
             return element.children;
         }
         // @Todo: Manage empty registry case. (Using the "default" group).
-        if(!this.ActiveGroup.id){
+        if (!this.ActiveGroup.id) {
             return [];
         }
         let children: ArtifactVersion[] = await this.getArtifactsVersions();
-        if(this.filterBy){
+        if (this.filterBy) {
             children = this.filterArtifacts(children);
         }
-// vscode.window.showErrorMessage(`version: ${JSON.stringify(children)}`);
+        // vscode.window.showErrorMessage(`version: ${JSON.stringify(children)}`);
         return Promise.resolve(children);
     }
 
@@ -296,7 +301,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         }
         // Manage display of group in the tree view.
         // Manage tree item
-        let  treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
+        let treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = artifact.state;
         // treeItem.tooltip = new vscode.MarkdownString(`**${artifact.version}**`);
         treeItem.command = {
