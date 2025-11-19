@@ -45,7 +45,7 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
 
     // Refresh the view
     public refresh(group?: ActiveElement): any {
-        if(group){
+        if (group) {
             this.ActiveGroup.id = group.id;
         }
         // vscode.window.showInformationMessage(`Refresh ${JSON.stringify(this.ActiveGroup)}`);
@@ -56,8 +56,8 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
 
     // Get Artifacts
     private getBranches(): Promise<Branch[]> {
-        let result = Services.get().getRegistryClient().getBranches(this.ActiveGroup, this.ActiveArtifact);
-        let branches: Promise<Branch[]> = result.then(res => res.branches);
+        const result = Services.get().getRegistryClient().getBranches(this.ActiveGroup, this.ActiveArtifact);
+        const branches: Promise<Branch[]> = result.then(res => res.branches);
         return branches;
     }
 
@@ -87,18 +87,18 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
         // As api do not return full Barnch object, compement it here
         branch.artifactId = this.ActiveArtifact.id;
         branch.groupId = this.ActiveGroup.id;
-        vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', {groupId:this.ActiveGroup.id, artifactId:this.ActiveArtifact.id} as Artifact, branch);
-        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', {id:branch.branchId, type:ElementType.BRANCH} as ActiveElement, branch);
+        vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', { groupId: this.ActiveGroup.id, artifactId: this.ActiveArtifact.id } as Artifact, branch);
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', { id: branch.branchId, type: ElementType.BRANCH } as ActiveElement, branch);
     }
 
     /**
      * End of Contextual menu actions
      */
-    
+
     // Get all tree Datas
     async getChildren(): Promise<Branch[]> {
         // @Todo: Manage empty registry case. (Using the "default" group).
-        if(!this.ActiveGroup.id){
+        if (!this.ActiveGroup.id) {
             return [];
         }
         const children: Branch[] = await this.getBranches();

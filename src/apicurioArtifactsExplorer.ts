@@ -47,7 +47,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
 
     // Refresh the view
     public refresh(group?: ActiveElement): any {
-        if(group){
+        if (group) {
             this.ActiveGroup.id = group.id;
         }
         // Clear children and refresh view
@@ -59,11 +59,11 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     // Get Artifacts
     private getArtifacts(): Promise<Artifact[]> {
         // Avoid API request if we already have the groups.
-        if (this.ArtifactList){
+        if (this.ArtifactList) {
             return this.ArtifactList.then(res => res);
         }
-        let result = Services.get().getRegistryClient().getArtifacts(this.ActiveGroup);
-        let artifacts: Promise<Artifact[]> = result.then(res => res.artifacts);
+        const result = Services.get().getRegistryClient().getArtifacts(this.ActiveGroup);
+        const artifacts: Promise<Artifact[]> = result.then(res => res.artifacts);
         return artifacts;
     }
 
@@ -75,20 +75,20 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
      * Contextual menu actions
      */
 
-    public filter (){
-        this.filterBy = (this.filterBy==null) ? "type" : null;
+    public filter() {
+        this.filterBy = (this.filterBy == null) ? "type" : null;
         this.onDidChangeTreeDataEmitter.fire();
     }
     // Filter artifacts by type.
     private filterArtifacts(artifacts): any {
         artifacts.sort((a, b) => {
-            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
+            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId);
             // modifiedOn
         });
-        let grouped = Object.values(
+        const grouped = Object.values(
             artifacts.reduce((acc, item) => {
                 const key = item.artifactType;
-                if (!acc[key]) acc[key] = {'name':key, 'children':[]};
+                if (!acc[key]) acc[key] = { 'name': key, 'children': [] };
                 acc[key]['children'].push(item); // keep full object
                 return acc;
             }, {})
@@ -105,26 +105,26 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         // @TODO display artifacts metas
         vscode.commands.executeCommand('apicurioBranchesExplorer.selectArtifact', artifact);
         vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.selectArtifact', artifact);
-        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, artifact); 
+        vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveArtifact, artifact);
         // this.refresh(); // No need of refreshing curent artifacts view.
     }
 
     /**
      * End of Contextual menu actions
      */
-    
+
     // Get all tree Datas
-    async getChildren(element?:Artifact): Promise<Artifact[]> {
+    async getChildren(element?: Artifact): Promise<Artifact[]> {
         // If filtered child element.
-        if (element){
+        if (element) {
             return element.children;
         }
         // @TODO: Manage empty registry case. (Using the "default" group).
-        if(!this.ActiveGroup.id){
+        if (!this.ActiveGroup.id) {
             return [];
         }
         let children: Artifact[] = await this.getArtifacts();
-        if(this.filterBy){
+        if (this.filterBy) {
             children = this.filterArtifacts(children);
         }
         return Promise.resolve(children);

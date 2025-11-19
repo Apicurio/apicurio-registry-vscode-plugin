@@ -47,15 +47,15 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     // Refresh the view
     public refresh(keepCache?: boolean): any {
         // Clear cached groups to force re-fetching from the server.
-        if(!keepCache){
+        if (!keepCache) {
             this.GroupList = null;
             // Clear children and refresh view
             vscode.commands.executeCommand('apicurioArtifactsExplorer.refresh', this.ActiveGroup);
             vscode.commands.executeCommand('apicurioBranchesExplorer.refresh', this.ActiveGroup, true);
-            vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.refresh', {groupId:null}, null);
+            vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.refresh', { groupId: null }, null);
         }
-        vscode.commands.executeCommand('apicurioBranchesExplorer.refresh', {id:null, type:null} as ActiveElement, true);
-        vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.refresh', {groupId:null}, null);
+        vscode.commands.executeCommand('apicurioBranchesExplorer.refresh', { id: null, type: null } as ActiveElement, true);
+        vscode.commands.executeCommand('apicurioArtifactVersionsExplorer.refresh', { groupId: null }, null);
         vscode.commands.executeCommand('apicurioMetasExplorer.refresh', this.ActiveGroup, true);
         this.onDidChangeTreeDataEmitter.fire();
     }
@@ -63,10 +63,10 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     // Get Groups
     private getGroups(): Promise<Group[]> {
         // Avoid API request if we already have the groups.
-        if (this.GroupList){
+        if (this.GroupList) {
             return this.GroupList.then(res => res);
         }
-        let result = Services.get().getRegistryClient().getGroups();
+        const result = Services.get().getRegistryClient().getGroups();
         let groups: Promise<Group[]> = result.then(res => res.groups);
         groups = groups.then(res => {
             const defaultGroup: Group = _.tools.getDefaultGroup();
@@ -104,14 +104,14 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     /**
      * Groups editions
      */
-    
+
     // Create a new group   
     public async createGroup(): Promise<void> {
         const groupId = await vscode.window.showInputBox({ prompt: 'Enter the ID of the new group:' });
         if (groupId) {
             const description = await vscode.window.showInputBox({ prompt: 'Enter a description for the new group (optional):' });
             try {
-                await Services.get().getRegistryClient().createGroup({ groupId: groupId, description: description} as Group);
+                await Services.get().getRegistryClient().createGroup({ groupId: groupId, description: description } as Group);
                 vscode.window.showInformationMessage(`Group '${groupId}' created successfully.`);
                 this.refresh();
             } catch (error) {
@@ -129,7 +129,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
      * End of Groups editions
      */
 
-    
+
     // Get all tree Datas
     async getChildren(group?: Group): Promise<Group[]> {
         const children = await this.getGroups();

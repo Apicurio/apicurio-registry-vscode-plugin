@@ -70,8 +70,8 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
 
     // Get ArtifactVersions
     private getArtifactsVersions(): Promise<ArtifactVersion[]> {
-        let result = Services.get().getRegistryClient().getArtifacttVersions(this.ActiveGroup, this.ActiveArtifact, this.ActiveBranch);
-        let artifacts: Promise<ArtifactVersion[]> = result.then(res => res.versions);
+        const result = Services.get().getRegistryClient().getArtifacttVersions(this.ActiveGroup, this.ActiveArtifact, this.ActiveBranch);
+        const artifacts: Promise<ArtifactVersion[]> = result.then(res => res.versions);
         return artifacts;
     }
 
@@ -93,10 +93,10 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     // Filter artifacts by type.
     private filterArtifacts(artifacts): any {
         artifacts.sort((a, b) => {
-            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId)
+            return a.artifactType.localeCompare(b.artifactType) || a.artifactId.localeCompare(b.artifactId);
             // modifiedOn
         });
-        let grouped = Object.values(
+        const grouped = Object.values(
             artifacts.reduce((acc, item) => {
                 const key = item.state;
                 if (!acc[key]) acc[key] = { 'name': key, 'children': [] };
@@ -153,7 +153,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         }
 
         // Detect file extension and language from response headers or artifact type
-        let contentType = responseHeaders['content-type'] || responseHeaders['Content-Type'] || '';
+        const contentType = responseHeaders['content-type'] || responseHeaders['Content-Type'] || '';
         let extention = '';
         if (contentType.includes('yaml') || contentType.includes('yml')) {
             extention = 'yaml';
@@ -261,8 +261,8 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         //  */
         let content = [];
         if (comments.length) {
-            for (let i in comments) {
-                content.push(`<h2>${comments[i].commentId}</h2><p>${comments[i].value.replace('\n', '<br>')}</p><p><i>by ${comments[i].owner} on ${comments[i].createdOn}</i></p>`)
+            for (const i in comments) {
+                content.push(`<h2>${comments[i].commentId}</h2><p>${comments[i].value.replace('\n', '<br>')}</p><p><i>by ${comments[i].owner} on ${comments[i].createdOn}</i></p>`);
             }
         }
         else {
@@ -302,13 +302,13 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     getTreeItem(artifact: ArtifactVersion): vscode.TreeItem {
         // IF filtered view, return filter
         if (artifact.artifactType == undefined) {
-            let treeItem = new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+            const treeItem = new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
             treeItem.contextValue = 'collapsibleItem';
             return treeItem;
         }
         // Manage display of group in the tree view.
         // Manage tree item
-        let treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
+        const treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = artifact.state;
         // treeItem.tooltip = new vscode.MarkdownString(`**${artifact.version}**`);
         treeItem.command = {

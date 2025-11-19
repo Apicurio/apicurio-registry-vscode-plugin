@@ -22,10 +22,10 @@ interface Group {
 interface MetaList {
 }
 
-interface Meta extends Object {} {
+interface Meta extends Object { } {
 }
 
-interface ArtifactList{
+interface ArtifactList {
     artifacts: Artifact[];
     count?: number;
 }
@@ -43,11 +43,11 @@ interface Artifact {
     modifiedOn?: string;
     children?: Artifact[];
 }
-interface BranchList{
+interface BranchList {
     branches: Branch[]
     count?: number;
 }
-interface Branch{
+interface Branch {
     groupId: string;
     artifactId: string;
     branchId: string;
@@ -57,7 +57,7 @@ interface Branch{
     owner?: string;
     systemDefined?: string;
 }
-interface ArtifactVersionsList{
+interface ArtifactVersionsList {
     versions: ArtifactVersion[];
     count?: number;
 }
@@ -140,13 +140,13 @@ enum ArtifactType {
     WebServicesDescriptionLanguage = "WSDL",
     XMLSchema = "XSD"
 }
-enum ReferencesQueryParam{
+enum ReferencesQueryParam {
     PRESERVE = "PRESERVE",
     DEREFERENCE = "DEREFERENCE",
     REWRITE = "REWRITE"
 }
 
-export { 
+export {
     ActiveElement,
     ElementType,
     ArtifactType,

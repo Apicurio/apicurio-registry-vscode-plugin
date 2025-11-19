@@ -77,12 +77,12 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                         // Fetch Group rules for the active group and await the promise
                         result = await Services.get().getRegistryClient().getGroupRules(element);
                         if (result.length != 0) {
-                            let rulesConfigs = [];
-                            for (let i in result) {
-                                let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
+                            const rulesConfigs = [];
+                            for (const i in result) {
+                                const rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
                                 rulesConfigs.push(rulesResult);
                             }
-                            let rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
+                            const rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
                             // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
@@ -94,13 +94,13 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     // Fetch Group rules for the active artifact and await the promise
                     result = await Services.get().getRegistryClient().getArtifactRules(this.ActiveDataObject);
                     if (result) {
-                        let rulesConfigs = [];
-                        for (let i in result) {
-                            let rulesResult = await Services.get().getRegistryClient().getArtifactRulesConfig(this.ActiveDataObject, result[i]);
+                        const rulesConfigs = [];
+                        for (const i in result) {
+                            const rulesResult = await Services.get().getRegistryClient().getArtifactRulesConfig(this.ActiveDataObject, result[i]);
                             rulesConfigs.push(rulesResult);
                         }
                         if (rulesConfigs.length) {
-                            let rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
+                            const rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
                             // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
@@ -114,12 +114,12 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     // @TODO Manage the display.
                     result = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject as ArtifactVersion);
                     if (result.length) {
-                        let refs: any[] = [];
-                        for (let i in result) {
+                        const refs: any[] = [];
+                        for (const i in result) {
                             refs[i] = {};
                             refs[i][result[i].name] = result[i];
                         }
-                        let references = { 'References': refs };
+                        const references = { 'References': refs };
                         metas.push(references);
                     }
                     break;
@@ -143,13 +143,13 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         const children: Meta[] = [];
         // Rules managment
         if (rules) {
-            for (let i in result) {
+            for (const i in result) {
                 metas.push({ [`${result[i].ruleType}`]: `${result[i].config}` } as Meta);
             }
         }
         // Others metas managment
         else {
-            for (let i in result) {
+            for (const i in result) {
                 // As the object key is dynamic, extract it here.
                 if (typeof result[i] === 'object' && result[i] !== null) {
                     children.length = 0; // Clear children array
@@ -180,7 +180,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         this.getMetas(this.ActiveElement).then(metas => {
             const arrayHeader = `\n| Meta      | Value |\n| ----------- | ----------- |`;
             let value: string = `${arrayHeader}`;
-            let values: string[] = [];
+            const values: string[] = [];
             for (const meta of metas) {
                 const key = Object.keys(meta)[0];
                 const val = (meta as any)[key];
