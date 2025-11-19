@@ -178,7 +178,8 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
      */
     public displayMetasValue() {
         this.getMetas(this.ActiveElement).then(metas => {
-            let value: string = '\n| Meta      | Value |\n| ----------- | ----------- |';
+            const arrayHeader = `\n| Meta      | Value |\n| ----------- | ----------- |`;
+            let value: string = `${arrayHeader}`;
             let values: string[] = [];
             for (const meta of metas) {
                 const key = Object.keys(meta)[0];
@@ -186,14 +187,14 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 let i = 0;
                 // If the value is an array, iterate children (each child is a { key: value } Meta)
                 if (Array.isArray(val)) {
-                    values[i] = `\n## ${key}\n| Meta      | Value |\n| ----------- | ----------- |`;
+                    values[i] = `\n## ${key}\n${arrayHeader}`;
                     for (const child of val) {
                         const childKey = Object.keys(child)[0];
                         values[i] += `\n| ${childKey} | ${child[childKey]} |`;
                     }
                 } else if (val && typeof val === 'object') {
                     // If it's an object (map), list its properties
-                    values[i] = `\n## ${key}\n| Meta      | Value |\n| ----------- | ----------- |`;
+                    values[i] = `\n## ${key}\n${arrayHeader}`;
                     for (const prop of Object.keys(val)) {
                         values[i] += `\n| ${prop} | ${val[prop]} |`;
                     }
@@ -203,7 +204,9 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 }
                 i++;
             }
-            value += `\n${values.join("")}`;
+            if (values.length) {
+                value += `\n${values.join("")}`;
+            }
             vscode.workspace.openTextDocument({
                 content: `# ${this.ActiveElement.type}: ${this.ActiveElement.id}\n${value}\n`,
                 language: 'markdown'
