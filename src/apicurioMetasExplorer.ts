@@ -30,7 +30,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
     readonly onDidChangeTreeData: vscode.Event<void>;
 
     private ActiveElement: ActiveElement = { id: null, type: null };
-    private ActiveDataObject: Artifact|ArtifactVersion;
+    private ActiveDataObject: Artifact | ArtifactVersion;
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
@@ -44,9 +44,9 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
      */
 
     // Refresh the view
-    public refresh(element: ActiveElement, data?:Artifact, clear?: boolean): any {
+    public refresh(element: ActiveElement, data?: Artifact, clear?: boolean): any {
         this.ActiveElement = { id: element.id, type: element.type };
-        if(data){ this.ActiveDataObject = data; }
+        if (data) { this.ActiveDataObject = data; }
         if (clear) {
             this.ActiveElement = { id: null, type: null };
             this.ActiveDataObject = null;
@@ -55,7 +55,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         return;
     }
     // Get Metas
-    private async getMetas(element: ActiveElement, data?: Group|Artifact|ArtifactVersion): Promise<Meta[]> {
+    private async getMetas(element: ActiveElement, data?: Group | Artifact | ArtifactVersion): Promise<Meta[]> {
         // If no element or invalid element provided, fallback to default group
         if (!element || !element.id) {
             // Use default group id expected by the registry client
@@ -68,21 +68,21 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             switch (this.ActiveElement.type) {
                 case ElementType.GROUP:
                     // Manage exception for default Group metas fetching
-                    if(element.id === _.tools.getDefaultGroup().groupId){
-                        metas = [{'groupId': _.tools.getDefaultGroup().groupId}, {'description': _.tools.getDefaultGroup().description}];
+                    if (element.id === _.tools.getDefaultGroup().groupId) {
+                        metas = [{ 'groupId': _.tools.getDefaultGroup().groupId }, { 'description': _.tools.getDefaultGroup().description }];
                     }
                     else {
                         result = await Services.get().getRegistryClient().getMetas(element);
                         metas.push(...this.queryResultToMetas(result));
                         // Fetch Group rules for the active group and await the promise
                         result = await Services.get().getRegistryClient().getGroupRules(element);
-                        if(result.length != 0){
+                        if (result.length != 0) {
                             let rulesConfigs = [];
-                            for(let i in result){
+                            for (let i in result) {
                                 let rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
                                 rulesConfigs.push(rulesResult);
                             }
-                            let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
+                            let rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
                             // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
@@ -93,17 +93,18 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     metas = this.queryResultToMetas(result);
                     // Fetch Group rules for the active artifact and await the promise
                     result = await Services.get().getRegistryClient().getArtifactRules(this.ActiveDataObject);
-                    if(result){
+                    if (result) {
                         let rulesConfigs = [];
-                        for(let i in result){
+                        for (let i in result) {
                             let rulesResult = await Services.get().getRegistryClient().getArtifactRulesConfig(this.ActiveDataObject, result[i]);
                             rulesConfigs.push(rulesResult);
                         }
-                        if(rulesConfigs.length){
-                            let rules = {'Rules':this.queryResultToMetas(rulesConfigs, true)};
+                        if (rulesConfigs.length) {
+                            let rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
                             // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
+                    }
                     break;
                 case ElementType.VERSION:
                     // @TODO Get references
@@ -111,14 +112,14 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     metas = this.queryResultToMetas(result);
                     // Fetch References rules for the active artifact Version and await the promise
                     // @TODO Manage the display.
-                    result = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject);
-                    if(result.length){
-                        let refs:any[] = [];
-                        for(let i in result){
-                            refs[i]={};
-                            refs[i][result[i].name]= result[i];
+                    result = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject as ArtifactVersion);
+                    if (result.length) {
+                        let refs: any[] = [];
+                        for (let i in result) {
+                            refs[i] = {};
+                            refs[i][result[i].name] = result[i];
                         }
-                        let references = {'References':refs};
+                        let references = { 'References': refs };
                         metas.push(references);
                     }
                     break;
@@ -135,19 +136,19 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         }
     }
 
-    private queryResultToMetas(result, rules?: boolean){
+    private queryResultToMetas(result, rules?: boolean) {
         // @Todo: Manage proper display of Rules.
         // @Todo: request for rules settigns and display it.
         const metas: Meta[] = [];
         const children: Meta[] = [];
         // Rules managment
-        if(rules){
+        if (rules) {
             for (let i in result) {
                 metas.push({ [`${result[i].ruleType}`]: `${result[i].config}` } as Meta);
             }
         }
         // Others metas managment
-        else{
+        else {
             for (let i in result) {
                 // As the object key is dynamic, extract it here.
                 if (typeof result[i] === 'object' && result[i] !== null) {
@@ -212,11 +213,11 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
     /**
      * End of Contextual menu actions
      */
-    
+
     // Get all tree Datas
     // NOTE: when `element` is undefined, VS Code asks for root items; when `element` is a Meta,
     // VS Code asks for the children of that Meta node.
-    async getChildren(element?: Meta, data?:Group|Artifact|ArtifactVersion): Promise<Meta[]> {
+    async getChildren(element?: Meta, data?: Group | Artifact | ArtifactVersion): Promise<Meta[]> {
         // Root request: fetch metas for the active group
         if (!element) {
             if (!this.ActiveElement || this.ActiveElement.id == null) {
@@ -296,7 +297,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         if (label === 'description' && typeof treeItem.description === 'string') {
             const MAX = 25;
             // Trim long descriptions and add a command to show full description on click.
-            if (treeItem.description.length > (MAX-3)) {
+            if (treeItem.description.length > (MAX - 3)) {
                 treeItem.description = treeItem.description.substring(0, MAX).trimEnd() + '...';
             }
         }
@@ -354,7 +355,7 @@ export class ApicurioMetasExplorer {
             })
         );
         // Register commands
-        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', (element: ActiveElement, data?:Artifact, clear?: boolean) => treeDataProvider.refresh(element, data, clear));
+        vscode.commands.registerCommand('apicurioMetasExplorer.refresh', (element: ActiveElement, data?: Artifact, clear?: boolean) => treeDataProvider.refresh(element, data, clear));
         vscode.commands.registerCommand('apicurioMetasExplorer.getChildren', (element, data) =>
             treeDataProvider.getChildren(element, data)
         );
