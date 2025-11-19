@@ -2,8 +2,6 @@ import * as http from 'http';
 import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services, Settings } from './services';
-import { isObject } from './utils';
-import { isArray } from 'util';
 import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
 import path from 'path';
 import { ApicurioTools } from './tools';
@@ -44,7 +42,7 @@ class RegistryClient {
         ) as Promise<ArtifactList>;
         return res;
     }
-    public getBranches(group:ActiveElement, artifact: ActiveElement, options?: object): Promise<BranchList> {
+    public getBranches(group: ActiveElement, artifact: ActiveElement, options?: object): Promise<BranchList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches`, {
                 ...Services.get().getSettings().limits(),
@@ -53,7 +51,7 @@ class RegistryClient {
         ) as Promise<BranchList>;
         return res;
     }
-    public getArtifacttVersions(group:ActiveElement, artifact: ActiveElement, branch: ActiveElement, options?: object): Promise<ArtifactVersionsList> {
+    public getArtifacttVersions(group: ActiveElement, artifact: ActiveElement, branch: ActiveElement, options?: object): Promise<ArtifactVersionsList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches/${branch.id}/versions`, {
                 ...Services.get().getSettings().limits(),
@@ -62,21 +60,21 @@ class RegistryClient {
         ) as Promise<ArtifactVersionsList>;
         return res;
     }
-    public getArtifactContent(artifact:ArtifactVersion, references?:ReferencesQueryParam, options?: object, returnHeaders?: boolean){
+    public getArtifactContent(artifact: ArtifactVersion, references?: ReferencesQueryParam, options?: object, returnHeaders?: boolean) {
         // @TODO Manage references in query path.
-        if (references){
-            let refParams = {'references':references};
-            options = Object.assign((options)?options:{}, refParams)
+        if (references) {
+            let refParams = { 'references': references };
+            options = Object.assign((options) ? options : {}, refParams)
         }
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
                 ...Services.get().getSettings().limits(),
                 ...options,
             })
-        , undefined, undefined, undefined, returnHeaders) as Promise<any>;
+            , undefined, undefined, undefined, returnHeaders) as Promise<any>;
         return res;
     }
-    public getArtifactComment(artifact:ArtifactVersion, options?: object){
+    public getArtifactComment(artifact: ArtifactVersion, options?: object) {
         // @TODO Manage references in query path.
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comments`, {
@@ -97,7 +95,7 @@ class RegistryClient {
         return res.then((x) => this.fixDefaultGroup(x));
     }
 
-    public async getGroups(options?: object): Promise<GroupList>{
+    public async getGroups(options?: object): Promise<GroupList> {
         const res = this.executeRequest(
             this.requestPath(`groups`, {
                 ...Services.get().getSettings().limits(),
@@ -107,7 +105,7 @@ class RegistryClient {
         return res;
     }
 
-    public async getMetas(element: ActiveElement, data?:Group|Artifact|ArtifactVersion, options?: object): Promise<any>{
+    public async getMetas(element: ActiveElement, data?: Group | Artifact | ArtifactVersion, options?: object): Promise<any> {
         let path = '';
         switch (element.type) {
             case ElementType.GROUP:
@@ -133,7 +131,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getArtifactReferences(element: ArtifactVersion, options?: object): Promise<any>{
+    public async getArtifactReferences(element: ArtifactVersion, options?: object): Promise<any> {
         let path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -143,7 +141,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getGroupRules(element: ActiveElement, options?: object): Promise<any>{
+    public async getGroupRules(element: ActiveElement, options?: object): Promise<any> {
         let path = `groups/${element.id}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -153,7 +151,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getGroupRulesConfig(element: ActiveElement, rule: string, options?: object): Promise<any>{
+    public async getGroupRulesConfig(element: ActiveElement, rule: string, options?: object): Promise<any> {
         let path = `groups/${element.id}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -163,7 +161,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getArtifactRules(element: Artifact, options?: object): Promise<any>{
+    public async getArtifactRules(element: Artifact, options?: object): Promise<any> {
         let path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -173,7 +171,7 @@ class RegistryClient {
         ) as Promise<any>;
         return res;
     }
-    public async getArtifactRulesConfig(element: Artifact, rule: string, options?: object): Promise<any>{
+    public async getArtifactRulesConfig(element: Artifact, rule: string, options?: object): Promise<any> {
         let path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
@@ -192,7 +190,7 @@ class RegistryClient {
     /**
      * EDIT ACTIONS
      */
-    public async createGroup(group: Group): Promise<Group>{
+    public async createGroup(group: Group): Promise<Group> {
         let body = group;
         const res = this.executeRequest(
             this.requestPath(`groups`, {
@@ -239,7 +237,7 @@ class RegistryClient {
             const settings = Services.get().getSettings();
             const client = settings.useHttps ? https : http;
 
-            if (!isObject(headers)) {
+            if (!_.tools.isObject(headers)) {
                 headers = {};
             }
             headers = {

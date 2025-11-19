@@ -2,15 +2,18 @@ import * as vscode from 'vscode';
 import * as http from 'http';
 import * as https from 'https';
 import { CurrentArtifact, Group } from './interfaces';
-import { isObject } from './utils';
 
 export class ApicurioTools {
+
+    public isObject(value: unknown): value is object {
+        return value instanceof Object && value.constructor === Object;
+    }
 
     /**
      * Manage Apicurio default values.
      */
-    public getDefault(value:string){
-        let defaultValue:string;
+    public getDefault(value: string) {
+        let defaultValue: string;
         switch (value) {
             case 'group':
                 defaultValue = 'default';
@@ -25,7 +28,7 @@ export class ApicurioTools {
         return defaultValue;
     }
 
-    public getDefaultGroup(){
+    public getDefaultGroup() {
         return { groupId: this.getDefault('group'), description: 'Default group, system generated.' } as Group;
     }
     /**
@@ -40,13 +43,13 @@ export class ApicurioTools {
     /**
      * 
      */
-    public getPreview(){
+    public getPreview() {
         return vscode.workspace.getConfiguration('apicurio.tools.preview').get('OPENAPI');
     }
     /**
      * 
      */
-    public getFormat(){
+    public getFormat() {
         return vscode.workspace.getConfiguration('apicurio.tools.preview').get('format');
     }
 
@@ -80,7 +83,7 @@ export class ApicurioTools {
         };
         return settings;
     }
-    
+
     /**
      * End of Apicurio Plugin Settings.
      */
@@ -108,7 +111,7 @@ export class ApicurioTools {
             case 'editableMetas':
                 options = ['name', 'description', 'labels'];
                 /* V2 - Support both labels & properties. */
-                if (this.getApicurioApiVersion() == "v2"){
+                if (this.getApicurioApiVersion() == "v2") {
                     options.push('properties');
                 }
                 break;
@@ -174,7 +177,7 @@ export class ApicurioTools {
         /**
          * Add some retro compatibility data when Apicurio is V2
          */
-        if (this.getApicurioApiVersion() == "v2"){
+        if (this.getApicurioApiVersion() == "v2") {
             switch (type) {
                 case 'meta':
                     path = `groups/${artifact.group}/artifacts/${artifact.artifactId}${artifact.version && artifact.version != 'latest' ? `/versions/${artifact.version}` : ``}/meta`;
@@ -216,7 +219,7 @@ export class ApicurioTools {
             const hhttpx = vscode.workspace.getConfiguration('apicurio.http').get('secure') ? https : http;
             const settings = this.getApicurioHttpSettings();
 
-            if (!isObject(headers)) {
+            if (!this.isObject(headers)) {
                 headers = {};
             }
             headers = {
