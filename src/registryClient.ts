@@ -1,10 +1,11 @@
+'use strict';
+
 import * as http from 'http';
 import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services } from './services';
 import { Settings } from './settings';
 import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
-import path from 'path';
 
 class RegistryClient {
     private settings: Settings;

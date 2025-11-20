@@ -14,5 +14,4 @@ export function activate(context: vscode.ExtensionContext) {
     new ApicurioArtifactsExplorer(context);
     new ApicurioArtifactVersionsExplorer(context);
     new ApicurioMetasExplorer(context);
-    // new ApicurioVersionsCommentsExplorer(context);
 }

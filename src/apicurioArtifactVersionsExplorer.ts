@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
 import { Services } from './services';
 import { Settings } from './settings';
-import { version } from 'os';
 
 /**
  * Apicurio Explorer Provider

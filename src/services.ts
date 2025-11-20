@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
-import { RegistryClient } from './registryClient';
-import { Group } from './interfaces';
+'use strict';
 
+import { RegistryClient } from './registryClient';
 import { Settings } from './settings';
 
 class Services {

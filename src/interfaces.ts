@@ -1,3 +1,5 @@
+'use strict';
+
 interface ActiveElement {
     id: string;
     type: ElementType;
