@@ -22,7 +22,7 @@ interface Group {
 interface MetaList {
 }
 
-interface Meta extends Object { } {
+interface Meta {
 }
 
 interface ArtifactList {
