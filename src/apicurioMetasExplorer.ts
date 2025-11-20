@@ -105,13 +105,11 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     }
                     break;
                 case ElementType.VERSION:
-                    // @TODO Get references
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     // Fetch References rules for the active artifact Version and await the promise
-                    // @TODO Manage the display.
                     result = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject as ArtifactVersion);
-                    if (result.length) {
+                    if (result) {
                         const refs: any[] = [];
                         for (const i in result) {
                             refs[i] = {};
@@ -179,16 +177,25 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             const arrayHeader = `\n| Meta      | Value |\n| ----------- | ----------- |`;
             let value: string = `${arrayHeader}`;
             const values: string[] = [];
+            let i = 0;
             for (const meta of metas) {
                 const key = Object.keys(meta)[0];
                 const val = (meta as any)[key];
-                let i = 0;
                 // If the value is an array, iterate children (each child is a { key: value } Meta)
                 if (Array.isArray(val)) {
-                    values[i] = `\n## ${key}\n${arrayHeader}`;
+                    values[i] = `\n\n## ${key}\n${arrayHeader}`;
                     for (const child of val) {
                         const childKey = Object.keys(child)[0];
-                        values[i] += `\n| ${childKey} | ${child[childKey]} |`;
+                        let childVal = child[childKey];
+                        let stringVal = '';
+                        // If the value is an object, list its properties
+                        if (childVal && typeof childVal === 'object') {
+                            for (const prop of Object.keys(childVal)) {
+                                stringVal += `- *${prop}*: ${childVal[prop]} `;
+                            }
+                            childVal = stringVal;
+                        }
+                        values[i] += `\n| ${childKey} | ${childVal} |`;
                     }
                 } else if (val && typeof val === 'object') {
                     // If it's an object (map), list its properties

@@ -52,7 +52,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
   -H "Content-Type: application/json" \
   -d '{
         "artifactType": "JSON",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "content": {
             "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\",\"email\"]}",
             "contentType": "application/json"
@@ -89,9 +89,9 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
   -H "Content-Type: application/json" \
   -d '{
     "artifactType": "OPENAPI",
-      "version": "1.0.7",
+      "version": "1.0.1",
       "content": {
-        "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.2\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"user\"}}}}}}}}}",
+        "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.1\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"user\"}}}}}}}}}",
         "contentType": "application/json",
         "references": [
             {
@@ -104,6 +104,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
       },
       "name": "User API 1.0.1",
       "description": "Initial OpenAPI specification referencing demo-user-schema",
+      "labels": {"custom-1": "foo","custom-2": "bar"},
       "isDraft": true
   }'
 
@@ -143,5 +144,31 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
 }'
 
 
+curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts/Item/versions \
+-H 'Content-Type: application/json' \
+--data-raw '{
+	"artifactType": "AVRO",
+		"version": "1.0.1",
+    "labels": {"custom-1": "foo","custom-2": "bar"},
+		"content": {
+			"content": "{\"namespace\":\"com.example.common\",\"name\":\"Item\",\"type\":\"record\",\"fields\":[{\"name\":\"itemId\",\"type\":\"com.example.common.ItemId\"}]}",
+			"contentType": "application/json",
+			"references": [
+				{
+					"name": "com.example.common.ItemId",
+					"groupId": "my-group",
+					"artifactId": "ItemId",
+					"version": "1.0.1"
+				}
+			]
+	}
+}'
 
-curl -s "http://localhost:8080/apis/registry/v3/groups/json-demo/artifacts/profile/versions/1.0.0" | jq .
+
+# curl -s "http://localhost:8080/apis/registry/v3/groups/json-demo/artifacts/profile/versions/1.0.0" | jq .
+
+
+
+curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/rules \
+   -H "Content-Type: application/json" \
+   --data '{"ruleType": "VALIDITY","config": "FULL"}'
