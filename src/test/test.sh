@@ -12,19 +12,6 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups" \
   }
 }'
 
-# # Create artifact
-# curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts" \
-#   -H "Content-Type: application/json" \
-#   -d '{
-#     "artifactId":"demo-user-schema",
-#     "artifactType":"JSON",
-#     "name":"User Schema",
-#     "description":"A Sample User Schema",
-#     "labels":{
-#         "custom-1": "foo",
-#         "custom-2": "bar"
-#         }
-#     }'
 # Create artifact
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExists=CREATE_VERSION" \
   -H "Content-Type: application/json" \
@@ -42,7 +29,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExi
         },
         "name": "User Schema 1.0.0",
         "description": "Initial version of the user schema",
-        "Branches":"v1",
+        "branches":["1", "1.0", "1.0.0"],
         "isDraft": false
         }
     }'
@@ -57,9 +44,9 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
             "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\",\"email\"]}",
             "contentType": "application/json"
         },
-        "name": "User Schema 1.0.0",
+        "name": "User Schema 1.0.1",
         "description": "Initial version of the user schema",
-        "isDraft": false
+        "isDraft": true
     }'
 
 
@@ -79,7 +66,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExi
         },
         "name": "User Schema 1.0.0",
         "description": "Initial OpenAPI specification referencing demo-user-schema",
-        "Branches":"v1",
+        "branches":["1", "1.0", "1.0.0"],
         "isDraft": false
         }
     }'
@@ -94,17 +81,18 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
         "content": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"User API\",\"version\":\"1.0.1\"},\"paths\":{\"/users/{userId}\":{\"get\":{\"summary\":\"Get user by ID\",\"parameters\":[{\"name\":\"userId\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"OK\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"user\"}}}}}}}}}",
         "contentType": "application/json",
         "references": [
-            {
+          {
+            "name": "user",
             "groupId": "test",
             "artifactId": "demo-user-schema",
-            "version": "1.0.0",
-            "name": "user"
-            }
+            "version": "1.0.0"
+          }
         ]
       },
       "name": "User API 1.0.1",
       "description": "Initial OpenAPI specification referencing demo-user-schema",
       "labels": {"custom-1": "foo","custom-2": "bar"},
+      "branches":["1", "1.0", "1.0.0"],
       "isDraft": true
   }'
 
@@ -117,11 +105,11 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
 # Functional for AVRO.
 # @TODO, make it work for OPENAPI & JSON.
 
-curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts \
    -H "Content-Type: application/json" \
    --data '{"artifactId":"ItemId","artifactType":"AVRO","firstVersion":{"version":"1.0.0","content":{"content":"{\"namespace\":\"com.example.common\",\"name\":\"ItemId\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"int\"}]}","contentType":"application/json"}}}'
 
-curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts \
 -H 'Content-Type: application/json' \
 --data-raw '{
 	"artifactId": "Item",
@@ -134,7 +122,7 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
 			"references": [
 				{
 					"name": "com.example.common.ItemId",
-					"groupId": "my-group",
+					"groupId": "demo",
 					"artifactId": "ItemId",
 					"version": "1.0.0"
 				}
@@ -144,7 +132,7 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts \
 }'
 
 
-curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts/Item/versions \
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions \
 -H 'Content-Type: application/json' \
 --data-raw '{
 	"artifactType": "AVRO",
@@ -156,19 +144,29 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/artifacts/It
 			"references": [
 				{
 					"name": "com.example.common.ItemId",
-					"groupId": "my-group",
+					"groupId": "demo",
 					"artifactId": "ItemId",
-					"version": "1.0.1"
+					"version": "1.0.0"
 				}
 			]
 	}
 }'
 
 
-# curl -s "http://localhost:8080/apis/registry/v3/groups/json-demo/artifacts/profile/versions/1.0.0" | jq .
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions/1.0.1/comments \
+-H 'Content-Type: application/json' \
+--data-raw '{"value": "This is a new comment on an existing artifact version."}'
+
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions/1.0.1/comments \
+-H 'Content-Type: application/json' \
+--data-raw '{"value": "This is another comment on an existing artifact version."}'
 
 
+# Prettify request :
+# curl -s "http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions/1.0.1" | jq .
 
-curl -X POST http://localhost:8080/apis/registry/v3/groups/my-group/rules \
+
+# Add rules to the group
+curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/rules \
    -H "Content-Type: application/json" \
    --data '{"ruleType": "VALIDITY","config": "FULL"}'

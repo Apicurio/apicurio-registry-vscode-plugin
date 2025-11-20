@@ -132,7 +132,12 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     getTreeItem(artifact: Artifact): vscode.TreeItem {
         // IF filtered view, return filter
         if (artifact.artifactType == undefined) {
-            return new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+            const treeItem = new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+            treeItem.iconPath = {
+                dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', artifact.name.toLowerCase() + '.svg'),
+                light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', artifact.name.toLowerCase() + '.svg'),
+            };
+            return treeItem;
         }
         // Manage default Group as not in artifact property when default.
         if (!artifact.groupId) {
