@@ -5,11 +5,6 @@ import { Services } from './services';
 import { Settings } from './settings';
 import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
 import path from 'path';
-import { ApicurioTools } from './tools';
-
-namespace _ {
-    export const tools = new ApicurioTools();
-}
 
 class RegistryClient {
     private settings: Settings;
@@ -202,7 +197,7 @@ class RegistryClient {
             const settings = this.settings;
             const client = settings.useHttps ? https : http;
 
-            if (!_.tools.isObject(headers)) {
+            if (!Services.get().isObject(headers)) {
                 headers = {};
             }
             headers = {

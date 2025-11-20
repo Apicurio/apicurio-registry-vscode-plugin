@@ -28,6 +28,10 @@ class Services {
         return this.client;
     }
 
+    public isObject(value: unknown): value is object {
+        return value instanceof Object && value.constructor === Object;
+    }
+
     public async test() {
         // console.log(await Services.get().getRegistryClient().searchArtifacts({ group: 'default' }));
     }

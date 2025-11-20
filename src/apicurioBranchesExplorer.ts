@@ -2,12 +2,7 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, Branch, Artifact } from './interfaces';
-import { ApicurioTools } from './tools';
 import { Services } from './services';
-
-namespace _ {
-    export const tools = new ApicurioTools();
-}
 
 /**
  * Apicurio Explorer Provider
