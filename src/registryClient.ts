@@ -63,8 +63,8 @@ class RegistryClient {
     public getArtifactContent(artifact: ArtifactVersion, references?: ReferencesQueryParam, options?: object, returnHeaders?: boolean) {
         // @TODO Manage references in query path.
         if (references) {
-            let refParams = { 'references': references };
-            options = Object.assign((options) ? options : {}, refParams)
+            const refParams = { 'references': references };
+            options = Object.assign((options) ? options : {}, refParams);
         }
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
@@ -132,7 +132,7 @@ class RegistryClient {
         return res;
     }
     public async getArtifactReferences(element: ArtifactVersion, options?: object): Promise<any> {
-        let path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
+        const path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
                 ...Services.get().getSettings().limits(),
@@ -142,7 +142,7 @@ class RegistryClient {
         return res;
     }
     public async getGroupRules(element: ActiveElement, options?: object): Promise<any> {
-        let path = `groups/${element.id}/rules`;
+        const path = `groups/${element.id}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
                 ...Services.get().getSettings().limits(),
@@ -152,7 +152,7 @@ class RegistryClient {
         return res;
     }
     public async getGroupRulesConfig(element: ActiveElement, rule: string, options?: object): Promise<any> {
-        let path = `groups/${element.id}/rules/${rule}`;
+        const path = `groups/${element.id}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
                 ...Services.get().getSettings().limits(),
@@ -162,7 +162,7 @@ class RegistryClient {
         return res;
     }
     public async getArtifactRules(element: Artifact, options?: object): Promise<any> {
-        let path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules`;
+        const path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
                 ...Services.get().getSettings().limits(),
@@ -172,7 +172,7 @@ class RegistryClient {
         return res;
     }
     public async getArtifactRulesConfig(element: Artifact, rule: string, options?: object): Promise<any> {
-        let path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules/${rule}`;
+        const path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
                 ...Services.get().getSettings().limits(),
@@ -191,7 +191,7 @@ class RegistryClient {
      * EDIT ACTIONS
      */
     public async createGroup(group: Group): Promise<Group> {
-        let body = group;
+        const body = group;
         const res = this.executeRequest(
             this.requestPath(`groups`, {
                 ...Services.get().getSettings().limits()
