@@ -2,12 +2,9 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType } from './interfaces';
-import { ApicurioTools } from './tools';
 import { Services } from './services';
+import { Settings } from './settings';
 
-namespace _ {
-    export const tools = new ApicurioTools();
-}
 
 /**
  * Apicurio Explorer Provider
@@ -26,7 +23,7 @@ namespace _ {
 
 export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> {
     private readonly extensionUri: any;
-
+    private settings: Settings;
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
 
@@ -35,6 +32,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
+        this.settings = new Settings();
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
@@ -69,7 +67,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
         const result = Services.get().getRegistryClient().getGroups();
         let groups: Promise<Group[]> = result.then(res => res.groups);
         groups = groups.then(res => {
-            const defaultGroup: Group = _.tools.getDefaultGroup();
+            const defaultGroup: Group = this.settings.getDefaultGroup();
             return [defaultGroup, ...res];
         });
         this.GroupList = groups; // Cache result to avoid future requests.
@@ -139,7 +137,7 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
     // Get each tree items.
     getTreeItem(group: Group): vscode.TreeItem {
         // Manage display of group in the tree view.
-        const displayName = _.tools.displayName();
+        const displayName = this.settings.displayName();
         const name = (!displayName || !group.name) ? group.groupId : group.name;
         const tooltip = (!displayName && group.name) ? group.name : group.groupId;
         // Manage tree item

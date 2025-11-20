@@ -2,12 +2,8 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, Artifact } from './interfaces';
-import { ApicurioTools } from './tools';
 import { Services } from './services';
-
-namespace _ {
-    export const tools = new ApicurioTools();
-}
+import { Settings } from './settings';
 
 /**
  * Apicurio Explorer Provider
@@ -33,8 +29,10 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
     private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
     private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
     private filterBy: any = null;
+    private settings: Settings;
 
     constructor(extensionUri: vscode.Uri) {
+        this.settings = new Settings();
         this.extensionUri = extensionUri;
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
@@ -138,10 +136,10 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         }
         // Manage default Group as not in artifact property when default.
         if (!artifact.groupId) {
-            artifact.groupId = _.tools.getDefaultGroup().groupId;
+            artifact.groupId = this.settings.getDefaultGroup().groupId;
         }
         // Manage display of artifacts in the tree view.
-        const displayName = _.tools.displayName();
+        const displayName = this.settings.displayName();
         const name = (!displayName || !artifact.name) ? artifact.artifactId : artifact.name;
         const tooltip = (!displayName && artifact.name) ? artifact.name : artifact.artifactId;
         // Manage tree item

@@ -180,12 +180,18 @@
                         "description": "The version of the Apicurio Registry API to use",
                         "type": "string",
                         "default": "v3",
-                        "enum": ["v3", "v2"],
+                        "enum": [
+                            "v3",
+                            "v2"
+                        ],
                         "markdownEnumDescriptions": [
                             "Core Registry API v3",
                             "Core Registry API v2"
                         ],
-                        "enumItemLabels": ["Core API v3", "Core API v2"]
+                        "enumItemLabels": [
+                            "Core API v3",
+                            "Core API v2"
+                        ]
                     },
                     "apicurio.http.secure": {
                         "description": "Use HTTPS instead of HTTP",

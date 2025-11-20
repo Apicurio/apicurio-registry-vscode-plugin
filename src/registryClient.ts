@@ -1,7 +1,8 @@
 import * as http from 'http';
 import * as https from 'https';
 import * as vscode from 'vscode';
-import { Services, Settings } from './services';
+import { Services } from './services';
+import { Settings } from './settings';
 import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from './interfaces';
 import path from 'path';
 import { ApicurioTools } from './tools';
@@ -10,33 +11,19 @@ namespace _ {
     export const tools = new ApicurioTools();
 }
 
-interface SearchedArtifact {
-    groupId: string | undefined;
-    description: string | undefined;
-    artifactId: string;
-    name: string;
-    createdOn: string;
-    createdBy: string;
-    artifactType: string;
-    modifiedBy: string;
-    modifiedOn: string;
-    state: string;
-}
-
-interface ArtifactSearchResult {
-    artifacts: [SearchedArtifact];
-    count: number;
-}
-
 class RegistryClient {
+    private settings: Settings;
+    constructor() {
+        this.settings = new Settings();
+    }
+
     /**
      * GET ACTIONS
      */
-
     public getArtifacts(group: ActiveElement, options?: object): Promise<ArtifactList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<ArtifactList>;
@@ -45,7 +32,7 @@ class RegistryClient {
     public getBranches(group: ActiveElement, artifact: ActiveElement, options?: object): Promise<BranchList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<BranchList>;
@@ -54,7 +41,7 @@ class RegistryClient {
     public getArtifacttVersions(group: ActiveElement, artifact: ActiveElement, branch: ActiveElement, options?: object): Promise<ArtifactVersionsList> {
         const res = this.executeRequest(
             this.requestPath(`groups/${group.id}/artifacts/${artifact.id}/branches/${branch.id}/versions`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<ArtifactVersionsList>;
@@ -68,7 +55,7 @@ class RegistryClient {
         }
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
             , undefined, undefined, undefined, returnHeaders) as Promise<any>;
@@ -78,27 +65,17 @@ class RegistryClient {
         // @TODO Manage references in query path.
         const res = this.executeRequest(
             this.requestPath(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comments`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
         return res;
     }
 
-    public searchArtifacts(options?: object): Promise<ArtifactSearchResult> {
-        const res = this.executeRequest(
-            this.requestPath(`search/artifacts`, {
-                ...Services.get().getSettings().limits(),
-                ...options,
-            })
-        ) as Promise<ArtifactSearchResult>;
-        return res.then((x) => this.fixDefaultGroup(x));
-    }
-
     public async getGroups(options?: object): Promise<GroupList> {
         const res = this.executeRequest(
             this.requestPath(`groups`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<GroupList>;
@@ -125,7 +102,7 @@ class RegistryClient {
         }
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -135,7 +112,7 @@ class RegistryClient {
         const path = `groups/${element.groupId}/artifacts/${element.artifactId}/versions/${element.version}/references`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -145,7 +122,7 @@ class RegistryClient {
         const path = `groups/${element.id}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -155,7 +132,7 @@ class RegistryClient {
         const path = `groups/${element.id}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -165,7 +142,7 @@ class RegistryClient {
         const path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -175,7 +152,7 @@ class RegistryClient {
         const path = `groups/${element.groupId}/artifacts/${element.artifactId}/rules/${rule}`;
         const res = this.executeRequest(
             this.requestPath(`${path}`, {
-                ...Services.get().getSettings().limits(),
+                ...this.settings.limits(),
                 ...options,
             })
         ) as Promise<any>;
@@ -194,7 +171,7 @@ class RegistryClient {
         const body = group;
         const res = this.executeRequest(
             this.requestPath(`groups`, {
-                ...Services.get().getSettings().limits()
+                ...this.settings.limits()
             }),
             'POST',
             undefined,
@@ -202,18 +179,6 @@ class RegistryClient {
         ) as Promise<Group>;
         return res;
     }
-    /**
-     * END of EDIT ACTIONS
-     */
-    private fixDefaultGroup(result: ArtifactSearchResult) {
-        for (const i in result.artifacts) {
-            if (!result.artifacts[i].groupId) {
-                result.artifacts[i].groupId = _.tools.getDefaultGroup().groupId;
-            }
-        }
-        return result;
-    }
-
     private requestPath(path: string, params?: object) {
         let query = '';
         for (const key in params) {
@@ -234,7 +199,7 @@ class RegistryClient {
 
     private executeRequest(path: string, method?: string, headers?: any, body?: any, returnHeaders?: boolean): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            const settings = Services.get().getSettings();
+            const settings = this.settings;
             const client = settings.useHttps ? https : http;
 
             if (!_.tools.isObject(headers)) {
@@ -301,6 +266,42 @@ class RegistryClient {
                         );
                         return reject(returnHeaders ? responseWrapper : output);
                     } else {
+                        // // reject on bad status
+                        // switch (res.statusCode) {
+                        //     case 204:
+                        //         // Fix resolution issue for no body 204 (PUT) responses on Apicurio API
+                        //         resolve('');
+                        //         break;
+                        //     case 400:
+                        //         // Fix resolution issue for 400 responses on Apicurio API
+                        //         vscode.window.showErrorMessage('Apicurio : retrun a 400 error.');
+                        //         resolve('');
+                        //         break;
+                        //     case 401:
+                        //         // Fix resolution issue for 401 responses on Apicurio API
+                        //         vscode.window.showErrorMessage(
+                        //             'Apicurio Unauthorized : you have to login or grant more permissions.'
+                        //         );
+                        //         resolve('');
+                        //         break;
+                        //     case 404:
+                        //         // Fix resolution issue for 404 responses on Apicurio API
+                        //         vscode.window.showErrorMessage('Apicurio : Not found.');
+                        //         resolve('');
+                        //         break;
+                        //     case 405:
+                        //         // Fix resolution issue for 405 responses on Apicurio API
+                        //         vscode.window.showErrorMessage('Apicurio : Fail due to method not allowed or disabled.');
+                        //         resolve('');
+                        //         break;
+                        //     case 409:
+                        //         // Fix resolution issue for 409 responses on Apicurio API
+                        //         vscode.window.showErrorMessage('Apicurio : conflicts with existing data.');
+                        //         resolve('');
+                        //         break;
+                        //     default:
+                        //         break;
+                        // }
                         // Return either the raw body or the wrapper containing headers and request
                         return resolve(returnHeaders ? responseWrapper : output);
                     }

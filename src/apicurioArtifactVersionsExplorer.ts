@@ -2,13 +2,9 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
-import { ApicurioTools } from './tools';
 import { Services } from './services';
+import { Settings } from './settings';
 import { version } from 'os';
-
-namespace _ {
-    export const tools = new ApicurioTools();
-}
 
 /**
  * Apicurio Explorer Provider
@@ -31,17 +27,20 @@ namespace _ {
 
 export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeDataProvider<Group> {
     private readonly extensionUri: any;
+    private settings: Settings;
 
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
 
     private ActiveGroup: ActiveElement = { id: null, type: ElementType.GROUP };
     private ActiveArtifact: ActiveElement = { id: null, type: ElementType.ARTIFACT };
-    private ActiveBranch: ActiveElement = { id: _.tools.getDefault('branch'), type: ElementType.BRANCH };
+    private ActiveBranch: ActiveElement = { id: null, type: ElementType.BRANCH };
     private filterBy: any = null;
 
     constructor(extensionUri: vscode.Uri) {
+        this.settings = new Settings();
         this.extensionUri = extensionUri;
+        this.ActiveBranch.id = this.settings.getDefault('branch');
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
@@ -60,10 +59,10 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             this.ActiveArtifact.id = artifact.id;
         }
         if (branch) {
-            this.ActiveBranch.id = (branch.id) ? branch.id : _.tools.getDefault('branch');
+            this.ActiveBranch.id = (branch.id) ? branch.id : this.settings.getDefault('branch');
         }
         else if (!this.ActiveBranch.id) {
-            this.ActiveBranch.id = _.tools.getDefault('branch');
+            this.ActiveBranch.id = this.settings.getDefault('branch');
         }
         this.onDidChangeTreeDataEmitter.fire();
     }
@@ -114,7 +113,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     public selectArtifact(artifact: Artifact, branch?: Branch): void {
         this.ActiveArtifact.id = artifact.artifactId;
         this.ActiveGroup.id = artifact.groupId;
-        this.ActiveBranch.id = _.tools.getDefault('brach');
+        this.ActiveBranch.id = this.settings.getDefault('branch');
         if (branch) {
             this.ActiveBranch.id = branch.branchId;
         }
@@ -141,7 +140,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         // Manage default group issue.
         // If groupId undefined, add default group.
         if (!artifact.groupId) {
-            artifact.groupId = _.tools.getDefault('group');
+            artifact.groupId = this.settings.getDefault('group');
         }
         const result = await Services.get().getRegistryClient().getArtifactContent(artifact, references, undefined, true);
 
@@ -201,12 +200,12 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             }
 
             // Format document if enabled
-            if (_.tools.getFormat()) {
+            if (this.settings.getFormat()) {
                 // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
                 setTimeout(() => { vscode.commands.executeCommand('editor.action.formatDocument'); }, 500);
             }
             // Preview if available
-            if (_.tools.getPreview() && vscode.extensions.getExtension('Arjun.swagger-viewer')) {
+            if (this.settings.getPreview() && vscode.extensions.getExtension('Arjun.swagger-viewer')) {
                 if (artifact.artifactType == 'OPENAPI') {
                     // @FIXME : Quick & dirty timeout to manage delai to insert content befor triger command...
                     setTimeout(() => { vscode.commands.executeCommand('swagger.preview'); }, 500);

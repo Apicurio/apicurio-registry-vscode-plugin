@@ -2,12 +2,8 @@
 
 import * as vscode from 'vscode';
 import { Meta, ActiveElement, ElementType, Group, Artifact, ArtifactVersion } from './interfaces';
-import { ApicurioTools } from './tools';
 import { Services } from './services';
-
-namespace _ {
-    export const tools = new ApicurioTools();
-}
+import { Settings } from './settings';
 
 /**
  * Apicurio Metas Explorer Provider
@@ -31,9 +27,11 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
 
     private ActiveElement: ActiveElement = { id: null, type: null };
     private ActiveDataObject: Artifact | ArtifactVersion;
+    private settings: Settings;
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
+        this.settings = new Settings();
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
@@ -68,8 +66,8 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             switch (this.ActiveElement.type) {
                 case ElementType.GROUP:
                     // Manage exception for default Group metas fetching
-                    if (element.id === _.tools.getDefaultGroup().groupId) {
-                        metas = [{ 'groupId': _.tools.getDefaultGroup().groupId }, { 'description': _.tools.getDefaultGroup().description }];
+                    if (element.id === this.settings.getDefaultGroup().groupId) {
+                        metas = [{ 'groupId': this.settings.getDefaultGroup().groupId }, { 'description': this.settings.getDefaultGroup().description }];
                     }
                     else {
                         result = await Services.get().getRegistryClient().getMetas(element);
