@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, Branch, Artifact } from './interfaces';
-import { Services } from './services';
+import { Services } from './tools/services';
 
 /**
  * Apicurio Explorer Provider

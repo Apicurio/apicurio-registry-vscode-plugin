@@ -4,6 +4,7 @@ interface ActiveElement {
     id: string;
     type: ElementType;
 }
+
 interface GroupList {
     groups: Group[];
     count?: number;
@@ -19,9 +20,6 @@ interface Group {
     modifiedOn?: string;
     modifiedBy?: string;
     artifactList?: ArtifactList;
-}
-
-interface MetaList {
 }
 
 interface Meta {
@@ -80,23 +78,6 @@ interface ArtifactVersion {
     children?: ArtifactVersion[];
 }
 
-interface SearchEntry {
-    groupId: string;
-    artifactId: string;
-    name: string;
-    description: string;
-    artifactType: string;
-    state: string;
-    version?: string;
-    parent: boolean;
-}
-
-interface ArtifactVersionEntry extends SearchEntry {
-    version: string;
-    createdOn: string;
-    parent: boolean;
-}
-
 interface ArtifactVersionCommentsEntry {
     commentId: string;
     value: string;
@@ -116,11 +97,6 @@ interface CurrentArtifact {
     group: string;
     artifactId: string;
     version?: string;
-}
-
-interface Search {
-    property: string;
-    propertyValue: string;
 }
 
 enum ElementType {
@@ -160,13 +136,9 @@ export {
     Branch,
     ArtifactVersion,
     ArtifactVersionsList,
-    MetaList,
     Meta,
     ReferencesQueryParam,
-    SearchEntry,
-    ArtifactVersionEntry,
     ArtifactVersionCommentsEntry,
     MetaEntry,
-    CurrentArtifact,
-    Search
+    CurrentArtifact
 };

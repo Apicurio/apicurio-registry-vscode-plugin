@@ -6,7 +6,6 @@ import { ApicurioArtifactsExplorer } from './apicurioArtifactsExplorer';
 import { ApicurioBranchesExplorer } from "./apicurioBranchesExplorer";
 import { ApicurioArtifactVersionsExplorer } from './apicurioArtifactVersionsExplorer';
 import { ApicurioMetasExplorer } from './apicurioMetasExplorer';
-// import { ApicurioVersionsCommentsExplorer } from './apicurioVersionsCommentsExplorer';
 
 export function activate(context: vscode.ExtensionContext) {
     new ApicurioExplorer(context);

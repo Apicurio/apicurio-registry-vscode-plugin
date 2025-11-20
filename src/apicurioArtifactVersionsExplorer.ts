@@ -2,8 +2,8 @@
 
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
-import { Services } from './services';
-import { Settings } from './settings';
+import { Services } from './tools/services';
+import { Settings } from './tools/settings';
 
 /**
  * Apicurio Explorer Provider

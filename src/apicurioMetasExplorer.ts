@@ -2,8 +2,8 @@
 
 import * as vscode from 'vscode';
 import { Meta, ActiveElement, ElementType, Group, Artifact, ArtifactVersion } from './interfaces';
-import { Services } from './services';
-import { Settings } from './settings';
+import { Services } from './tools/services';
+import { Settings } from './tools/settings';
 
 /**
  * Apicurio Metas Explorer Provider
