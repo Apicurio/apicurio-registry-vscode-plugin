@@ -4,29 +4,55 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased][Unreleased]
+## v1.1.x
 
-## [v1.0.3][v1.0.3] - 2023-04-19
+### [Unreleased][Unreleased]
+
+Major refactoring to support V3. Starting by Registry Read capabilities. (V2 api is currently broken)
+
+- Refactor views to maange V3 Features
+  - Add Branches support (`latest` open by default)
+  - Add Artifact versions Comments display
+  - Add Rules display in metas
+  - Add References display in metas
+  - Add Meta export as `.md` file.
+  - Add References integration in artifact version content
+  - Add Filter artifact by `type` in artifact view
+  - Add filter version by `state` in version view
+- Config
+  - Add Core API version
+  - /!\ V2 support not yet (re-)implemented.
+- Edit UI
+  - New views managment
+  - Fix Icon issues on JSON
+  - Update Avro Icon
+- Other
+  - Improve API queries & manage some caches to limit uncecessary API usage.
+  - Tools cleanup (single method for API managment, etc.)
+
+## v1.0.x
+
+### [v1.0.3][v1.0.3] - 2023-04-19
 
 -   Fix: Detect workspace location when previewing Apicurio Registry content.
 
-## [v1.0.2][v1.0.2] - 2023-04-12
+### [v1.0.2][v1.0.2] - 2023-04-12
 
 -   Fix handling of default artifact groups.
 
-## [v1.0.1][v1.0.1] - 2023-01-04
+### [v1.0.1][v1.0.1] - 2023-01-04
 
 -   Fix README publication issues.
 
-## [v1.0.0][v1.0.0] - 2023-01-04
+### [v1.0.0][v1.0.0] - 2023-01-04
 
 -   Move to Apicurio Organization.
 
 ## Before integration to Apicurio organization
 
-## [v0.1.0][v0.1.0] - 2022-04-29
+### [v0.1.0][v0.1.0] - 2022-04-29
 
-### Added
+#### Added
 
 -   Add new artifacts.
 -   Add artifact verions.
@@ -36,7 +62,7 @@ All notable changes to this project will be documented in this file.
 -   Add setting to display name (if exist) instead of ID in registry explorer view.
 -   Add setting to format document on preview.
 
-### Updated
+#### Updated
 
 -   README : Update features description.
 -   Fix preview issue.
@@ -44,28 +70,28 @@ All notable changes to this project will be documented in this file.
 -   Enhance README with screen records.
 -   Manage [Apicurio issue](https://github.com/Apicurio/apicurio-registry/issues/2143) on YAML (OAS) mime type.
 
-## [v0.0.4][v0.0.4] - 2022-02-17
+### [v0.0.4][v0.0.4] - 2022-02-17
 
-### Added
+#### Added
 
 -   Reverse Versions order.
 -   Reverse Versions by default setting.
 
-### Updated
+#### Updated
 
 -   README : Add settings description.
 
-## [v0.0.3][v0.0.3] - 2022-02-01
+### [v0.0.3][v0.0.3] - 2022-02-01
 
-### Added
+#### Added
 
 -   Display labels meta.
 -   Display properties meta.
 -   Search artifacts.
 
-## [v0.0.2][v0.0.2] - 2022-01-27
+### [v0.0.2][v0.0.2] - 2022-01-27
 
-### Added
+#### Added
 
 -   Display meta by versions.
 -   Manage search limit as parameter.
@@ -75,9 +101,9 @@ All notable changes to this project will be documented in this file.
 -   Update artifacts icons.
 -   Fix minor issues in documentation.
 
-## v0.0.1 - 2022-01-26
+### v0.0.1 - 2022-01-26
 
-### Added
+#### Added
 
 -   Basic Apicurio explorer.
 

@@ -6,7 +6,7 @@ This document describes the current status and the upcoming milestones of the Ap
 
 ### Improvments
 
-* Manage pagination in Apicurio search request.
+* Manage pagination in Apicurio relevant queries.
 * Manage keycloack authentification methods. (See impacts if multiples registries using workspace settings)
 
 ### Features

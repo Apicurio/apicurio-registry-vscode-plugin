@@ -17,22 +17,27 @@ Explore any [Apicurio registry V2](https://www.apicur.io/registry/) with ease on
 ### Explore registry
 
 - [X] Explore groups
-- [X] Explore artifacts by ID or Names (see settings)
-- [X] Search artifacts
+- [ ] Explore artifacts by ID or Names (see settings)
+- [ ] Search artifacts
+- [X] Explore artifacts branches
 - [X] Explore artifacts versions
 - [X] Explore artifacts metas
 - [X] Preview artifacts versions on your IDE
+- [X] Preview artifacts versions dereferenced on your IDE
 - [X] Preview OPENAPI with swaggerPreview (using [swagger-viewer](https://marketplace.visualstudio.com/items?itemName=Arjun.swagger-viewer) if available)
 
 ![Apicurio](/resources/gif/preview-artifact.gif)
 
 ### Content Edition
 
-- [X] Add new artifacts
-- [X] Add artifact versions
-- [X] Edit artifacts versions metas
-- [X] Edit artefacts versions state
-- [X] Delete artifacts
+- [X] Add new group
+- [ ] Add new artifacts
+- [ ] Add new artifacts branch
+- [ ] Add artifact versions
+- [ ] Add artifact versions comment
+- [ ] Edit artifacts versions metas
+- [ ] Edit artefacts versions state
+- [ ] Delete artifacts
 
 ![Apicurio](/resources/gif/add-artifact.gif)
 
@@ -51,11 +56,12 @@ Also available on [open-vsx.org][openvsx].
 
 ## Settings
 
+- `apicurio.api.version` : Apicurio Core Registry API version.
 - `apicurio.http.secure` : Acces to Apicurio registry API over http or https.
 - `apicurio.http.host` : Apicurio registry host.
 - `apicurio.http.path` : Apicurio registry path.
 - `apicurio.http.port` : Apicurio registry port.
-- `apicurio.search.limit` : Custom search limit (increase Apicurio default).
+- `apicurio.search.limit` : Custom API limit (Apicurio default is 20).
 - `apicurio.explorer.name` : Display name (if exist) instead of ID in registry explorer view.
 - `apicurio.versions.reverse` : Reverse Versions order by default.
 - `apicurio.tools.preview.format` : Format document on preview.
