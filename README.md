@@ -8,20 +8,23 @@
 
 ![Apicurio](/resources/apicurio_icon.png)
 
-Explore any [Apicurio registry V2](https://www.apicur.io/registry/) with ease on your IDE.
+Explore any [Apicurio registry](https://www.apicur.io/registry/) with ease on your IDE.
 
 ## Features
 
 ![Apicurio](/resources/apicurio-explorer.png)
 
+Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/registry/docs/apicurio-registry/2.6.x/assets-attachments/registry-rest-api.htm) and [V3](https://www.apicur.io/registry/docs/apicurio-registry/3.1.x/assets-attachments/registry-rest-api.htm) APIs (Some features may not availables on v2).
+
 ### Explore registry
 
 - [X] Explore groups
-- [ ] Explore artifacts by ID or Names (see settings)
+- [X] Explore artifacts by ID or Names (see settings)
 - [ ] Search artifacts
 - [X] Explore artifacts branches
 - [X] Explore artifacts versions
-- [X] Explore artifacts metas
+- [X] Explore artifacts versions comment
+- [X] Explore metas (Groups, Artifacts, Branches, Versions)
 - [X] Preview artifacts versions on your IDE
 - [X] Preview artifacts versions dereferenced on your IDE
 - [X] Preview OPENAPI with swaggerPreview (using [swagger-viewer](https://marketplace.visualstudio.com/items?itemName=Arjun.swagger-viewer) if available)
