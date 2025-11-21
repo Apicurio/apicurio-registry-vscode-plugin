@@ -69,7 +69,14 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     // Get ArtifactVersions
     private getArtifactsVersions(): Promise<ArtifactVersion[]> {
         const result = Services.get().getRegistryClient().getArtifacttVersions(this.ActiveGroup, this.ActiveArtifact, this.ActiveBranch);
-        const artifacts: Promise<ArtifactVersion[]> = result.then(res => res.versions);
+        const artifacts: Promise<ArtifactVersion[]> = result.then(res => {
+            // Manage v2 retro-compatibility.
+            let versions = res.versions;
+            if (this.settings.getApicurioApiVersion() == "v2") {
+                versions = Services.get().v2tov3Versions(versions);
+            }
+            return versions;
+        });
         return artifacts;
     }
 

@@ -61,7 +61,14 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
             return this.ArtifactList.then(res => res);
         }
         const result = Services.get().getRegistryClient().getArtifacts(this.ActiveGroup);
-        const artifacts: Promise<Artifact[]> = result.then(res => res.artifacts);
+        const artifacts: Promise<Artifact[]> = result.then(res => {
+            // Manage v2 retro-compatibility.
+            let artifacts = res.artifacts;
+            if (this.settings.getApicurioApiVersion() == "v2") {
+                artifacts = Services.get().v2tov3Artifacts(artifacts);
+            }
+            return artifacts;
+        });
         return artifacts;
     }
 

@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { Group, ActiveElement, ElementType, Branch, Artifact } from './interfaces';
 import { Services } from './tools/services';
+import { Settings } from './tools/settings';
 
 /**
  * Apicurio Explorer Provider
@@ -20,6 +21,7 @@ import { Services } from './tools/services';
 
 export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider<Group> {
     private readonly extensionUri: any;
+    private settings: Settings;
 
     private readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<void>;
     readonly onDidChangeTreeData: vscode.Event<void>;
@@ -29,6 +31,7 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
 
     constructor(extensionUri: vscode.Uri) {
         this.extensionUri = extensionUri;
+        this.settings = new Settings();
         // Manage events for window refresh.
         this.onDidChangeTreeDataEmitter = new vscode.EventEmitter<any>();
         this.onDidChangeTreeData = this.onDidChangeTreeDataEmitter.event;
@@ -92,7 +95,9 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
 
     // Get all tree Datas
     async getChildren(): Promise<Branch[]> {
-        // @Todo: Manage empty registry case. (Using the "default" group).
+        if (this.settings.getApicurioApiVersion() === 'v2') {
+            return [this.settings.getDefaultBranch(this.ActiveArtifact.id)] as Branch[];
+        }
         if (!this.ActiveGroup.id) {
             return [];
         }
@@ -105,11 +110,13 @@ export class ApicurioBranchesExplorerProvider implements vscode.TreeDataProvider
         // Manage display of group in the tree view.
         const treeItem = new vscode.TreeItem(branch.branchId, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.iconPath = new vscode.ThemeIcon('git-branch');
-        treeItem.command = {
-            command: 'apicurioBranchesExplorer.selectBranch',
-            title: 'Display artifact branch',
-            arguments: [branch],
-        };
+        if (this.settings.getApicurioApiVersion() != 'v2') {
+            treeItem.command = {
+                command: 'apicurioBranchesExplorer.selectBranch',
+                title: 'Display artifact branch',
+                arguments: [branch],
+            };
+        }
         return treeItem;
     }
 }

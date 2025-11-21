@@ -65,7 +65,14 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
             return this.GroupList.then(res => res);
         }
         const result = Services.get().getRegistryClient().getGroups();
-        let groups: Promise<Group[]> = result.then(res => res.groups);
+        let groups: Promise<Group[]> = result.then(res => {
+            // Manage v2 retro-compatibility.
+            let groups = res.groups;
+            if (this.settings.getApicurioApiVersion() == "v2") {
+                groups = Services.get().v2tov3Groups(groups);
+            }
+            return groups;
+        });
         groups = groups.then(res => {
             const defaultGroup: Group = this.settings.getDefaultGroup();
             return [defaultGroup, ...res];
@@ -136,10 +143,9 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
 
     // Get each tree items.
     getTreeItem(group: Group): vscode.TreeItem {
-        // Manage display of group in the tree view.
-        const displayName = this.settings.displayName();
-        const name = (!displayName || !group.name) ? group.groupId : group.name;
-        const tooltip = (!displayName && group.name) ? group.name : group.groupId;
+        // Manage display of group in the tree view, compatibility V2/v3.
+        const name = group.groupId;
+        const tooltip = (group.description) ? group.description : group.name;
         // Manage tree item
         const treeItem = new vscode.TreeItem(name, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.tooltip = tooltip;

@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group } from '../interfaces';
+import { Group, Branch } from '../interfaces';
 
 class Settings {
     public readonly hostname: string | null | undefined;
@@ -75,6 +75,9 @@ class Settings {
 
     public getDefaultGroup() {
         return { groupId: this.getDefault('group'), description: 'Default group, system generated.' } as Group;
+    }
+    public getDefaultBranch(artifactId?: string) {
+        return { branchId: this.getDefault('branch'), artifactId: artifactId || "", groupId: this.getDefault('group'), description: 'Default branch, system generated.' } as Branch;
     }
     /**
      * End of Manage Apicurio default values.

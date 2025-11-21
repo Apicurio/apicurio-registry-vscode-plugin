@@ -25,16 +25,24 @@ class RegistryClient {
         return res;
     }
     public getArtifacttVersions(group: ActiveElement, artifact: ActiveElement, branch: ActiveElement, options?: object): Promise<ArtifactVersionsList> {
-        const res = this.executeRequest(`groups/${group.id}/artifacts/${artifact.id}/branches/${branch.id}/versions`, { ...options, ...this.settings.queryParamsPaginate(options) }) as Promise<ArtifactVersionsList>;
+        let path = `groups/${group.id}/artifacts/${artifact.id}/branches/${branch.id}/versions`;
+        if (this.settings.getApicurioApiVersion() == "v2") {
+            path = `groups/${group.id}/artifacts/${artifact.id}/versions`;
+        }
+        const res = this.executeRequest(path, { ...options, ...this.settings.queryParamsPaginate(options) }) as Promise<ArtifactVersionsList>;
         return res;
     }
     public getArtifactContent(artifact: ArtifactVersion, references?: ReferencesQueryParam, options?: object, returnHeaders?: boolean) {
         // @TODO Manage references in query path.
         if (references) {
-            const refParams = { 'references': references };
+            const refParams = { 'references': (this.settings.getApicurioApiVersion() != "v2") ? references : true };
             options = Object.assign((options) ? options : {}, refParams);
         }
-        const res = this.executeRequest(`groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`, options, undefined, undefined, undefined, returnHeaders) as Promise<any>;
+        let path = `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`;
+        if (this.settings.getApicurioApiVersion() == "v2") {
+            path = `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}`;
+        }
+        const res = this.executeRequest(path, options, undefined, undefined, undefined, returnHeaders) as Promise<any>;
         return res;
     }
     public getArtifactComment(artifact: ArtifactVersion, options?: object) {
@@ -59,6 +67,9 @@ class RegistryClient {
                 break;
             case ElementType.VERSION:
                 path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/versions/${(data as any).version}`;
+                if (this.settings.getApicurioApiVersion() == "v2") {
+                    path = `${path}/meta`;
+                }
                 break;
             case ElementType.BRANCH:
                 path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/branches/${(data as any).branchId}`;

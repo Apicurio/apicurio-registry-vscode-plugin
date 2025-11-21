@@ -70,19 +70,28 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                         metas = [{ 'groupId': this.settings.getDefaultGroup().groupId }, { 'description': this.settings.getDefaultGroup().description }];
                     }
                     else {
-                        result = await Services.get().getRegistryClient().getMetas(element);
-                        metas.push(...this.queryResultToMetas(result));
-                        // Fetch Group rules for the active group and await the promise
-                        result = await Services.get().getRegistryClient().getGroupRules(element);
-                        if (result.length != 0) {
-                            const rulesConfigs = [];
-                            for (const i in result) {
-                                const rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
-                                rulesConfigs.push(rulesResult);
+                        // Request metas for the active element
+                        result = await Services.get().getRegistryClient().getMetas(element).then(res => {
+                            // Manage v2 retro-compatibility.
+                            if (this.settings.getApicurioApiVersion() == "v2") {
+                                res = Services.get().v2tov3Group(res);
                             }
-                            const rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
-                            // @TODO Get rules for all available entities.
-                            metas.push(rules);
+                            return res;
+                        });
+                        metas.push(...this.queryResultToMetas(result));
+                        // Request rules for the active element
+                        if (this.settings.getApicurioApiVersion() != "v2") {
+                            // Fetch Group rules for the active group and await the promise
+                            result = await Services.get().getRegistryClient().getGroupRules(element);
+                            if (result.length != 0) {
+                                const rulesConfigs = [];
+                                for (const i in result) {
+                                    const rulesResult = await Services.get().getRegistryClient().getGroupRulesConfig(element, result[i]);
+                                    rulesConfigs.push(rulesResult);
+                                }
+                                const rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
+                                metas.push(rules);
+                            }
                         }
                     }
                     break;
@@ -99,7 +108,6 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                         }
                         if (rulesConfigs.length) {
                             const rules = { 'Rules': this.queryResultToMetas(rulesConfigs, true) };
-                            // @TODO Get rules for all available entities.
                             metas.push(rules);
                         }
                     }

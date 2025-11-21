@@ -38,7 +38,9 @@ interface Artifact {
     description?: string;
     artifactType?: string;
     owner?: string;
+    labels?: string[];
     createdOn?: string;
+    createdBy?: string;
     modifiedBy?: string;
     modifiedOn?: string;
     children?: Artifact[];
@@ -67,12 +69,14 @@ interface ArtifactVersion {
     version: string;
     branchId?: string;
     globalId?: string;
+    contentId?: string;
     name?: string;
     state?: string;
     description?: string;
     artifactType?: string;
     owner?: string;
     createdOn?: string;
+    createdBy?: string;
     modifiedBy?: string;
     modifiedOn?: string;
     children?: ArtifactVersion[];
