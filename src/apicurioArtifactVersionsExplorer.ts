@@ -73,7 +73,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             // Manage v2 retro-compatibility.
             let versions = res.versions;
             if (this.settings.getApicurioApiVersion() == "v2") {
-                versions = Services.get().v2tov3Versions(versions);
+                versions = Services.get().v2tov3Versions(versions, this.ActiveGroup.id, this.ActiveArtifact.id);
             }
             return versions;
         });

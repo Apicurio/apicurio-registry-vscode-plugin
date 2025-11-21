@@ -79,6 +79,7 @@ interface ArtifactVersion {
     createdBy?: string;
     modifiedBy?: string;
     modifiedOn?: string;
+    labels?: string[];
     children?: ArtifactVersion[];
 }
 

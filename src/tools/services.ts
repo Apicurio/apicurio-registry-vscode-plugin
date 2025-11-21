@@ -1,6 +1,5 @@
 'use strict';
-
-import { group } from 'console';
+import * as vscode from 'vscode';
 import { Group, Artifact, ArtifactVersion, ArtifactVersionsList } from '../interfaces';
 import { RegistryClient } from './registryClient';
 import { Settings } from './settings';
@@ -85,18 +84,18 @@ class Services {
         return art;
     }
 
-    public v2tov3Versions(versions: any[]) {
+    public v2tov3Versions(versions: any[], groupId: string, artifactId: string) {
         const vers: ArtifactVersion[] = [];
         for (const key in versions) {
-            vers.push(this.v2tov3Version(versions[key]));
+            vers.push(this.v2tov3Version(versions[key], groupId, artifactId));
         }
         return vers;
     }
 
-    public v2tov3Version(version: any) {
+    public v2tov3Version(version: any, groupId: string, artifactId: string) {
         const ver: ArtifactVersion = {
-            artifactId: version.id,
-            groupId: version.groupId,
+            artifactId: artifactId,
+            groupId: groupId,
             version: version.version,
             branchId: this.getSettings().getDefault('branch'),
             artifactType: (version.type) ? version.type : '',
@@ -109,7 +108,8 @@ class Services {
             createdOn: (version.createdOn) ? version.createdOn : '',
             createdBy: (version.createdBy) ? version.createdBy : '',
             modifiedOn: (version.modifiedOn) ? version.modifiedOn : '',
-            modifiedBy: (version.modifiedBy) ? version.modifiedBy : ''
+            modifiedBy: (version.modifiedBy) ? version.modifiedBy : '',
+            labels: (version.labels) ? version.labels : undefined
         };
         // @TODO manage labels, properties as two separate objects in V2 and references as not in additional request but part of the version object
         return ver;
