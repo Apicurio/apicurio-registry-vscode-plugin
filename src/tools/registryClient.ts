@@ -35,7 +35,10 @@ class RegistryClient {
     public getArtifactContent(artifact: ArtifactVersion, references?: ReferencesQueryParam, options?: object, returnHeaders?: boolean) {
         // @TODO Manage references in query path.
         if (references) {
-            const refParams = { 'references': (this.settings.getApicurioApiVersion() != "v2") ? references : true };
+            let refParams: { references?: ReferencesQueryParam; dereference?: boolean } = { 'references': references };
+            if (this.settings.getApicurioApiVersion() == "v2") {
+                refParams = { 'dereference': true };
+            }
             options = Object.assign((options) ? options : {}, refParams);
         }
         let path = `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/content`;
