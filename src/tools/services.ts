@@ -111,7 +111,7 @@ class Services {
             modifiedOn: (version.modifiedOn) ? version.modifiedOn : '',
             modifiedBy: (version.modifiedBy) ? version.modifiedBy : ''
         };
-        // @TODO manage labels, properties and references
+        // @TODO manage labels, properties as two separate objects in V2 and references as not in additional request but part of the version object
         return ver;
     }
 }
