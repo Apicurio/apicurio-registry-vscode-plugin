@@ -29,6 +29,8 @@ Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/regi
 - [X] Preview artifacts versions dereferenced on your IDE
 - [X] Preview OPENAPI with swaggerPreview (using [swagger-viewer](https://marketplace.visualstudio.com/items?itemName=Arjun.swagger-viewer) if available)
 
+![Apicurio](/resources/screen/apicurio-screen.jpeg)
+
 ![Apicurio](/resources/screen/apicurio-groups-explorer.png)
 
 ![Apicurio](/resources/screen/apicurio-artifacts-explorer.png)
