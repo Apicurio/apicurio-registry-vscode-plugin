@@ -12,9 +12,9 @@ Explore any [Apicurio registry](https://www.apicur.io/registry/) with ease on yo
 
 ## Features
 
-![Apicurio](/resources/apicurio-explorer.png)
-
 Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/registry/docs/apicurio-registry/2.6.x/assets-attachments/registry-rest-api.htm) and [V3](https://www.apicur.io/registry/docs/apicurio-registry/3.1.x/assets-attachments/registry-rest-api.htm) APIs (Some features may not availables on v2).
+
+![Apicurio](/resources/apicurio-explorer.png)
 
 ### Explore registry
 
@@ -29,7 +29,20 @@ Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/regi
 - [X] Preview artifacts versions dereferenced on your IDE
 - [X] Preview OPENAPI with swaggerPreview (using [swagger-viewer](https://marketplace.visualstudio.com/items?itemName=Arjun.swagger-viewer) if available)
 
-![Apicurio](/resources/gif/preview-artifact.gif)
+![Apicurio](/resources/screen/apicurio-groups-explorer.png)
+
+![Apicurio](/resources/screen/apicurio-artifacts-explorer.png)
+
+![Apicurio](/resources/screen/apicurio-artifacts-explorer-filtered.png)
+
+![Apicurio](/resources/screen/apicurio-branches-explorer.png)
+
+![Apicurio](/resources/screen/apicurio-versions-explorer.png)
+
+![Apicurio](/resources/screen/apicurio-versions-explorer-filtered.png)
+
+![Apicurio](/resources/screen/apicurio-metas-explorer.png)
+
 
 ### Content Edition
 
@@ -41,10 +54,6 @@ Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/regi
 - [ ] Edit artifacts versions metas
 - [ ] Edit artefacts versions state
 - [ ] Delete artifacts
-
-![Apicurio](/resources/gif/add-artifact.gif)
-
-![Apicurio](/resources/gif/edit-metas.gif)
 
 ## Installation
 
