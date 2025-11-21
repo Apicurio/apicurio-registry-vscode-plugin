@@ -64,6 +64,9 @@ class RegistryClient {
                 break;
             case ElementType.ARTIFACT:
                 path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}`;
+                if (this.settings.getApicurioApiVersion() == "v2") {
+                    path = `${path}/meta`;
+                }
                 break;
             case ElementType.VERSION:
                 path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/versions/${(data as any).version}`;
