@@ -107,6 +107,11 @@
                 "icon": "$(comment-discussion)"
             },
             {
+                "command": "apicurioArtifactVersionsExplorer.addComment",
+                "title": "Add Comment",
+                "icon": "$(comment)"
+            },
+            {
                 "command": "apicurioMetasExplorer.displayMetasValue",
                 "title": "Display Metas Value",
                 "icon": "$(zoom-in)"
@@ -159,12 +164,17 @@
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
-                    "group": "inline"
+                    "group": "context1"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openComments",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
-                    "group": "inline"
+                    "group": "context2"
+                },
+                {
+                    "command": "apicurioArtifactVersionsExplorer.addComment",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
+                    "group": "context3"
                 }
             ]
         },

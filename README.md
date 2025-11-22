@@ -52,7 +52,7 @@ Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/regi
 - [ ] Add new artifacts
 - [ ] Add new artifacts branch
 - [ ] Add artifact versions
-- [ ] Add artifact versions comment
+- [x] Add artifact versions comment
 - [ ] Edit artifacts versions metas
 - [ ] Edit artefacts versions state
 - [ ] Delete artifacts

@@ -281,6 +281,26 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         ).webview.html = `<html><body><h1>Comments for ${artifact.groupId} > ${artifact.artifactId} > ${artifact.version}</h1>${content.toString()}</body></html>`;
     }
 
+    // Add comments.
+    public async addComment(artifact: ArtifactVersion) {
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Add a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}?` });
+        if (confirm === 'Yes') {
+            // const comment = await vscode.window.showInputBox({ prompt: `Enter a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}.` });
+            const comment = await vscode.window.showInputBox({ prompt: `Enter a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}.` });
+            if (comment) {
+                const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Confirm comment: ${comment}` });
+                if (confirm === 'Yes') {
+                    Services.get().getRegistryClient().addArtifactComment(artifact, comment).then(() => {
+                        vscode.window.showInformationMessage(`Comment added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}`);
+                    }).catch((error) => {
+                        console.error(error);
+                        vscode.window.showErrorMessage(`Failed to add comment: ${error}`);
+                    });
+                }
+            }
+        }
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -343,5 +363,6 @@ export class ApicurioArtifactVersionsExplorer {
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersion(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionReferences', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionReferences(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openComments', (artifactVersion: ArtifactVersion) => treeDataProvider.openComments(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.addComment', (artifactVersion: ArtifactVersion) => treeDataProvider.addComment(artifactVersion));
     }
 }

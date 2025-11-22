@@ -132,6 +132,24 @@ class RegistryClient {
         return res;
     }
 
+    public async addArtifactComment(artifact: ArtifactVersion, comment: string): Promise<any> {
+        const body = {
+            'value': comment
+        };
+        const res = this.executeRequest(
+            `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/comments`,
+            {},
+            'POST',
+            undefined,
+            body
+        ) as Promise<any>;
+        return res;
+    }
+
+    /**
+     * END of EDIT ACTIONS
+     */
+
     /**
      *  Execute HTTP request to Apicurio Registry API
      * @param path The API endpoint path
