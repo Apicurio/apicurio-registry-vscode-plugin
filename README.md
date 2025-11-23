@@ -45,13 +45,12 @@ Apicurio registry explorer support Apicurio Core [V2](https://www.apicur.io/regi
 
 ![Apicurio](/resources/screen/apicurio-metas-explorer.png)
 
-
 ### Content Edition
 
 - [X] Add new group
-- [ ] Add new artifacts
+- [x] Add new artifacts
 - [ ] Add new artifacts branch
-- [ ] Add artifact versions
+- [x] Add artifact versions
 - [x] Add artifact versions comment
 - [ ] Edit artifacts versions metas
 - [ ] Edit artefacts versions state

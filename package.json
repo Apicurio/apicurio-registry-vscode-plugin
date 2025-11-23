@@ -82,6 +82,16 @@
                 "icon": "$(add)"
             },
             {
+                "command": "apicurioArtifactsExplorer.addArtifact",
+                "title": "Add Artifact",
+                "icon": "$(add)"
+            },
+            {
+                "command": "apicurioArtifactsExplorer.addVersion",
+                "title": "Add Version",
+                "icon": "$(new-file)"
+            },
+            {
                 "command": "apicurioArtifactsExplorer.filter",
                 "title": "Filter",
                 "icon": "$(filter)"
@@ -145,6 +155,11 @@
                     "group": "navigation"
                 },
                 {
+                    "command": "apicurioArtifactsExplorer.addArtifact",
+                    "when": "view == apicurioArtifactsExplorer",
+                    "group": "sidebar"
+                },
+                {
                     "command": "apicurioArtifactVersionsExplorer.filter",
                     "when": "view == apicurioArtifactVersionsExplorer",
                     "group": "navigation"
@@ -157,6 +172,11 @@
             ],
             "view/item/context": [
                 {
+                    "command": "apicurioArtifactsExplorer.addVersion",
+                    "when": "view == apicurioArtifactsExplorer",
+                    "group": "versions"
+                },
+                {
                     "command": "apicurioArtifactVersionsExplorer.openVersion",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "inline"
@@ -164,17 +184,17 @@
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
-                    "group": "context1"
+                    "group": "references"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openComments",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
-                    "group": "context2"
+                    "group": "comments"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.addComment",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
-                    "group": "context3"
+                    "group": "comments"
                 }
             ]
         },
@@ -247,6 +267,23 @@
                         "description": "Open OPENAPI artifacts with SwaggerPreview (if 'Arjun.swagger-viewer' plugin is available)",
                         "type": "boolean",
                         "default": "true"
+                    },
+                    "apicurio.create.asDraft": {
+                        "description": "Create artifact versions as Draft",
+                        "type": "boolean",
+                        "default": true,
+                        "enum": [
+                            true,
+                            false
+                        ],
+                        "markdownEnumDescriptions": [
+                            "Draft",
+                            "Enabled"
+                        ],
+                        "enumItemLabels": [
+                            "DRAFT",
+                            "ENABLED"
+                        ]
                     }
                 }
             }
@@ -276,6 +313,7 @@
     "dependencies": {
         "http": "^0.0.1-security",
         "https": "^1.0.0",
-        "mime-types": "^2.1.34"
+        "mime-types": "^2.1.34",
+        "path": "^0.12.7"
     }
 }

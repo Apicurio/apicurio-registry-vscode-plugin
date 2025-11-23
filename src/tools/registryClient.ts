@@ -146,6 +146,61 @@ class RegistryClient {
         return res;
     }
 
+    public async createArtifact(group: ActiveElement, artifactType: string, artifactId: string, name: string, description: string): Promise<Artifact> {
+        const body = {
+            'artifactId': artifactId,
+            'artifactType': artifactType,
+            'name': name,
+            'description': description
+        };
+        const res = this.executeRequest(
+            `groups/${group.id}/artifacts`,
+            {},
+            'POST',
+            undefined,
+            body
+        ) as Promise<any>;
+        return res;
+    }
+
+    public async createArtifactVersion(version: string, artifact: Artifact, fileExt:string, content: any): Promise<ArtifactVersion> {
+        let contentType = 'application/json';
+        // Determine content type based on file extension
+        switch (fileExt.toLowerCase()) {
+            case '.yaml':
+            case '.yml':
+                contentType = 'application/x-yaml';
+                break;
+            case '.xml':
+                contentType = 'application/xml';
+                break;
+            default:
+                contentType = 'application/json';
+        }
+        // Build request body
+        const body: any = {
+            'version': version,
+            'content': {
+                'content': content.toString(),
+                'contentType': contentType,
+                'references': []
+            },
+            'name': artifact.name,
+            'description': artifact.description,
+            'labels': artifact.labels,
+            'branch': [this.settings.getDefault('branch')],
+            'isDraft': this.settings.createAsDraft()
+        };
+        const res = this.executeRequest(
+            `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions`,
+            {},
+            'POST',
+            undefined,
+            body
+        ) as Promise<ArtifactVersion>;
+        return res;
+    }
+
     /**
      * END of EDIT ACTIONS
      */

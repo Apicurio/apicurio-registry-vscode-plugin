@@ -47,6 +47,8 @@ export class ApicurioExplorerProvider implements vscode.TreeDataProvider<Group> 
         // Clear cached groups to force re-fetching from the server.
         if (!keepCache) {
             this.GroupList = null;
+            // Clear cached settings to force re-fetching from the configuration.
+            this.settings = new Settings();
             // Clear children and refresh view
             vscode.commands.executeCommand('apicurioArtifactsExplorer.refresh', this.ActiveGroup);
             vscode.commands.executeCommand('apicurioBranchesExplorer.refresh', this.ActiveGroup, true);

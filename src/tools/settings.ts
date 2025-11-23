@@ -18,6 +18,10 @@ class Settings {
         this.useHttps = vscode.workspace.getConfiguration('apicurio.http').get('secure');
     }
 
+    public createAsDraft(): boolean {
+        return vscode.workspace.getConfiguration('apicurio.create').get('asDraft');
+    }
+
     public queryParamsPaginate(queryParams: object): object {
         return {
             ...queryParams,
@@ -25,12 +29,14 @@ class Settings {
             offset: 0,
         };
     }
+
     /**
      * Get preview from settings
      */
     public getPreview() {
         return vscode.workspace.getConfiguration('apicurio.tools.preview').get('OPENAPI');
     }
+
     /**
      * Get format from settings
      */

@@ -1,9 +1,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, ActiveElement, ElementType, Artifact } from './interfaces';
+import { Group, ActiveElement, ElementType, Artifact, ArtifactType } from './interfaces';
 import { Services } from './tools/services';
 import { Settings } from './tools/settings';
+// import { path } from 'path';
 
 /**
  * Apicurio Explorer Provider
@@ -114,6 +115,57 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         // this.refresh(); // No need of refreshing curent artifacts view.
     }
 
+    /** Add Artifact */
+    public async addArtifact(): Promise<void> {
+        const artifactType = await vscode.window.showQuickPick(Object.values(ArtifactType), { placeHolder: 'Select the type of the new artifact:' });
+        const artifactId = await vscode.window.showInputBox({ prompt: 'Enter the ID of the new artifact:' });
+        const name = await vscode.window.showInputBox({ prompt: 'Enter a name for the new artifact (optional):' });
+        const description = await vscode.window.showInputBox({ prompt: 'Enter a description for the new artifact (optional):' });
+        if (artifactId) {
+            try {
+                await Services.get().getRegistryClient().createArtifact(this.ActiveGroup, artifactType, artifactId, name, description);
+                vscode.window.showInformationMessage(`Artifact '${artifactId}' created successfully.`);
+                this.refresh();
+            } catch (error) {
+                vscode.window.showErrorMessage(`Failed to create artifact '${artifactId}': ${error.message}`);
+            }
+        } else {
+            vscode.window.showWarningMessage('Artifact creation cancelled or missing properties.');
+        }
+    }
+
+    // Add a new version
+    public async addVersion(artifact: Artifact) {
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Add a new version to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }?` });
+        if (confirm === 'Yes') {
+            const version = await vscode.window.showInputBox({ prompt: 'Version for the new artifact version (optional, semver may be forced by the registry)' });
+            if (confirm === 'Yes') {
+                const previousProperties = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Choose Yes to keep artifact level properties, no for update.` });
+                if (previousProperties === 'Yes') {
+                    // Keep previous properties
+                } else {
+                    const name = await vscode.window.showInputBox({ prompt: 'Edit name for the new artifact version (optional):', value: artifact.name });
+                    const description = await vscode.window.showInputBox({ prompt: 'Edit description for the new artifact version (optional):', value: artifact.description });
+                    artifact.name = name ? name : '';
+                    artifact.description = description ? description : '';
+                }
+                // Choose file
+                const fileUri = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: 'Select Artifact File' });
+                if (fileUri && fileUri[0]) {
+                    const path = require('path');
+                    const content = await vscode.workspace.fs.readFile(fileUri[0]);
+                    Services.get().getRegistryClient().createArtifactVersion(version, artifact, path.extname(fileUri[0].fsPath),content).then(() => {
+                        vscode.window.showInformationMessage(`New version added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }`);
+                        this.refresh();
+                    }).catch((error) => {
+                        console.error(error);
+                        vscode.window.showErrorMessage(`Failed to add new version: ${error}`);
+                    });
+                }
+            }
+        }
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -184,5 +236,7 @@ export class ApicurioArtifactsExplorer {
         vscode.commands.registerCommand('apicurioArtifactsExplorer.refresh', (group: ActiveElement) => treeDataProvider.refresh(group));
         vscode.commands.registerCommand('apicurioArtifactsExplorer.filter', () => treeDataProvider.filter());
         vscode.commands.registerCommand('apicurioArtifactsExplorer.selectArtifact', (artifact: Artifact) => treeDataProvider.selectArtifact(artifact));
+        vscode.commands.registerCommand('apicurioArtifactsExplorer.addArtifact', () => treeDataProvider.addArtifact());
+        vscode.commands.registerCommand('apicurioArtifactsExplorer.addVersion', (artifact: Artifact) => treeDataProvider.addVersion(artifact));
     }
 }
