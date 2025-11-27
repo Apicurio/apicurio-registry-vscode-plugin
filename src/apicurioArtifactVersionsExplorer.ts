@@ -136,8 +136,11 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     /**
      * Open an artifact Version
      */
-    public openVersionReferences(artifact: ArtifactVersion) {
+    public openVersionDereference(artifact: ArtifactVersion) {
         this.openVersion(artifact, ReferencesQueryParam.DEREFERENCE);
+    }
+    public openVersionRewrite(artifact: ArtifactVersion) {
+        this.openVersion(artifact, ReferencesQueryParam.REWRITE);
     }
 
     public async openVersion(artifact: ArtifactVersion, references?: ReferencesQueryParam): Promise<void> {
@@ -361,7 +364,8 @@ export class ApicurioArtifactVersionsExplorer {
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifact', (artifact: Artifact, branch?: Branch) => treeDataProvider.selectArtifact(artifact, branch));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.selectArtifactVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.selectArtifactVersion(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersion', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersion(artifactVersion));
-        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionReferences', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionReferences(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionDereference', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionDereference(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionRewrite', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionRewrite(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openComments', (artifactVersion: ArtifactVersion) => treeDataProvider.openComments(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.addComment', (artifactVersion: ArtifactVersion) => treeDataProvider.addComment(artifactVersion));
     }

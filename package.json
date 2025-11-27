@@ -107,8 +107,13 @@
                 "icon": "$(go-to-file)"
             },
             {
-                "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
-                "title": "Open & replace references",
+                "command": "apicurioArtifactVersionsExplorer.openVersionDereference",
+                "title": "Open & dereference",
+                "icon": "$(find-replace)"
+            },
+            {
+                "command": "apicurioArtifactVersionsExplorer.openVersionRewrite",
+                "title": "Open & rewrite",
                 "icon": "$(find-replace)"
             },
             {
@@ -182,7 +187,12 @@
                     "group": "inline"
                 },
                 {
-                    "command": "apicurioArtifactVersionsExplorer.openVersionReferences",
+                    "command": "apicurioArtifactVersionsExplorer.openVersionDereference",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
+                    "group": "references"
+                },
+                {
+                    "command": "apicurioArtifactVersionsExplorer.openVersionRewrite",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "references"
                 },

@@ -1,0 +1,50 @@
+openapi: 3.0.1
+info:
+  title: Citizen API
+  version: 1.0.0
+  description: Simple API that returns a Citizen object.
+
+paths:
+  /citizens/{identifier}:
+    get:
+      summary: Get a citizen by identifier
+      operationId: getCitizenByIdentifier
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the citizen.
+      responses:
+        '200':
+          description: Citizen found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Citizen'
+        '404':
+          description: Citizen not found
+
+components:
+  schemas:
+    Citizen:
+      title: Citizen
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: The citizen's first name.
+        lastName:
+          type: string
+          description: The citizen's last name.
+        age:
+          type: integer
+          minimum: 0
+          description: Age in years which must be equal to or greater than zero.
+        city:
+          $ref: 'types/all-types.json#/definitions/City/properties/name'
+        identifier:
+          $ref: 'types/all-types.json#/definitions/Identifier'
+      required:
+        - city

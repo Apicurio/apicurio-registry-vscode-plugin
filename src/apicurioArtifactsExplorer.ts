@@ -156,7 +156,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
                     const content = await vscode.workspace.fs.readFile(fileUri[0]);
                     Services.get().getRegistryClient().createArtifactVersion(version, artifact, path.extname(fileUri[0].fsPath),content).then(() => {
                         vscode.window.showInformationMessage(`New version added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }`);
-                        this.refresh();
+                        this.selectArtifact(artifact);
                     }).catch((error) => {
                         console.error(error);
                         vscode.window.showErrorMessage(`Failed to add new version: ${error}`);
