@@ -339,6 +339,14 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         const treeItem = new vscode.TreeItem(artifact.version, vscode.TreeItemCollapsibleState.None); // None / Collapsed
         treeItem.description = artifact.state;
         // treeItem.tooltip = new vscode.MarkdownString(`**${artifact.version}**`);
+        // Manage derefencing command for suported artifacts types.
+        if(artifact.artifactType == ArtifactType.AsyncAPI || 
+            artifact.artifactType == ArtifactType.AVRO || 
+            artifact.artifactType == ArtifactType.JSONSchema || 
+            artifact.artifactType == ArtifactType.OPENAPI || 
+            artifact.artifactType == ArtifactType.PROTOBUF) {
+            treeItem.contextValue = 'dereferenceEnabled';
+        }
         treeItem.command = {
             command: 'apicurioArtifactVersionsExplorer.selectArtifactVersion',
             title: 'Display artifact version',

@@ -192,6 +192,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         // IF filtered view, return filter
         if (artifact.artifactType == undefined) {
             const treeItem = new vscode.TreeItem(artifact.name, vscode.TreeItemCollapsibleState.Collapsed);
+            treeItem.contextValue = 'collapsibleItem';
             treeItem.iconPath = {
                 dark: vscode.Uri.joinPath(this.extensionUri, 'resources', 'dark', artifact.name.toLowerCase() + '.svg'),
                 light: vscode.Uri.joinPath(this.extensionUri, 'resources', 'light', artifact.name.toLowerCase() + '.svg'),

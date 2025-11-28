@@ -178,7 +178,7 @@
             "view/item/context": [
                 {
                     "command": "apicurioArtifactsExplorer.addVersion",
-                    "when": "view == apicurioArtifactsExplorer",
+                    "when": "view == apicurioArtifactsExplorer && viewItem != collapsibleItem",
                     "group": "versions"
                 },
                 {
@@ -188,12 +188,12 @@
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersionDereference",
-                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem && viewItem == dereferenceEnabled",
                     "group": "references"
                 },
                 {
                     "command": "apicurioArtifactVersionsExplorer.openVersionRewrite",
-                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem && viewItem == dereferenceEnabled",
                     "group": "references"
                 },
                 {
