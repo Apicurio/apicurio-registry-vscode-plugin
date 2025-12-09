@@ -159,7 +159,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
                         this.selectArtifact(artifact);
                     }).catch((error) => {
                         console.error(error);
-                        vscode.window.showErrorMessage(`Failed to add new version: ${error}`);
+                        vscode.window.showErrorMessage(`Failed to add new version: ${JSON.stringify(error)}`);
                     });
                 }
             }
