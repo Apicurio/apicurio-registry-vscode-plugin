@@ -128,6 +128,12 @@ enum ReferencesQueryParam {
     DEREFERENCE = "DEREFERENCE",
     REWRITE = "REWRITE"
 }
+enum States {
+    ENABLED = "ENABLED",
+    DISABLED = "DISABLED",
+    DEPRECATED = "DEPRECATED",
+    DRAFT = "DRAFT"
+}
 
 export {
     ActiveElement,
@@ -145,5 +151,6 @@ export {
     ReferencesQueryParam,
     ArtifactVersionCommentsEntry,
     MetaEntry,
-    CurrentArtifact
+    CurrentArtifact,
+    States
 };

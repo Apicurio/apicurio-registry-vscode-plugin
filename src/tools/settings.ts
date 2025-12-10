@@ -4,18 +4,35 @@ import * as vscode from 'vscode';
 import { Group, Branch } from '../interfaces';
 
 class Settings {
-    public readonly hostname: string | null | undefined;
-    public readonly port: number | string | null | undefined;
-    public readonly path: string | null | undefined;
-    public readonly limit: number;
-    public readonly useHttps: boolean;
+    public hostname: string | null | undefined;
+    public port: number | string | null | undefined;
+    public path: string | null | undefined;
+    public limit: number;
+    public useHttps: boolean;
 
     constructor() {
-        this.hostname = vscode.workspace.getConfiguration('apicurio.http').get('host');
-        this.port = vscode.workspace.getConfiguration('apicurio.http').get('port');
-        this.path = vscode.workspace.getConfiguration('apicurio.http').get('path');
+        this.loadSettings();
+        vscode.workspace.onDidChangeConfiguration(event => {
+            vscode.window.showInformationMessage("CHANGE CONFIG");
+             if (event.affectsConfiguration("apicurio")) {
+                this.loadSettings();
+             }
+        });
+        // vscode.commands.registerCommand('apicurioExplorer.refreshSettings', () => this.loadSettings());
+        // vscode.commands.onDidExecuteCommand((event) => {
+        //     if (event.command === 'apicurioExplorer.refresh') {
+        //         this.loadSettings();
+        //     }
+        // });
+    }
+
+    private loadSettings() {
+        const httpConfig = vscode.workspace.getConfiguration('apicurio.http');
+        this.hostname = httpConfig.get('host');
+        this.port = httpConfig.get('port');
+        this.path = httpConfig.get('path');
+        this.useHttps = httpConfig.get('secure');
         this.limit = vscode.workspace.getConfiguration('apicurio.search').get('limit');
-        this.useHttps = vscode.workspace.getConfiguration('apicurio.http').get('secure');
     }
 
     public createAsDraft(): boolean {

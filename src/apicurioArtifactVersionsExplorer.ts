@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam } from './interfaces';
+import { Group, ActiveElement, ElementType, ArtifactType, ArtifactVersion, BranchList, Branch, Artifact, ReferencesQueryParam, States } from './interfaces';
 import { Services } from './tools/services';
 import { Settings } from './tools/settings';
 
@@ -304,6 +304,29 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
         }
     }
 
+    // Change State
+    public async changeState(artifact: ArtifactVersion){
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Change the state of ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}?` });
+        if (confirm === 'Yes') {
+            // Select desired state.
+            const state = await vscode.window.showQuickPick([States.DRAFT, States.ENABLED, States.DEPRECATED, States.DISABLED], { placeHolder: `Chose a state.` });
+            const confirmState = await vscode.window.showQuickPick([States.DRAFT, States.ENABLED, States.DEPRECATED, States.DISABLED], { placeHolder: `Confirm state.` });
+            if (state == confirmState){
+                // Edit if confirm match
+                Services.get().getRegistryClient().changeArtifactVersionState(artifact, state).then(() => {
+                    vscode.window.showInformationMessage(`Comment added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}`);
+                }).catch((error) => {
+                    console.error(error);
+                    vscode.window.showErrorMessage(`Failed to change State: ${JSON.stringify(error)}`);
+                });
+            }
+            else{
+                // Error is confirm do not match.
+                vscode.window.showErrorMessage(`State do not match with confirmation.`)
+            }
+        }
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -376,5 +399,6 @@ export class ApicurioArtifactVersionsExplorer {
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openVersionRewrite', (artifactVersion: ArtifactVersion) => treeDataProvider.openVersionRewrite(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.openComments', (artifactVersion: ArtifactVersion) => treeDataProvider.openComments(artifactVersion));
         vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.addComment', (artifactVersion: ArtifactVersion) => treeDataProvider.addComment(artifactVersion));
+        vscode.commands.registerCommand('apicurioArtifactVersionsExplorer.changeState', (artifactVersion: ArtifactVersion) => treeDataProvider.changeState(artifactVersion));
     }
 }

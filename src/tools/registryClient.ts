@@ -201,6 +201,20 @@ class RegistryClient {
         return res;
     }
 
+    public async changeArtifactVersionState(artifact: ArtifactVersion, state: string): Promise<any> {
+        const body = {
+            'state': state
+        };
+        const res = this.executeRequest(
+            `groups/${artifact.groupId}/artifacts/${artifact.artifactId}/versions/${artifact.version}/state`,
+            {},
+            'PUT',
+            undefined,
+            body
+        ) as Promise<any>;
+        return res;
+    }
+
     /**
      * END of EDIT ACTIONS
      */

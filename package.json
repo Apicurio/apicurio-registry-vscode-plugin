@@ -127,6 +127,11 @@
                 "icon": "$(comment)"
             },
             {
+                "command": "apicurioArtifactVersionsExplorer.changeState",
+                "title": "Change State",
+                "icon": "$(gear)"
+            },
+            {
                 "command": "apicurioMetasExplorer.displayMetasValue",
                 "title": "Display Metas Value",
                 "icon": "$(zoom-in)"
@@ -205,6 +210,11 @@
                     "command": "apicurioArtifactVersionsExplorer.addComment",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "comments"
+                },
+                {
+                    "command": "apicurioArtifactVersionsExplorer.changeState",
+                    "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
+                    "group": "state"
                 }
             ]
         },
