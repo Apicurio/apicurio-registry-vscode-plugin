@@ -48,6 +48,19 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
         "description": "Initial version of the user schema",
         "isDraft": true
     }'
+# Update version (if draft & apropriate registry settings.)
+curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "contentType": "application/json"
+        "content": {
+            "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\"]}",
+        }
+    }'| jq .
+# Change State
+curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1/state" \
+  -H "Content-Type: application/json" \
+  -d '{"state": "DRAFT"}' | jq .
 
 
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExists=CREATE_VERSION" \
