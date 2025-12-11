@@ -49,14 +49,12 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
         "isDraft": true
     }'
 # Update version (if draft & apropriate registry settings.)
-curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1" \
+curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1/content" \
   -H "Content-Type: application/json" \
   -d '{
+        "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\"]}",
         "contentType": "application/json"
-        "content": {
-            "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"User\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"string\"},\"name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\",\"format\":\"email\"}},\"required\":[\"id\",\"name\"]}",
-        }
-    }'| jq .
+    }' | jq .
 # Change State
 curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1/state" \
   -H "Content-Type: application/json" \
