@@ -152,6 +152,7 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
                 // Choose file
                 const fileUri = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: 'Select Artifact File' });
                 if (fileUri && fileUri[0]) {
+                    /* eslint @typescript-eslint/no-var-requires: "off" */
                     const path = require('path');
                     const content = await vscode.workspace.fs.readFile(fileUri[0]);
                     Services.get().getRegistryClient().createArtifactVersion(version, artifact, path.extname(fileUri[0].fsPath),content).then(() => {
