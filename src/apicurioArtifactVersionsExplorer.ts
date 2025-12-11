@@ -288,7 +288,6 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
     public async addComment(artifact: ArtifactVersion) {
         const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Add a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}?` });
         if (confirm === 'Yes') {
-            // const comment = await vscode.window.showInputBox({ prompt: `Enter a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}.` });
             const comment = await vscode.window.showInputBox({ prompt: `Enter a comment to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}.` });
             if (comment) {
                 const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Confirm comment: ${comment}` });
@@ -313,8 +312,14 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             const confirmState = await vscode.window.showQuickPick([States.DRAFT, States.ENABLED, States.DEPRECATED, States.DISABLED], { placeHolder: `Confirm state.` });
             if (state == confirmState){
                 // Edit if confirm match
+                // Manage default group issue.
+                if (!artifact.groupId) {
+                    artifact.groupId = this.settings.getDefault('group');
+                }
                 Services.get().getRegistryClient().changeArtifactVersionState(artifact, state).then(() => {
-                    vscode.window.showInformationMessage(`Comment added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version}`);
+                    vscode.window.showInformationMessage(`Artifact ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId } version ${artifact.version} state changed to ${state}.`);
+                    // Refresh view.
+                    this.refresh();
                 }).catch((error) => {
                     console.error(error);
                     vscode.window.showErrorMessage(`Failed to change State: ${JSON.stringify(error)}`);
@@ -322,7 +327,7 @@ export class ApicurioArtifactVersionsExplorerProvider implements vscode.TreeData
             }
             else{
                 // Error is confirm do not match.
-                vscode.window.showErrorMessage(`State do not match with confirmation.`)
+                vscode.window.showErrorMessage(`State do not match with confirmation.`);
             }
         }
     }

@@ -5,7 +5,7 @@ import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services } from './services';
 import { Settings } from './settings';
-import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam } from '../interfaces';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam, States } from '../interfaces';
 
 class RegistryClient {
     private settings: Settings;
@@ -285,52 +285,18 @@ class RegistryClient {
                         if (output != null && typeof output !== 'string') {
                             if ('name' in output && 'message' in output) {
                                 vscode.window.showErrorMessage(
-                                    `Apicurio Registry client error: ${output.name}: ${output.message} on path ${path}`
+                                    `Apicurio Registry client ${res.statusCode} error: ${output.name}: ${output.message} on path ${path}`
                                 );
                                 return reject(returnHeaders ? responseWrapper : output);
                             }
                         }
-                        vscode.window.showErrorMessage(
-                            `Apicurio Registry client error: Unknown: HTTP code ${res.statusCode} on path ${path}`
-                        );
+                        else {
+                            vscode.window.showErrorMessage(
+                                `Apicurio Registry client ${res.statusCode} error: on path ${path}`
+                            );
+                        }
                         return reject(returnHeaders ? responseWrapper : output);
                     } else {
-                        // // reject on bad status
-                        // switch (res.statusCode) {
-                        //     case 204:
-                        //         // Fix resolution issue for no body 204 (PUT) responses on Apicurio API
-                        //         resolve('');
-                        //         break;
-                        //     case 400:
-                        //         // Fix resolution issue for 400 responses on Apicurio API
-                        //         vscode.window.showErrorMessage('Apicurio : retrun a 400 error.');
-                        //         resolve('');
-                        //         break;
-                        //     case 401:
-                        //         // Fix resolution issue for 401 responses on Apicurio API
-                        //         vscode.window.showErrorMessage(
-                        //             'Apicurio Unauthorized : you have to login or grant more permissions.'
-                        //         );
-                        //         resolve('');
-                        //         break;
-                        //     case 404:
-                        //         // Fix resolution issue for 404 responses on Apicurio API
-                        //         vscode.window.showErrorMessage('Apicurio : Not found.');
-                        //         resolve('');
-                        //         break;
-                        //     case 405:
-                        //         // Fix resolution issue for 405 responses on Apicurio API
-                        //         vscode.window.showErrorMessage('Apicurio : Fail due to method not allowed or disabled.');
-                        //         resolve('');
-                        //         break;
-                        //     case 409:
-                        //         // Fix resolution issue for 409 responses on Apicurio API
-                        //         vscode.window.showErrorMessage('Apicurio : conflicts with existing data.');
-                        //         resolve('');
-                        //         break;
-                        //     default:
-                        //         break;
-                        // }
                         // Return either the raw body or the wrapper containing headers and request
                         return resolve(returnHeaders ? responseWrapper : output);
                     }
