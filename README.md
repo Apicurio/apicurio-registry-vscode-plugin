@@ -85,6 +85,18 @@ Also available on [open-vsx.org][openvsx].
 If you use differents registries on different projects, use Workspace settings to override defaults.
 You car use the the `Settings` > `Workspace` > `Apicurio` pannel or create a `.vscode/setttings.json` file.
 
+> Due to settings cache, reload your IDE when editing the http settings.
+
+```json
+// Sample .vscode/setttings.json
+{
+    "apicurio.http.host": "localhost",
+    "apicurio.http.path": "/apis/registry/v3/",
+    "apicurio.http.secure": false,
+    "apicurio.http.port": 8080
+}
+```
+
 ## Release Notes
 
 See [Changelog][Changelog].
