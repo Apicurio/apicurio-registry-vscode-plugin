@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+##
+# TEST GROUP
+#
+
 # Create Group
 curl -X POST "http://localhost:8080/apis/registry/v3/groups" \
   -H "Content-Type: application/json" \
@@ -48,6 +52,7 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
         "description": "Initial version of the user schema",
         "isDraft": true
     }'
+
 # Update version (if draft & apropriate registry settings.)
 curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-user-schema/versions/1.0.1/content" \
   -H "Content-Type: application/json" \
@@ -61,6 +66,10 @@ curl -v -X PUT "http://localhost:8080/apis/registry/v3/groups/test/artifacts/dem
   -d '{"state": "DRAFT"}' | jq .
 
 
+##
+# CREATE OPENAPI
+# @TODO manage references.
+#
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExists=CREATE_VERSION" \
   -H "Content-Type: application/json" \
   -d '{
@@ -82,7 +91,11 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts?ifExi
         }
     }'
 
+##
 # Create Artifact Version.
+# OPEN API with Reference to JSON Schema.
+# @TODO Fix references
+#
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-openapi/versions" \
   -H "Content-Type: application/json" \
   -d '{
@@ -116,10 +129,17 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/test/artifacts/demo-
 # Functional for AVRO.
 # @TODO, make it work for OPENAPI & JSON.
 
+##
+# Create referenced Artifact
+#
 curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts \
    -H "Content-Type: application/json" \
    --data '{"artifactId":"ItemId","artifactType":"AVRO","firstVersion":{"version":"1.0.0","content":{"content":"{\"namespace\":\"com.example.common\",\"name\":\"ItemId\",\"type\":\"record\",\"fields\":[{\"name\":\"id\",\"type\":\"int\"}]}","contentType":"application/json"}}}'
 
+##
+# Create Artifact with references
+# Avro to Avro reference
+#
 curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts \
 -H 'Content-Type: application/json' \
 --data-raw '{
@@ -142,7 +162,10 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts \
 	}
 }'
 
-
+##
+# Create Artifact Version with references
+# Avro to Avro reference
+#
 curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions \
 -H 'Content-Type: application/json' \
 --data-raw '{
@@ -163,11 +186,12 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/v
 	}
 }'
 
-
+##
+# Add comments to an artifact version
+#
 curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions/1.0.1/comments \
 -H 'Content-Type: application/json' \
 --data-raw '{"value": "This is a new comment on an existing artifact version."}'
-
 curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/artifacts/Item/versions/1.0.1/comments \
 -H 'Content-Type: application/json' \
 --data-raw '{"value": "This is another comment on an existing artifact version."}'
@@ -184,9 +208,9 @@ curl -X POST http://localhost:8080/apis/registry/v3/groups/demo/rules \
 
 
 ##
-
-
-
+# JSON Schema referencing other schemas
+# @TODO Fix Content issue.
+#
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/default/artifacts?ifExists=CREATE_VERSION" \
   -H "Content-Type: application/json" \
 --data-raw  '{
@@ -220,6 +244,9 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/default/artifacts?if
         }
     }'
 
+##
+# OPENAPI reference to JSON Schema
+#
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/default/artifacts?ifExists=CREATE_VERSION" \
   -H "Content-Type: application/json" \
 --data-raw  '{
@@ -254,11 +281,9 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/default/artifacts?if
     }'
 
 
-
-
-
-
-
+##
+# JSON Schema with definitions for reference
+#
 curl -X POST 'http://localhost:8080/apis/registry/v3/groups/demo/artifacts' \
 -H 'Content-Type: application/json' \
 -d '{
@@ -272,8 +297,9 @@ curl -X POST 'http://localhost:8080/apis/registry/v3/groups/demo/artifacts' \
   }
 }'
 
-
-
+##
+# OPENAPI reference to JSON Schema
+#
 curl -X POST "http://localhost:8080/apis/registry/v3/groups/demo/artifacts?ifExists=CREATE_VERSION" \
   -H "Content-Type: application/json" \
   --data-raw '{
@@ -304,6 +330,102 @@ curl -X POST "http://localhost:8080/apis/registry/v3/groups/demo/artifacts?ifExi
       },
       "name":"Citizen API 1.0.0",
       "description":"Initial version of the Citizen API",
+      "branches":["1","1.0","1.0.0"],
+      "isDraft":false
+    }
+}'
+
+##
+# JSON Schema reference to JSON Schema
+#
+curl -X POST "http://localhost:8080/apis/registry/v3/groups/demo/artifacts?ifExists=CREATE_VERSION" \
+  -H "Content-Type: application/json" \
+  --data-raw '{
+    "artifactId":"citizen-schema",
+    "artifactType":"JSON",
+    "name":"Citizen JSON Schema",
+    "description":"Citizen JSON Schema",
+    "labels":{},
+    "firstVersion":{
+      "version":"1.0.0",
+      "content":{
+        "content":"{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"$id\":\"user-schema.json\",\"title\":\"User\",\"type\":\"object\",\"required\":[\"id\",\"name\",\"city\"],\"properties\":{\"id\":{\"type\":\"string\",\"description\":\"Unique identifier of the user\"},\"name\":{\"type\":\"string\",\"description\":\"Full name of the user\"},\"city\":{\"$ref\":\"types/all-types.json#/definitions/City/properties/name\",\"description\":\"City name, reused from the City definition\"}},\"additionalProperties\":false}",
+        "contentType":"application/json",
+        "references":[
+          {
+            "name":"types/all-types.json#/definitions/City/properties/name",
+            "groupId": "demo",
+            "artifactId":"all-types",
+            "version":"1"
+          }
+        ]
+      },
+      "name":"Citizen Schema 1.0.0",
+      "description":"Initial version of the Citizen Schema",
+      "branches":["1","1.0","1.0.0"],
+      "isDraft":false
+    }
+}'
+
+## 
+# OPENAPI referencing JSON Schema referencing other JSON Schema
+#
+curl -X POST "http://localhost:8080/apis/registry/v3/groups/demo/artifacts?ifExists=CREATE_VERSION" \
+  -H "Content-Type: application/json" \
+  --data-raw '{
+    "artifactId":"oas-referencing-json-schema",
+    "artifactType":"OPENAPI",
+    "name":"OAS referencing JSON Schema",
+    "description":"OpenAPI referencing a JSON Schema which itself references another JSON Schema",
+    "labels":{},
+    "firstVersion":{
+      "version":"1.0.0",
+      "content":{
+        "content":"{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"OAS referencing JSON Schema\",\"version\":\"1.0.0\"},\"paths\":{\"/citizens/{identifier}\":{\"get\":{\"summary\":\"Get a citizen by identifier\",\"operationId\":\"getCitizenByIdentifier\",\"parameters\":[{\"name\":\"identifier\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"},\"description\":\"Unique identifier of the citizen.\"}],\"responses\":{\"200\":{\"description\":\"Citizen found\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"urn:apicurio:registry:demo:citizen-schema:1.0.0\"}}}},\"404\":{\"description\":\"Citizen not found\"}}}}}},\"components\":{}}",
+        "contentType":"application/json",
+        "references":[
+          {
+            "name":"urn:apicurio:registry:demo:citizen-schema:1.0.0",
+            "groupId": "demo",
+            "artifactId":"citizen-schema",
+            "version":"1.0.0"
+          }
+        ]
+      },
+      "name":"OAS referencing JSON Schema 1.0.0",
+      "description":"Initial version of the OAS referencing a JSON Schema which itself references another JSON Schema",
+      "branches":["1","1.0","1.0.0"],
+      "isDraft":false
+    }
+}'
+
+##
+# ASYNCAPI referencing AVRO schema
+#
+curl -X POST "http://localhost:8080/apis/registry/v3/groups/demo/artifacts?ifExists=CREATE_VERSION" \
+  -H "Content-Type: application/json" \
+  --data-raw '{
+    "artifactId":"asyncapi-with-avro",
+    "artifactType":"ASYNCAPI",
+    "name":"AsyncAPI with Avro",
+    "description":"AsyncAPI referencing an Avro schema",
+    "labels":{},
+    "firstVersion":{
+      "version":"1.0.0",
+      "content":{
+        "content":"{\"asyncapi\":\"2.0.0\",\"info\":{\"title\":\"User Service\",\"version\":\"1.0.0\"},\"channels\":{\"user/signedup\":{\"subscribe\":{\"message\":{\"$ref\":\"#/components/messages/UserSignedUpMessage\"}}}},\"components\":{\"messages\":{\"UserSignedUpMessage\":{\"payload\":{\"$ref\":\"urn:apicurio:registry:demo:Item:1.0.1\"}}}}}",
+        "contentType":"application/json",
+        "references":[
+          {
+            "name":"urn:apicurio:registry:demo:Item:1.0.1",
+            "groupId": "demo",
+            "artifactId":"Item",
+            "version":"1.0.1"
+          }
+        ]
+      },
+      "name":"AsyncAPI with Avro 1.0.0",
+      "description":"Initial version of the AsyncAPI referencing an Avro schema",
       "branches":["1","1.0","1.0.0"],
       "isDraft":false
     }
