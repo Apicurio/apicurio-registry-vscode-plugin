@@ -203,7 +203,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                         // If the value is an object, list its properties
                         if (childVal && typeof childVal === 'object') {
                             for (const prop of Object.keys(childVal)) {
-                                stringVal += `- *${prop}*: ${childVal[prop]} `;
+                                stringVal += `- **${prop}**: \`${childVal[prop]}\` `;
                             }
                             childVal = stringVal;
                         }
