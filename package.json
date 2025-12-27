@@ -198,26 +198,6 @@
                     "command": "apicurioMetasExplorer.displayMetasValue",
                     "when": "view == apicurioMetasExplorer",
                     "group": "navigation"
-                },
-                {
-                    "command": "apicurioMetasExplorer.editLabel",
-                    "when": "view == apicurioExplorer",
-                    "group": "navigation"
-                },
-                {
-                    "command": "apicurioMetasExplorer.removeLabel",
-                    "when": "view == apicurioExplorer",
-                    "group": "navigation"
-                },
-                {
-                    "command": "apicurioMetasExplorer.editDescription",
-                    "when": "view == apicurioExplorer",
-                    "group": "navigation"
-                },
-                {
-                    "command": "apicurioMetasExplorer.editName",
-                    "when": "view == apicurioExplorer",
-                    "group": "navigation"
                 }
             ],
             "view/item/context": [
