@@ -137,9 +137,14 @@
                 "icon": "$(zoom-in)"
             },
             {
-                "command": "apicurioMetasExplorer.addLabel",
-                "title": "Add Label",
+                "command": "apicurioMetasExplorer.editLabel",
+                "title": "Edit Label",
                 "icon": "$(pen)"
+            },
+            {
+                "command": "apicurioMetasExplorer.removeLabel",
+                "title": "Remove Label",
+                "icon": "$(trash)"
             },
             {
                 "command": "apicurioMetasExplorer.editDescription",
@@ -195,7 +200,12 @@
                     "group": "navigation"
                 },
                 {
-                    "command": "apicurioMetasExplorer.addLabel",
+                    "command": "apicurioMetasExplorer.editLabel",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioMetasExplorer.removeLabel",
                     "when": "view == apicurioExplorer",
                     "group": "navigation"
                 },
@@ -247,7 +257,12 @@
                     "group": "state"
                 },
                 {
-                    "command": "apicurioMetasExplorer.addLabel",
+                    "command": "apicurioMetasExplorer.editLabel",
+                    "when": "view == apicurioMetasExplorer && viewItem == isLabels",
+                    "group": "metas"
+                },
+                {
+                    "command": "apicurioMetasExplorer.removeLabel",
                     "when": "view == apicurioMetasExplorer && viewItem == isLabels",
                     "group": "metas"
                 },

@@ -233,7 +233,7 @@ class RegistryClient {
      * @param labelValue 
      * @returns 
      */
-    public async addLabel(element: ActiveElement, data: Group | Artifact | ArtifactVersion | Branch, labelKey: string, labelValue: string): Promise<any> {
+    public async editLabel(element: ActiveElement, data: Group | Artifact | ArtifactVersion | Branch, labelKey: string, labelValue: string): Promise<any> {
         let metas = this.returnEditableMetasObject(element, data);
         metas.labels = {...metas.labels, ...{ [labelKey]: labelValue } };
         vscode.window.showInformationMessage(`Updated metas: ${JSON.stringify(metas)}`);
@@ -241,7 +241,7 @@ class RegistryClient {
         return;
     }
     /**
-     * No need of edit label function, addLabel will overwrite existing label key.
+     * No need of edit label function, editLabel will overwrite existing label key.
      */
     /**
      * Remove a label from an element.

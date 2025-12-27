@@ -261,7 +261,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         });
     }
 
-    public addLabel() {
+    public editLabel() {
         // Prompt the user to enter a new label key and value
         vscode.window.showInputBox({ prompt: 'Enter label key (use existing key to edit existing label value)' }).then(async (input) => {
             if (!input) {
@@ -281,7 +281,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 // Add the label via the registry client
                 try {
                     // @Todo: manage Issue on Groups, missing datas in ActiveDataObject.
-                    await Services.get().getRegistryClient().addLabel(this.ActiveElement, this.ActiveDataObject, labelKey, labelValue);
+                    await Services.get().getRegistryClient().editLabel(this.ActiveElement, this.ActiveDataObject, labelKey, labelValue);
                     vscode.window.showInformationMessage(`Label "${labelKey}:${labelValue}" added to ${this.ActiveElement.type} "${this.ActiveElement.id}".`);
                     // Refresh the tree view to show the new label
                     this.refresh(this.ActiveElement, this.ActiveDataObject);
@@ -291,8 +291,31 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             });
         });
     }
-    public removeLabel() {
-        // To be implemented
+    public async removeLabel() {
+        // Prompt the user to enter a new label key and value
+        const labelsDisplay = Object.keys(this.ActiveDataObject.labels);
+        const label = await vscode.window.showQuickPick(labelsDisplay, {
+            placeHolder: `Choose a label to delete.`
+        });
+        if (!label) {
+            vscode.window.showErrorMessage('Label key is required.');
+            return;
+        }
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
+            placeHolder: `Remove label "${label}" from ${this.ActiveElement.type} "${this.ActiveElement.id}"?`
+        });
+        if (confirm !== 'Yes') {
+            return;
+        }
+        try {
+            // @Todo: manage Issue on Groups, missing datas in ActiveDataObject.
+            await Services.get().getRegistryClient().removeLabel(this.ActiveElement, this.ActiveDataObject, label);
+            vscode.window.showInformationMessage(`Label "${label}" removed from ${this.ActiveElement.type} "${this.ActiveElement.id}".`);
+            // Refresh the tree view to show the new label
+            this.refresh(this.ActiveElement, this.ActiveDataObject);
+        } catch (err) {
+            vscode.window.showErrorMessage(`Error removing label: ${JSON.stringify(err)}`);
+        }
     }
     public editDescription() {
         vscode.window.showInputBox({ prompt: 'Edit description', value: this.ActiveDataObject.description }).then(async (input) => {
@@ -491,7 +514,8 @@ export class ApicurioMetasExplorer {
             treeDataProvider.getChildren(element, data)
         );
         vscode.commands.registerCommand('apicurioMetasExplorer.displayMetasValue', () => treeDataProvider.displayMetasValue());
-        vscode.commands.registerCommand('apicurioMetasExplorer.addLabel', () => treeDataProvider.addLabel());
+        vscode.commands.registerCommand('apicurioMetasExplorer.editLabel', () => treeDataProvider.editLabel());
+        vscode.commands.registerCommand('apicurioMetasExplorer.removeLabel', () => treeDataProvider.removeLabel());
         vscode.commands.registerCommand('apicurioMetasExplorer.editDescription', () => treeDataProvider.editDescription());
         vscode.commands.registerCommand('apicurioMetasExplorer.editName', () => treeDataProvider.editName());
     }
