@@ -135,6 +135,21 @@
                 "command": "apicurioMetasExplorer.displayMetasValue",
                 "title": "Display Metas Value",
                 "icon": "$(zoom-in)"
+            },
+            {
+                "command": "apicurioMetasExplorer.addLabel",
+                "title": "Add Label",
+                "icon": "$(pen)"
+            },
+            {
+                "command": "apicurioMetasExplorer.editDescription",
+                "title": "Edit Description",
+                "icon": "$(pen)"
+            },
+            {
+                "command": "apicurioMetasExplorer.editName",
+                "title": "Edit Name",
+                "icon": "$(pen)"
             }
         ],
         "_": {
@@ -178,6 +193,21 @@
                     "command": "apicurioMetasExplorer.displayMetasValue",
                     "when": "view == apicurioMetasExplorer",
                     "group": "navigation"
+                },
+                {
+                    "command": "apicurioMetasExplorer.addLabel",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editDescription",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editName",
+                    "when": "view == apicurioExplorer",
+                    "group": "navigation"
                 }
             ],
             "view/item/context": [
@@ -215,6 +245,21 @@
                     "command": "apicurioArtifactVersionsExplorer.changeState",
                     "when": "view == apicurioArtifactVersionsExplorer && viewItem != collapsibleItem",
                     "group": "state"
+                },
+                {
+                    "command": "apicurioMetasExplorer.addLabel",
+                    "when": "view == apicurioMetasExplorer && viewItem == isLabels",
+                    "group": "metas"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editDescription",
+                    "when": "view == apicurioMetasExplorer && viewItem == isDescription",
+                    "group": "metas"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editName",
+                    "when": "view == apicurioMetasExplorer && viewItem == isName",
+                    "group": "metas"
                 }
             ]
         },

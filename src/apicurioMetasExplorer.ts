@@ -57,7 +57,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         // If no element or invalid element provided, fallback to default group
         if (!element || !element.id) {
             // Use default group id expected by the registry client
-            element = { id: 'default', type: ElementType.GROUP } as ActiveElement;
+            element = { id: this.settings.getDefaultGroup().groupId, type: ElementType.GROUP } as ActiveElement;
         }
         try {
             let result = [];
@@ -135,6 +135,34 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                     result = await Services.get().getRegistryClient().getMetas(element, this.ActiveDataObject);
                     metas = this.queryResultToMetas(result);
                     break;
+            }
+            /**
+             * @TODO: Look form perf improvment.
+             */
+            // If meta is missing, show empty meta for proper display if not default group.
+            if((this.ActiveElement.id == this.settings.getDefaultGroup().groupId && this.ActiveElement.type == ElementType.GROUP) == false){
+                // look for 'labels' key in each metas on object key in array
+                if (metas.findIndex(meta => Object.keys(meta)[0] === 'labels') === -1) {
+                    // If type has labels, add empty labels object for proper display
+                    if(this.ActiveElement.type == ElementType.GROUP ||
+                        this.ActiveElement.type == ElementType.ARTIFACT ||
+                        this.ActiveElement.type == ElementType.VERSION){
+                            const emptyLabels: any[] = [];
+                            const labels = { 'labels': emptyLabels };
+                            metas.push(labels);
+                    }
+                }
+                // look for 'description' key in each metas on object key in array
+                if (metas.findIndex(meta => Object.keys(meta)[0] === 'description') === -1) {
+                    // If type has description, add empty description for proper display
+                    if(this.ActiveElement.type == ElementType.GROUP ||
+                        this.ActiveElement.type == ElementType.ARTIFACT ||
+                        this.ActiveElement.type == ElementType.VERSION ||
+                        this.ActiveElement.type == ElementType.BRANCH){
+                            const description = { 'description': '' };
+                            metas.push(description);
+                    }
+                }
             }
             return metas;
         }
@@ -233,6 +261,77 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         });
     }
 
+    public addLabel() {
+        // Prompt the user to enter a new label key and value
+        vscode.window.showInputBox({ prompt: 'Enter label key (use existing key to edit existing label value)' }).then(async (input) => {
+            if (!input) {
+                vscode.window.showErrorMessage('Label key is required.');
+                return;
+            }
+            const labelKey = input;
+            vscode.window.showInputBox({ prompt: 'Enter optional label value' }).then(async (input) => {
+                // Confirm input diplayed as key:value
+                const labelValue = input || '';
+                const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
+                    placeHolder: `Add label "${labelKey}:${labelValue}" to ${this.ActiveElement.type} "${this.ActiveElement.id}"?`
+                });
+                if (confirm !== 'Yes') {
+                    return;
+                }
+                // Add the label via the registry client
+                try {
+                    // @Todo: manage Issue on Groups, missing datas in ActiveDataObject.
+                    await Services.get().getRegistryClient().addLabel(this.ActiveElement, this.ActiveDataObject, labelKey, labelValue);
+                    vscode.window.showInformationMessage(`Label "${labelKey}:${labelValue}" added to ${this.ActiveElement.type} "${this.ActiveElement.id}".`);
+                    // Refresh the tree view to show the new label
+                    this.refresh(this.ActiveElement, this.ActiveDataObject);
+                } catch (err) {
+                    vscode.window.showErrorMessage(`Error adding label: ${JSON.stringify(err)}`);
+                }
+            });
+        });
+    }
+    public removeLabel() {
+        // To be implemented
+    }
+    public editDescription() {
+        vscode.window.showInputBox({ prompt: 'Edit description', value: this.ActiveDataObject.description }).then(async (input) => {
+            const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
+                placeHolder: `Edit description to: "${(input) ? input : ''}"?`
+            });
+            if (confirm !== 'Yes') {
+                return;
+            }
+            try {
+                await Services.get().getRegistryClient().editDescription(this.ActiveElement, this.ActiveDataObject, (input) ? input : '');
+                // Refresh the tree view to show the new description.
+                // @TODO: manage proper views variable updates. In case of re-edition, display the cached value.
+                this.refresh(this.ActiveElement, this.ActiveDataObject);
+            } catch (err) {
+                vscode.window.showErrorMessage(`Error description edit: ${JSON.stringify(err)}`);
+            }
+        });
+    }
+    public editName() {
+        vscode.window.showInputBox({ prompt: 'Edit name', value: this.ActiveDataObject.name }).then(async (input) => {
+            const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
+                placeHolder: `Edit name to: "${(input) ? input : ''}"?`
+            });
+            if (confirm !== 'Yes') {
+                return;
+            }
+            try {
+                await Services.get().getRegistryClient().editName(this.ActiveElement, this.ActiveDataObject, (input) ? input : '');
+                // Refresh the tree view to show the new name.
+                // @TODO: manage update of parent views if name is displayed there.
+                // @TODO: manage proper views variable updates. In case of re-edition, display the cached value.
+                this.refresh(this.ActiveElement, this.ActiveDataObject);
+            } catch (err) {
+                vscode.window.showErrorMessage(`Error name edit: ${JSON.stringify(err)}`);
+            }
+        });
+    }
+
     /**
      * End of Contextual menu actions
      */
@@ -327,19 +426,27 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
         treeItem.tooltip = treeItem.description;
 
         // Use a ThemeIcon so the icon displays correctly in the tree view
+        // Addditional contextValue for contextual menu management
         switch (label) {
             case 'properties':
             case 'labels':
                 treeItem.iconPath = new vscode.ThemeIcon('tag');
+                treeItem.contextValue = 'isLabels';
                 break;
             case 'owner':
                 treeItem.iconPath = new vscode.ThemeIcon('account');
                 break;
             case 'description':
                 treeItem.iconPath = new vscode.ThemeIcon('comment');
+                treeItem.contextValue = 'isDescription';
+                break;
+            case 'name':
+                treeItem.iconPath = new vscode.ThemeIcon('info');
+                treeItem.contextValue = 'isName';
                 break;
             case 'Rules':
                 treeItem.iconPath = new vscode.ThemeIcon('gear');
+                treeItem.contextValue = 'isRules';
                 break;
             case 'version':
                 treeItem.iconPath = new vscode.ThemeIcon('check');
@@ -349,6 +456,7 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
                 break;
             case 'References':
                 treeItem.iconPath = new vscode.ThemeIcon('references');
+                treeItem.contextValue = 'isReferences';
                 break;
             case 'modifiedOn':
             case 'createdOn':
@@ -383,5 +491,8 @@ export class ApicurioMetasExplorer {
             treeDataProvider.getChildren(element, data)
         );
         vscode.commands.registerCommand('apicurioMetasExplorer.displayMetasValue', () => treeDataProvider.displayMetasValue());
+        vscode.commands.registerCommand('apicurioMetasExplorer.addLabel', () => treeDataProvider.addLabel());
+        vscode.commands.registerCommand('apicurioMetasExplorer.editDescription', () => treeDataProvider.editDescription());
+        vscode.commands.registerCommand('apicurioMetasExplorer.editName', () => treeDataProvider.editName());
     }
 }

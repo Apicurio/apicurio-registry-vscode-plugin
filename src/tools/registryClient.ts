@@ -5,7 +5,7 @@ import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services } from './services';
 import { Settings } from './settings';
-import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam, States } from '../interfaces';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam, States, Branch } from '../interfaces';
 
 class RegistryClient {
     private settings: Settings;
@@ -201,6 +201,12 @@ class RegistryClient {
         return res;
     }
 
+    /**
+     * Manage artifact States
+     * @param artifact 
+     * @param state 
+     * @returns 
+     */
     public async changeArtifactVersionState(artifact: ArtifactVersion, state: string): Promise<any> {
         const body = {
             'state': state
@@ -211,6 +217,133 @@ class RegistryClient {
             'PUT',
             undefined,
             body
+        ) as Promise<any>;
+        return res;
+    }
+
+    /**
+     * Manage Objects Metas: Labels, Description, Owner, Name
+     * For custom metas as state, properties, references, etc. use dedicated functions.
+     */
+    /**
+     * Add or update a label on an element.
+     * @param element 
+     * @param data 
+     * @param labelKey 
+     * @param labelValue 
+     * @returns 
+     */
+    public async addLabel(element: ActiveElement, data: Group | Artifact | ArtifactVersion | Branch, labelKey: string, labelValue: string): Promise<any> {
+        let metas = this.returnEditableMetasObject(element, data);
+        metas.labels = {...metas.labels, ...{ [labelKey]: labelValue } };
+        vscode.window.showInformationMessage(`Updated metas: ${JSON.stringify(metas)}`);
+        await this.editMetas(element, data, metas);
+        return;
+    }
+    /**
+     * No need of edit label function, addLabel will overwrite existing label key.
+     */
+    /**
+     * Remove a label from an element.
+     * @param element 
+     * @param data 
+     * @param labelKey 
+     * @returns 
+     */
+    public async removeLabel(element: ActiveElement,  data: Group | Artifact | ArtifactVersion | Branch, labelKey: string): Promise<any> {
+        let metas = this.returnEditableMetasObject(element, data);
+        if (metas.labels && metas.labels[labelKey]) {
+            delete metas.labels[labelKey];
+        }   
+        await this.editMetas(element, data, metas);
+        return;
+    }
+    public async editDescription(element: ActiveElement, data: Group | Artifact | ArtifactVersion | Branch, description: string): Promise<any> {
+        let metas = this.returnEditableMetasObject(element, data);
+        metas.description = description;
+        await this.editMetas(element, data, metas);
+        return;
+    }
+    public async editName(element: ActiveElement, data: Artifact | ArtifactVersion, name: string): Promise<any> {
+        let metas = this.returnEditableMetasObject(element, data);
+        metas.name = name;
+        await this.editMetas(element, data, metas);
+        return;
+    }
+    /**
+     * Return an object containing only editable metas depending on the element type.
+     * @param element 
+     * @param data 
+     * @returns 
+     */
+    private returnEditableMetasObject(element: ActiveElement, data: any ): any {
+        let metas: any = {};
+        switch (element.type) {
+            case ElementType.GROUP:
+                metas = {
+                    description: (data.description) ? data.description : '',
+                    labels: (data.labels) ? data.labels : {}
+                };
+                break;
+            case ElementType.ARTIFACT:
+                metas = {
+                    name: (data.name) ? data.name : '',
+                    description: (data.description) ? data.description : '',
+                    labels: (data.labels) ? data.labels : {}
+                };
+                // add owner only if exists to avoid API error.
+                if (data.owner) {
+                    metas.owner = data.owner;
+                }
+                break;
+            case ElementType.VERSION:
+                metas = {
+                    name: (data.name) ? data.name : '',
+                    description: (data.description) ? data.description : '',
+                    labels: (data.labels) ? data.labels : {}
+                };
+                break;
+            case ElementType.BRANCH:
+                metas = {
+                    description: (data.description) ? data.description : '',
+                };
+                break;
+            default:
+                break;
+        }
+        return metas;
+    }
+    /**
+     * Update metas of an element.
+     * @param element 
+     * @param data 
+     * @param metas 
+     * @returns 
+     */
+    public async editMetas(element: ActiveElement, data: Group | Artifact | ArtifactVersion | Branch, metas: any): Promise<any> {
+        let path = '';
+        switch (element.type) {
+            case ElementType.GROUP:
+                path = `groups/${element.id}`;
+                break;
+            case ElementType.BRANCH:
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/branches/${(data as any).branchId}`;
+                break;
+            case ElementType.ARTIFACT:
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}`;
+                break;
+            case ElementType.VERSION:
+                path = `groups/${(data as any).groupId}/artifacts/${(data as any).artifactId}/versions/${(data as any).version}`;
+                break;
+            default:
+                break;
+        }
+        const res = this.executeRequest(
+            `${path}`,
+            {},
+            'PUT',
+            { 'Content-Type': 'application/json' },
+            metas
         ) as Promise<any>;
         return res;
     }
