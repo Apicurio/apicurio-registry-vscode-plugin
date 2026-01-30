@@ -303,6 +303,24 @@
                         "type": "string",
                         "default": "/apis/registry/v3/"
                     },
+                    "apicurio.authorization.enabled": {
+                        "description": "Enable authorization for Apicurio registry",
+                        "type": "boolean",
+                        "default": false
+                    },
+                    "apicurio.authorization.provider": {
+                        "description": "The VS Code authentication provider id to use for authorization",
+                        "type": "string",
+                        "default": "github"
+                    },
+                    "apicurio.authorization.scopes": {
+                        "description": "The VS Code authentication provider scopes to use for authorization",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "default": ["user:email"]
+                    },
                     "apicurio.search.limit": {
                         "description": "The Apicurio search limit (number of artifacts to return)",
                         "type": "integer",

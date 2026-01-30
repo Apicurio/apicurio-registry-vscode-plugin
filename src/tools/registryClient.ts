@@ -55,6 +55,11 @@ class RegistryClient {
     }
 
     public async getGroups(options?: object): Promise<GroupList> {
+        // const session = await vscode.authentication.getSession("microsoft", ["user:email"], { createIfNone: false }).then(token => {
+        //             if (token) {
+        //                 headers['Authorization'] = `Bearer ${token.accessToken}`;
+        //             }
+        //         });
         const res = this.executeRequest(`groups`, { ...options, ...this.settings.queryParamsPaginate(options) }) as Promise<GroupList>;
         return res;
     }
@@ -353,6 +358,55 @@ class RegistryClient {
      */
 
     /**
+     * Manage Bearer Token for Authorization
+     * @returns null | string
+     */
+    private async getBearerToken(): Promise<string> {
+        const authSettings = this.settings.getAuthorizationSettings();
+        if(authSettings.enabled) {
+            const session = await vscode.authentication.getSession(
+                authSettings.provider as string,
+                authSettings.scopes as string[],
+                { createIfNone: true }
+            );
+            if (!session) {
+                vscode.window.showInformationMessage('Apicurio: Authentication session not found');
+            }
+            // vscode.window.showInformationMessage(`Apicurio: Authentication session found for account ${session?.account.label}, ${session?.accessToken}`);
+            return session.accessToken;
+        }
+        // vscode.window.showInformationMessage('Apicurio: Authorization is disabled in settings.');
+        return null;
+    }
+    /**
+     * Manage HTTP Errors
+     * @param statusCode 
+     * @param path 
+     * @param output 
+     */
+    private httpErrorsHandler(statusCode: number, path: string, output: any) {
+        switch (statusCode) {
+            case 401:
+                vscode.window.showErrorMessage(`Apicurio Registry client error: Unauthorized (401).`);
+                break;
+            default:
+                if (output != null && typeof output !== 'string') {
+                    if ('name' in output && 'message' in output) {
+                        vscode.window.showErrorMessage(
+                            `Apicurio Registry client ${statusCode} error: ${output.name}: ${output.message} on path ${path}`
+                        );
+                    }
+                    else {
+                        vscode.window.showErrorMessage(`Apicurio Registry client ${statusCode} error: on path ${path}`);
+                    }
+                } else {
+                    vscode.window.showErrorMessage(`Apicurio Registry client ${statusCode} error: on path ${path}`);
+                }
+                break;
+        }
+    }
+
+    /**
      *  Execute HTTP request to Apicurio Registry API
      * @param path The API endpoint path
      * @param method The HTTP method to use (GET, POST, etc.)
@@ -362,7 +416,10 @@ class RegistryClient {
      * @returns A promise that resolves with the response data
      */
 
-    private executeRequest(path: string, queryParams?: any, method?: string, headers?: any, body?: any, returnHeaders?: boolean): Promise<any> {
+    private async executeRequest(path: string, queryParams?: any, method?: string, headers?: any, body?: any, returnHeaders?: boolean): Promise<any> {
+        // Get Auth token if authorization is enabled
+        const bearerToken = await this.getBearerToken();
+        const httpErrorsHandler = this.httpErrorsHandler;
         return new Promise<any>((resolve, reject) => {
             const settings = this.settings;
             const client = settings.useHttps ? https : http;
@@ -376,6 +433,10 @@ class RegistryClient {
             };
             if (headers['Content-Type'].endsWith('yaml') || headers['Content-Type'].endsWith('yml')) {
                 headers['Content-Type'] = 'application/x-yaml';
+            }
+            // Manage Bearer if authorization is enabled
+            if(bearerToken != null) {
+                headers['Authorization'] = `Bearer ${bearerToken}`;
             }
 
             // Build request options so we can return them if requested
@@ -412,24 +473,14 @@ class RegistryClient {
                             _statusCode: res.statusCode,
                         },
                     };
-
+                    // Error handling
                     if (res.statusCode < 200 || res.statusCode >= 300) {
                         // Try to surface structured error info when available
-                        if (output != null && typeof output !== 'string') {
-                            if ('name' in output && 'message' in output) {
-                                vscode.window.showErrorMessage(
-                                    `Apicurio Registry client ${res.statusCode} error: ${output.name}: ${output.message} on path ${path}`
-                                );
-                                return reject(returnHeaders ? responseWrapper : output);
-                            }
-                        }
-                        else {
-                            vscode.window.showErrorMessage(
-                                `Apicurio Registry client ${res.statusCode} error: on path ${path}`
-                            );
-                        }
+                        httpErrorsHandler(res.statusCode, path, output);
                         return reject(returnHeaders ? responseWrapper : output);
-                    } else {
+                    }
+                    // 2xx Success
+                    else {
                         // Return either the raw body or the wrapper containing headers and request
                         return resolve(returnHeaders ? responseWrapper : output);
                     }

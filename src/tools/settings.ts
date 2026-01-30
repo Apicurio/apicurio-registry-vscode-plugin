@@ -78,6 +78,17 @@ class Settings {
     }
 
     /**
+     * Retrise authorization settings
+     */
+    public getAuthorizationSettings() {
+        return {
+            enabled: vscode.workspace.getConfiguration('apicurio.authorization').get('enabled'),
+            provider: vscode.workspace.getConfiguration('apicurio.authorization').get('provider'),
+            scopes: vscode.workspace.getConfiguration('apicurio.authorization').get('scopes') 
+        };
+    }
+
+    /**
      * Manage Apicurio default values.
      */
     public getDefault(value: string) {
