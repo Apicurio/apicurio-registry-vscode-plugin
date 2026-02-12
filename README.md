@@ -93,6 +93,7 @@ Also available on [open-vsx.org][openvsx].
 - `apicurio.authorization.enabled`: Enable Authorization (Identity provider usage).
 - `apicurio.authorization.provider`: Authorization provider ID.
 - `apicurio.authorization.scopes`: Authorization scopes.
+- `apicurio.authorization.token`: Authorization token to be used (if multiples token in session, `accessToken` as default).
 
 ## Using multiples registries
 
@@ -124,7 +125,8 @@ You car use the the `Settings` > `Workspace` > `Apicurio` pannel or create a `.v
     "apicurio.authorization.provider": "github",
     "apicurio.authorization.scopes": [
         "user:email"
-    ]
+    ],
+    "apicurio.authorization.token": "accessToken"
 }
 ```
 

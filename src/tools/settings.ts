@@ -84,7 +84,8 @@ class Settings {
         return {
             enabled: vscode.workspace.getConfiguration('apicurio.authorization').get('enabled'),
             provider: vscode.workspace.getConfiguration('apicurio.authorization').get('provider'),
-            scopes: vscode.workspace.getConfiguration('apicurio.authorization').get('scopes') 
+            scopes: vscode.workspace.getConfiguration('apicurio.authorization').get('scopes'),
+            token: vscode.workspace.getConfiguration('apicurio.authorization').get('token')
         };
     }
 

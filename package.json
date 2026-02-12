@@ -341,6 +341,11 @@
                         },
                         "default": ["user:email"]
                     },
+                    "apicurio.authorization.token": {
+                        "description": "The authentication token to return for authorization (accessToken, idToken, etc.)",
+                        "type": "string",
+                        "default": "accessToken"
+                    },
                     "apicurio.search.limit": {
                         "description": "The Apicurio search limit (number of artifacts to return)",
                         "type": "integer",

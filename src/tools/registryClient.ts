@@ -378,8 +378,12 @@ class RegistryClient {
             if (!session) {
                 vscode.window.showInformationMessage('Apicurio: Authentication session not found');
             }
-            // vscode.window.showInformationMessage(`Apicurio: Authentication session found for account ${session?.account.label}, ${session?.accessToken}`);
-            return session.accessToken;
+            // vscode.window.showInformationMessage(`Apicurio: Authentication session found for account ${session?.account.label}, ${JSON.stringify(Object.keys(session))}`);
+            // // Debug tools
+            // let token = session[authSettings.token as string];
+            // let decoded = JSON.stringify(JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()));
+            // vscode.window.showInformationMessage(`Apicurio: Authentication session found for account ${session?.account.label}, ${decoded}`);
+            return session[authSettings.token as string];
         }
         // vscode.window.showInformationMessage('Apicurio: Authorization is disabled in settings.');
         return null;
