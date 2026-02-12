@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, Branch } from '../interfaces';
+import { Group, Branch, ArtifactReference } from '../interfaces';
 
 class Settings {
     public hostname: string | null | undefined;
@@ -113,9 +113,18 @@ class Settings {
     public getDefaultBranch(artifactId?: string) {
         return { branchId: this.getDefault('branch'), artifactId: artifactId || "", groupId: this.getDefault('group'), description: 'Default branch, system generated.' } as Branch;
     }
+
     /**
      * End of Manage Apicurio default values.
      */
+
+    public getEmptyReference(){
+        return {name:'', groupId:'',artifactId:'',version:''} as ArtifactReference;
+    }
+    public getAddReferenceLabel(){
+        // not used as ID, ID is table count.
+        return 'Add new Reference'
+    }
 }
 
 export { Settings };

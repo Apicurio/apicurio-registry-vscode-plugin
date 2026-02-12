@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Meta, ActiveElement, ElementType, Group, Artifact, ArtifactVersion } from './interfaces';
+import { Meta, ActiveElement, ElementType, Group, Artifact, ArtifactVersion, States } from './interfaces';
 import { Services } from './tools/services';
 import { Settings } from './tools/settings';
 
@@ -354,6 +354,60 @@ export class ApicurioMetasExplorerProvider implements vscode.TreeDataProvider<Me
             }
         });
     }
+    public async editReferences(){
+        // API limitation test.
+        if (this.ActiveDataObject.state && this.ActiveDataObject.state != States.DRAFT) {
+            vscode.window.showErrorMessage(`References can only be edited on artifacts if state is "${States.DRAFT}" and if allowed in registry settings.`);
+            return;
+        }
+        // if references are not loaded in artefact get it.
+        if(!this.ActiveDataObject.references){
+            let refs = await Services.get().getRegistryClient().getArtifactReferences(this.ActiveDataObject as ArtifactVersion);
+            this.ActiveDataObject.references = refs;
+        }
+        //get name form each refs object in array.
+        let labelsDisplay = [];
+        for(let i in this.ActiveDataObject.references){
+            labelsDisplay.push({
+                label: this.ActiveDataObject.references[i].name,
+                id: i
+            });
+        }
+        // Add at the end to properly increment ID in array.
+        labelsDisplay.push({
+            label: this.settings.getAddReferenceLabel(),
+            id: labelsDisplay.length
+        });
+        // Prompt the user to choose or add a reference.
+        const reference = await vscode.window.showQuickPick(labelsDisplay, {
+            placeHolder: `Choose a reference to edit`
+        });
+        if (!reference) {
+            vscode.window.showErrorMessage('Reference key is required.');
+            return;
+        }
+        // Edit Reference values
+        let currentReference = ( reference.id != labelsDisplay.length) ? this.ActiveDataObject.references[reference.id] : this.settings.getEmptyReference();
+        currentReference.name = await vscode.window.showInputBox({ prompt: 'Edit reference name', value: currentReference.name });
+        currentReference.groupId = await vscode.window.showInputBox({ prompt: 'Edit reference artifact group', value: currentReference.groupId });
+        currentReference.artifactId = await vscode.window.showInputBox({ prompt: 'Edit reference artifact Id', value: currentReference.artifactId });
+        currentReference.version = await vscode.window.showInputBox({ prompt: 'Edit reference artifact version', value: currentReference.version });
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
+            placeHolder: `Confirm to edit reference "${currentReference.name}" from ${this.ActiveElement.type} "${this.ActiveElement.id}"?`
+        });
+        if (confirm !== 'Yes') {
+            return;
+        }
+        try {
+            // @Todo: manage Issue on Groups, missing datas in ActiveDataObject.
+            await Services.get().getRegistryClient().editReferences(this.ActiveElement, this.ActiveDataObject, reference, currentReference);
+            vscode.window.showInformationMessage(`Reference "${currentReference.name}" upodated for ${this.ActiveElement.type} "${this.ActiveElement.id}".`);
+            // Refresh the tree view to show the new label
+            this.refresh(this.ActiveElement, this.ActiveDataObject);
+        } catch (err) {
+            vscode.window.showErrorMessage(`Error edditing reference: ${JSON.stringify(err)}`);
+        }
+    }
 
     /**
      * End of Contextual menu actions
@@ -518,5 +572,7 @@ export class ApicurioMetasExplorer {
         vscode.commands.registerCommand('apicurioMetasExplorer.removeLabel', () => treeDataProvider.removeLabel());
         vscode.commands.registerCommand('apicurioMetasExplorer.editDescription', () => treeDataProvider.editDescription());
         vscode.commands.registerCommand('apicurioMetasExplorer.editName', () => treeDataProvider.editName());
+        vscode.commands.registerCommand('apicurioMetasExplorer.editReferences', () => treeDataProvider.editReferences());
+        // vscode.commands.registerCommand('apicurioMetasExplorer.removeReferences', () => treeDataProvider.removeReferences());
     }
 }

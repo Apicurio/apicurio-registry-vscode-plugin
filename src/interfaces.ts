@@ -39,6 +39,7 @@ interface Artifact {
     artifactType?: string;
     owner?: string;
     labels?: string[];
+    references?: ArtifactReference[];
     createdOn?: string;
     createdBy?: string;
     modifiedBy?: string;
@@ -75,11 +76,12 @@ interface ArtifactVersion {
     description?: string;
     artifactType?: string;
     owner?: string;
+    labels?: string[];
+    references?: ArtifactReference[];
     createdOn?: string;
     createdBy?: string;
     modifiedBy?: string;
     modifiedOn?: string;
-    labels?: string[];
     children?: ArtifactVersion[];
 }
 
@@ -100,6 +102,13 @@ interface MetaEntry {
 
 interface CurrentArtifact {
     group: string;
+    artifactId: string;
+    version?: string;
+}
+
+interface ArtifactReference {
+    name: string;
+    groupId: string;
     artifactId: string;
     version?: string;
 }
@@ -152,5 +161,6 @@ export {
     ArtifactVersionCommentsEntry,
     MetaEntry,
     CurrentArtifact,
+    ArtifactReference,
     States
 };

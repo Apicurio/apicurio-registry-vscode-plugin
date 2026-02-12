@@ -155,6 +155,16 @@
                 "command": "apicurioMetasExplorer.editName",
                 "title": "Edit Name",
                 "icon": "$(pen)"
+            },
+            {
+                "command": "apicurioMetasExplorer.editReferences",
+                "title": "Edit References",
+                "icon": "$(pen)"
+            },
+            {
+                "command": "apicurioMetasExplorer.removeReferences",
+                "title": "Remove References",
+                "icon": "$(trash)"
             }
         ],
         "_": {
@@ -254,6 +264,16 @@
                 {
                     "command": "apicurioMetasExplorer.editName",
                     "when": "view == apicurioMetasExplorer && viewItem == isName",
+                    "group": "metas"
+                },
+                {
+                    "command": "apicurioMetasExplorer.editReferences",
+                    "when": "view == apicurioMetasExplorer && viewItem == isReferences",
+                    "group": "metas"
+                },
+                {
+                    "command": "apicurioMetasExplorer.removeReferences",
+                    "when": "view == apicurioMetasExplorer && viewItem == isReferences",
                     "group": "metas"
                 }
             ]

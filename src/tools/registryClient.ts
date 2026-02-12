@@ -5,7 +5,7 @@ import * as https from 'https';
 import * as vscode from 'vscode';
 import { Services } from './services';
 import { Settings } from './settings';
-import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam, States, Branch } from '../interfaces';
+import { GroupList, ArtifactList, BranchList, ArtifactVersionsList, ActiveElement, ElementType, Artifact, ArtifactVersion, Group, ReferencesQueryParam, States, Branch, ArtifactReference } from '../interfaces';
 
 class RegistryClient {
     private settings: Settings;
@@ -351,6 +351,12 @@ class RegistryClient {
             metas
         ) as Promise<any>;
         return res;
+    }
+    /**
+     * Edit References.
+     */
+    public async editReferences(element: ActiveElement, data: Artifact | ArtifactVersion, referenceId: string, reference: ArtifactReference) {
+
     }
 
     /**

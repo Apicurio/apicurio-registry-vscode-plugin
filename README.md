@@ -69,23 +69,37 @@ Also available on [open-vsx.org][openvsx].
 
 ## Settings
 
+### Core settings
+
 - `apicurio.api.version` : Apicurio Core Registry API version.
+
+### API settings
+
 - `apicurio.http.secure` : Acces to Apicurio registry API over http or https.
 - `apicurio.http.host` : Apicurio registry host.
 - `apicurio.http.path` : Apicurio registry path.
 - `apicurio.http.port` : Apicurio registry port.
 - `apicurio.search.limit` : Custom API limit (Apicurio default is 20).
+
+### User interface settings
+
 - `apicurio.explorer.name` : Display name (if exist) instead of ID in registry explorer view.
 - `apicurio.versions.reverse` : Reverse Versions order by default.
 - `apicurio.tools.preview.format` : Format document on preview.
 - `apicurio.tools.preview.OPENAPI` : Use or not Swagger-preview if [swagger-viewer](https://marketplace.visualstudio.com/items?itemName=Arjun.swagger-viewer) plugin is available for OPENAPI.
+
+### Security & authorization settings
+
+- `apicurio.authorization.enabled`: Enable Authorization (Identity provider usage).
+- `apicurio.authorization.provider`: Authorization provider ID.
+- `apicurio.authorization.scopes`: Authorization scopes.
 
 ## Using multiples registries
 
 If you use differents registries on different projects, use Workspace settings to override defaults.
 You car use the the `Settings` > `Workspace` > `Apicurio` pannel or create a `.vscode/setttings.json` file.
 
-> Due to settings cache, reload your IDE when editing the http settings.
+> Due to settings cache, you may reload your IDE when editing the settings.
 
 ```json
 // Sample .vscode/setttings.json
@@ -93,7 +107,24 @@ You car use the the `Settings` > `Workspace` > `Apicurio` pannel or create a `.v
     "apicurio.http.host": "localhost",
     "apicurio.http.path": "/apis/registry/v3/",
     "apicurio.http.secure": false,
-    "apicurio.http.port": 8080
+    "apicurio.http.port": 8080,
+    "apicurio.authorization.enabled": false
+}
+```
+
+```json
+// Sample using SSL & authorization
+{
+    "apicurio.api.version": "v3",
+    "apicurio.http.host": "some-domain.tld",
+    "apicurio.http.path": "/apis/registry/v3/",
+    "apicurio.http.secure": true,
+    "apicurio.http.port": 443,
+    "apicurio.authorization.enabled": true,
+    "apicurio.authorization.provider": "github",
+    "apicurio.authorization.scopes": [
+        "user:email"
+    ]
 }
 ```
 
