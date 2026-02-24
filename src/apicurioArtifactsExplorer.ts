@@ -1,7 +1,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { Group, ActiveElement, ElementType, Artifact, ArtifactType } from './interfaces';
+import { Group, ActiveElement, ElementType, Artifact, ArtifactType, ArtifactVersion, ArtifactReference } from './interfaces';
 import { Services } from './tools/services';
 import { Settings } from './tools/settings';
 // import { path } from 'path';
@@ -136,34 +136,67 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
 
     // Add a new version
     public async addVersion(artifact: Artifact) {
-        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Add a new version to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }?` });
+        let newArtifact: ArtifactVersion;
+        const confirm = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Create from existing version of ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }?` });
         if (confirm === 'Yes') {
-            const version = await vscode.window.showInputBox({ prompt: 'Version for the new artifact version (optional, semver may be forced by the registry)' });
-            if (confirm === 'Yes') {
-                const previousProperties = await vscode.window.showQuickPick(['Yes', 'No'], { placeHolder: `Choose Yes to keep artifact level properties, no for update.` });
-                if (previousProperties === 'Yes') {
-                    // Keep previous properties
-                } else {
-                    const name = await vscode.window.showInputBox({ prompt: 'Edit name for the new artifact version (optional):', value: artifact.name });
-                    const description = await vscode.window.showInputBox({ prompt: 'Edit description for the new artifact version (optional):', value: artifact.description });
-                    artifact.name = name ? name : '';
-                    artifact.description = description ? description : '';
-                }
-                // Choose file
-                const fileUri = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: 'Select Artifact File' });
-                if (fileUri && fileUri[0]) {
-                    /* eslint @typescript-eslint/no-var-requires: "off" */
-                    const path = require('path');
-                    const content = await vscode.workspace.fs.readFile(fileUri[0]);
-                    Services.get().getRegistryClient().createArtifactVersion(version, artifact, path.extname(fileUri[0].fsPath),content).then(() => {
-                        vscode.window.showInformationMessage(`New version added to ${(this.settings.displayName() && artifact.name)? artifact.name : artifact.artifactId }`);
-                        this.selectArtifact(artifact);
-                    }).catch((error) => {
-                        console.error(error);
-                        vscode.window.showErrorMessage(`Failed to add new version: ${JSON.stringify(error)}`);
+            // Choose Branch
+            const newActiveArtifact: ActiveElement = { id: artifact.artifactId, type: ElementType.ARTIFACT };
+            const branches = await Services.get().getRegistryClient().getBranches(this.ActiveGroup, newActiveArtifact);
+            const branchList = [];
+            for (let i in branches.branches) {
+                branchList.push({
+                    id: branches.branches[i].branchId,
+                    label: branches.branches[i].branchId
+                });
+            }
+            const newBranch = await vscode.window.showQuickPick(branchList, { placeHolder: `Select branch of the source version.` });
+            const artifacttVersions = [];
+            if (newBranch) {
+                // Choose Version from the branch
+                const newActiveArtifact: ActiveElement = { id: artifact.artifactId, type: ElementType.ARTIFACT };
+                const newActiveBranch: ActiveElement = { id: newBranch.id, type: ElementType.BRANCH };
+                const versions = await Services.get().getRegistryClient().getArtifacttVersions(this.ActiveGroup, newActiveArtifact, newActiveBranch);
+                for (let i in versions.versions) {
+                    artifacttVersions.push({
+                        id: versions.versions[i].version,
+                        label: versions.versions[i].version
                     });
                 }
             }
+            const versionFrom = await vscode.window.showQuickPick(artifacttVersions, { placeHolder: `Choose the source version.` });
+            // Keep previous properties
+            // Get artifact version
+            const activeVersion: ActiveElement = { id: artifact.artifactId, type: ElementType.VERSION };
+            const sourceArtifactVersion: ArtifactVersion = {
+                groupId: this.ActiveGroup.id,
+                artifactId: newActiveArtifact.id,
+                version: versionFrom.id,
+            };
+            newArtifact = await Services.get().getRegistryClient().getMetas(activeVersion, sourceArtifactVersion);
+            // Get artifact version references
+            newArtifact.references = await Services.get().getRegistryClient().getArtifactReferences(sourceArtifactVersion as ArtifactVersion);
+        }
+        else {
+            const name = await vscode.window.showInputBox({ prompt: 'Artifact version name :', value: artifact.name });
+            const description = await vscode.window.showInputBox({ prompt: 'Artifact version description:', value: artifact.description });
+            newArtifact.name = name ? name : '';
+            newArtifact.description = description ? description : '';
+        }
+        // Choose new version
+        const version = await vscode.window.showInputBox({ prompt: 'New artifact version - Semver may be required by the registry' });
+        // Choose file
+        const fileUri = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: 'Select Artifact File' });
+        if (fileUri && fileUri[0]) {
+            /* eslint @typescript-eslint/no-var-requires: "off" */
+            const path = require('path');
+            const content = await vscode.workspace.fs.readFile(fileUri[0]);
+            Services.get().getRegistryClient().createArtifactVersion(version, newArtifact, path.extname(fileUri[0].fsPath),content).then(() => {
+                vscode.window.showInformationMessage(`New version added to ${(this.settings.displayName() && newArtifact.name)? newArtifact.name : newArtifact.artifactId }`);
+                this.selectArtifact(newArtifact);
+            }).catch((error) => {
+                console.error(error);
+                vscode.window.showErrorMessage(`Failed to add new version: ${JSON.stringify(error)}`);
+            });
         }
     }
 

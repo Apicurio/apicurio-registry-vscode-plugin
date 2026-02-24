@@ -182,13 +182,14 @@ class RegistryClient {
             default:
                 contentType = 'application/json';
         }
+
         // Build request body
         const body: any = {
             'version': version,
             'content': {
                 'content': content.toString(),
                 'contentType': contentType,
-                'references': []
+                'references': (artifact.references) ? artifact.references : []
             },
             'name': artifact.name,
             'description': artifact.description,
