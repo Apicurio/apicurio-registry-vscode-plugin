@@ -179,6 +179,10 @@ export class ApicurioArtifactsExplorerProvider implements vscode.TreeDataProvide
         else {
             const name = await vscode.window.showInputBox({ prompt: 'Artifact version name :', value: artifact.name });
             const description = await vscode.window.showInputBox({ prompt: 'Artifact version description:', value: artifact.description });
+            newArtifact = {
+                groupId: this.ActiveGroup.id,
+                artifactId: artifact.artifactId,
+            } as ArtifactVersion;
             newArtifact.name = name ? name : '';
             newArtifact.description = description ? description : '';
         }
