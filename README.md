@@ -1,6 +1,7 @@
 # Apicurio Registry Explorer
 
-[![Current Version](https://img.shields.io/visual-studio-marketplace/v/apicurio.apicurio-registry-explorer.svg?color=emerald&label=Visual%20Studio%20Marketplace&logo=visual-studio-code&logoColor=blue&style=flat)][marketplace]
+[![Current Version](https://img.shields.io/visual-studio-marketplace/v/apicurio.apicurio-registry-explorer.svg?color=emerald&label=Visual%20Studio%20Marketplace&logo=visual-studio-code&logoColor=blue&style=flat)][![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FApicurio%2Fapicurio-registry-vscode-plugin.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FApicurio%2Fapicurio-registry-vscode-plugin?ref=badge_shield)
+[marketplace]
 ![Install Count](https://img.shields.io/visual-studio-marketplace/i/apicurio.apicurio-registry-explorer.svg?color=emerald&style=flat)
 ![downloads Count](https://img.shields.io/visual-studio-marketplace/d/apicurio.apicurio-registry-explorer.svg?color=emerald&style=flat)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/apicurio/apicurio-registry-vscode-plugin.svg?color=emerald&label=release&logoColor=white&logo=github&labelColor=grey)][github]
@@ -83,6 +84,9 @@ See [apicurio.io](https://www.apicur.io/)
 ## License
 
 [Apache-2.0 license][license]
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FApicurio%2Fapicurio-registry-vscode-plugin.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FApicurio%2Fapicurio-registry-vscode-plugin?ref=badge_large)
 
 ## Contribute
 
